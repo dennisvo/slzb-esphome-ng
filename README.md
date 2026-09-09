@@ -1,7 +1,67 @@
 # ESPHome Multi-Device Firmware Repository
 
+> **This is a security-hardened fork of [smlight-tech/slzb-esphome](https://github.com/smlight-tech/slzb-esphome).**
+> Branch: [`secure-native-api`](https://github.com/dennisvo/slzb-esphome/tree/secure-native-api).
+> The radio UARTs (Zigbee / Thread / Z-Wave) are no longer exposed as plaintext TCP ports on the LAN.
+> They are proxied over an **encrypted ESPHome Native API** to Home Assistant (`serial_proxy` + `esphome-hass://` URLs).
+> See [Fork Differences](#fork-differences) below and [`docs/design.md`](docs/design.md) for the full rationale.
+
 This repository contains a structured ESPHome project designed to support multiple devices and hardware revisions from a single, maintainable codebase.
 The architecture emphasizes clear separation between hardware definitions, low-level hardware handling, reusable logic, and device composition.
+
+---
+
+## Fork Differences
+
+### Upstream (`smlight-tech/slzb-esphome`)
+
+The radio UARTs are exposed to the network via [`oxan/esphome-stream-server`](https://github.com/oxan/esphome-stream-server) — one plaintext TCP port per radio (typically `6638`, `6640`, `6641`). Home Assistant integrations (ZHA, OpenThread Border Router, Z-Wave JS) connect to `socket://<device-ip>:<port>`. Anyone on the same L2 segment can read/write the raw coordinator UART.
+
+### This fork (`secure-native-api`)
+
+| Concern | Upstream | This fork |
+|---|---|---|
+| Radio UART transport | Plaintext TCP (`stream_server`) | Encrypted [ESPHome Native API](https://esphome.io/components/api.html) via [`serial_proxy`](https://esphome.io/components/serial_proxy.html) |
+| HA-side URL | `socket://<ip>:<port>` | `esphome-hass://esphome/{entry_id}?port_name=<zigbee\|thread\|zwave>` |
+| Auth | None (open TCP) | Pre-shared `api_encryption_key` (Noise / ChaCha20-Poly1305) |
+| Radio reset / bootloader entry | HA switches writing GPIO | Automatic — `serial_proxy` drives `dtr_pin` (nRESET) and `rts_pin` (bootloader) from the client's DTR/RTS modem-control signals (matches `zigpy-znp`, `universal-silabs-flasher`, `bellows`, `zwave-js`) |
+| OTA | Unauthenticated | Password-protected (`ota_password`) |
+| USB pass-through (`packages/usb/usb_uart.yaml`) | Plaintext TCP `:9638` | `serial_proxy` (port name `usb`) — no plaintext port even for the future USB-host variant |
+
+### What is preserved
+
+- All hardware definitions, HAL packages, LEDs / buttons / buzzer / IR / WS2812 / microphone logic.
+- All supported devices (ULTIMA, MRxU, 06xU, SLWF-09U).
+- The device-composition-driven build model.
+
+### What is removed
+
+- `packages/stream_servers/` (whole directory)
+- `packages/external_components/stream_server.yaml` — `serial_proxy` is a first-class ESPHome component, no external source needed
+- `packages/buses/uarts/uart_ctrl/` (whole directory) — the per-radio `RST` / `FLASH` GPIO-switch wrappers. Their function is now performed automatically by `serial_proxy` on behalf of the connected client.
+
+### HA-side entity changes
+
+Per-radio, the following Home Assistant entities are **no longer created**:
+
+- `<friendly> <radio> RST` switch
+- `<friendly> <radio> FLASH` switch
+- `<friendly> <radio> TCP Connected` binary_sensor
+
+Manual radio reset from the HA dashboard is not required in normal operation — the flasher / integration handles DTR/RTS itself over the Native API.
+
+### Setup
+
+1. Copy `secrets.example.yaml` → `secrets.yaml` and fill in:
+   - `api_encryption_key` — generate one at <https://esphome.io/components/api.html> (or via `openssl rand -base64 32`).
+   - `ota_password` — any strong secret.
+   - `wifi_ssid` / `wifi_password` — if not using Ethernet only.
+2. Build and flash a device YAML (e.g. `mr4u-r1-73.yaml`) with ESPHome as usual.
+3. In Home Assistant, add the device via **ESPHome integration** using the same `api_encryption_key`.
+4. In ZHA / OTBR / Z-Wave JS, use the URL:
+   `esphome-hass://esphome/{entry_id}?port_name=zigbee` (or `thread` / `zwave` / `usb`).
+
+`{entry_id}` is the ESPHome config-entry id — visible in HA under **Settings → Devices & Services → ESPHome → (your device)**.
 
 ---
 
