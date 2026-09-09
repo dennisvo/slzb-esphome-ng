@@ -1,3 +1,15 @@
+# ============================================================================
+# NOTE (secure-native-api fork observation, not upstream):
+#
+# This file is NOT currently included by any device composition in this repo.
+# The MR4U device uses `hw_defs/mrxu/mr4u_r1_73.yaml`, which has UART2 TX/RX
+# at GPIO8/GPIO10 — whereas this file declares UART2 TX/RX at GPIO10/GPIO8
+# (see the `UART2 - Radio 2 (EFR32 - Zigbee/Thread)` section below).
+#
+# If activating this file for a new MRxU variant, confirm which mapping is
+# board-correct before flashing. See docs/hardware-map.md §5.2 for detail.
+# ============================================================================
+
 substitutions:
 
   # ==========================================================
