@@ -32,22 +32,25 @@ This fork replaces the transport with the **encrypted [ESPHome Native API](https
 - Firmware updates over **password-protected OTA** through the ESPHome dashboard.
 - Support for multiple boards from a single, structured codebase (see [Supported Devices](#supported-devices)): **ULTIMA**, **MRxU**, **06xU**, **SLWF-09U**.
 
-## Advantages over SLZB-OS
+## How this firmware compares
 
-| | SLZB-OS | This firmware |
-|---|---|---|
-| Radio UART transport | Plaintext TCP `stream_server` | Encrypted ESPHome Native API (`serial_proxy`) |
-| Access control on radio streams | Optional source-IP allow-list, off by default | Pre-shared key required (Noise `NNpsk0` + ChaCha20-Poly1305) |
-| Management surface | Plain HTTP on `:80`, cleartext admin password | No HTTP admin surface — device is managed through the ESPHome / HA integration |
-| OTA firmware update | Unauthenticated | Password-protected |
-| Radio reset / bootloader entry | Manual HA switches wired to GPIO | Automatic — the flasher's DTR/RTS are proxied to `nRESET` / `BOOT` |
-| Network ports exposed on the LAN | `:80`, `:6638`, `:7638`, `:8638`, … | Only `:6053` (ESPHome Native API, encrypted) |
-| Home Assistant integration | Per-radio `socket://ip:port` config | Adopted as a normal ESPHome device; radios addressed via `esphome-hass://…` URLs |
-| Configuration model | Vendor-managed image | Open ESPHome YAML — you can add sensors, buttons, automations, effects, etc. |
+Compared against the two SMLIGHT-supported firmwares — proprietary SLZB-OS and their upstream ESPHome build ([`smlight-tech/slzb-esphome`](https://github.com/smlight-tech/slzb-esphome)):
+
+| | SLZB-OS | Upstream ESPHome (`smlight-tech`) | This firmware |
+|---|---|---|---|
+| Radio UART transport | Plaintext TCP `stream_server` | Plaintext TCP `stream_server` | Encrypted ESPHome Native API (`serial_proxy`) |
+| Access control on radio streams | Optional source-IP allow-list, off by default | None — open TCP | Pre-shared key required (Noise `NNpsk0` + ChaCha20-Poly1305) |
+| ESPHome Native API encryption | n/a | Off by default (plaintext) | Pre-shared key required |
+| Management surface | Plain HTTP on `:80`, cleartext admin password | No HTTP admin — managed via ESPHome / HA | No HTTP admin surface — device is managed through the ESPHome / HA integration |
+| OTA firmware update | Unauthenticated | Unauthenticated by default | Password-protected |
+| Radio reset / bootloader entry | Manual HA switches wired to GPIO | Manual HA switches wired to GPIO | Automatic — the flasher's DTR/RTS are proxied to `nRESET` / `BOOT` |
+| Network ports exposed on the LAN | `:80`, `:6638`, `:7638`, `:8638`, … | `:6053` (plaintext API) plus `:6638`, `:7638`, `:8638` (plaintext `stream_server`) | Only `:6053` (ESPHome Native API, encrypted) |
+| Home Assistant integration | Per-radio `socket://ip:port` config | ESPHome device in HA, but radios still consumed via `socket://ip:port` | Adopted as a normal ESPHome device; radios addressed via `esphome-hass://…` URLs |
+| Configuration model | Vendor-managed image | Open ESPHome YAML — extensible with sensors, buttons, automations, effects, etc. | Open ESPHome YAML — extensible with sensors, buttons, automations, effects, etc. |
 
 ## Trade-offs and downsides
 
-Being honest about what you give up compared to running the stock firmware:
+Being honest about what you give up compared to running the stock firmware (SLZB-OS):
 
 - **Home Assistant is effectively required.** The Native API transport is designed around the HA ESPHome integration and the `esphome-hass://` URL scheme. If you want to run a coordinator standalone (no HA, or with a non-HA host such as Zigbee2MQTT on bare Linux talking to `socket://`), this firmware is not the right choice — stick with the stock SLZB-OS TCP model.
 - **Recent HA versions are required.** You need a Home Assistant version whose ESPHome integration supports `serial_proxy`, and ZHA / OTBR / Z-Wave JS versions that accept the `esphome-hass://` URL scheme.
