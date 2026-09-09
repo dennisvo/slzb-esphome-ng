@@ -1,3 +1,0 @@
-# platform/external_components/stream_server.yaml
-external_components:
-  - source: github://oxan/esphome-stream-server

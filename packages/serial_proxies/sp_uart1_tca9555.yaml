@@ -1,0 +1,26 @@
+# hal/serial_proxies/sp_uart1_tca9555.yaml
+#
+# CC26 (Zigbee) coordinator on UART1, tunnelled through the encrypted
+# ESPHome Native API. Reset/bootloader-entry pins are on a TCA9555 IO
+# expander (Ultima variant).
+#
+# dtr_pin → CC26 nRESET, driven via TCA9555 output.
+# rts_pin → CC26 BSL_ENTRY, driven via TCA9555 output.
+#
+# port_name = "zigbee"
+#
+# See docs/design.md Phase 1 item 5, docs/serial-proxy-inspection.md §2.
+
+serial_proxy:
+  - id: sp_uart1
+    name: "zigbee"
+    port_type: TTL
+    uart_id: hw_uart1
+    dtr_pin:
+      tca9555: ${tca9555_id}
+      number: ${tca_uart1_rst_num}
+      inverted: ${uart1_rst_inverted}
+    rts_pin:
+      tca9555: ${tca9555_id}
+      number: ${tca_uart1_flash_num}
+      inverted: ${uart1_flash_inverted}

@@ -1,0 +1,26 @@
+# hal/serial_proxies/sp_uart2_tca9555.yaml
+#
+# EFR32 (Thread / OTBR — or Zigbee via bellows) coordinator on UART2,
+# tunnelled through the encrypted ESPHome Native API. Reset/bootloader-
+# entry pins are on a TCA9555 IO expander (Ultima variant).
+#
+# dtr_pin → EFR32 nRESET, driven via TCA9555 output.
+# rts_pin → EFR32 bootloader-entry, driven via TCA9555 output.
+#
+# port_name = "thread"
+#
+# See docs/design.md Phase 1 item 5 and §11, docs/serial-proxy-inspection.md §2.
+
+serial_proxy:
+  - id: sp_uart2
+    name: "thread"
+    port_type: TTL
+    uart_id: hw_uart2
+    dtr_pin:
+      tca9555: ${tca9555_id}
+      number: ${tca_uart2_rst_num}
+      inverted: ${uart2_rst_inverted}
+    rts_pin:
+      tca9555: ${tca9555_id}
+      number: ${tca_uart2_flash_num}
+      inverted: ${uart2_flash_inverted}

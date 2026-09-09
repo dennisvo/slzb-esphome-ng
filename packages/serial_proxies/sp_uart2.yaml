@@ -1,0 +1,28 @@
+# hal/serial_proxies/sp_uart2.yaml
+#
+# EFR32 (Thread / OTBR — or Zigbee via bellows) coordinator on UART2,
+# tunnelled through the encrypted ESPHome Native API.
+#
+# dtr_pin → EFR32 nRESET (active-low). universal-silabs-flasher /
+#           bellows drive DTR for reset.
+# rts_pin → EFR32 bootloader-entry pin (active-low, held during reset
+#           to enter the Gecko Bootloader).
+#
+# port_name = "thread" — surfaced to HA's OTBR add-on and to ZHA's
+# config flow as:
+#   esphome-hass://esphome/{entry_id}?port_name=thread
+#
+# See docs/design.md Phase 1 item 5 and §11, docs/hardware-map.md §5,
+# docs/serial-proxy-inspection.md §2.
+
+serial_proxy:
+  - id: sp_uart2
+    name: "thread"
+    port_type: TTL
+    uart_id: hw_uart2
+    dtr_pin:
+      number: ${pin_uart2_rst}
+      inverted: ${uart2_rst_inverted}
+    rts_pin:
+      number: ${pin_uart2_flash}
+      inverted: ${uart2_flash_inverted}

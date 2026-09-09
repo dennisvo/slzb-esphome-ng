@@ -9,8 +9,11 @@ usb_uart:
         baud_rate: 115200
         buffer_size: 1024
 
-stream_server:
-  - id: ss_usb_device
+# secure-native-api: replaced plaintext stream_server on port 9638 with
+# serial_proxy over encrypted Native API. Consumer connects via
+# esphome-hass://esphome/{entry_id}?port_name=usb — no raw UART on the LAN.
+serial_proxy:
+  - id: sp_usb_device
+    name: "usb"
+    port_type: RS232       # CP210x is a USB-serial bridge, not TTL
     uart_id: usb_device_uart
-    port: 9638
-#    buffer_size: 8192

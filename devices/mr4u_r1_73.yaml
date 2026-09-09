@@ -13,7 +13,9 @@ packages:
   platform_core: !include ../packages/core/core.yaml
   platform_diag: !include ../packages/diagnostics/diagnostics.yaml
   platform_ble:  !include ../packages/bluetooth/bluetooth.yaml
-  stream_server: !include ../packages/external_components/stream_server.yaml
+  # NOTE (secure-native-api fork): `stream_server` and its per-UART bridges are
+  # replaced by `serial_proxy` instances tunnelled through the encrypted Native
+  # API. See docs/design.md §7 and Phase 1.
   # platform_wifi: !include ../packages/wifi/wifi.yaml   # enable if needed
 
 
@@ -29,16 +31,17 @@ packages:
   hal_uart1: !include ../packages/buses/uarts/uart1_hwfc.yaml
   hal_uart2: !include ../packages/buses/uarts/uart2_hwfc.yaml
 
-  # --- UART reset/flash control (via GPIO) ---
-  hal_uart1_rst:   !include ../packages/buses/uarts/uart_ctrl/uart1_rst_gpio.yaml
-  hal_uart1_flash: !include ../packages/buses/uarts/uart_ctrl/uart1_flash_gpio.yaml
+  # --- UART reset/flash control ---
+  # NOTE (secure-native-api fork): the `uart{1,2}_rst_gpio` / `uart{1,2}_flash_gpio`
+  # switch-based controls are dropped on MR4U. GPIO ownership for the CC26
+  # nRESET / BSL_ENTRY and EFR32 nRESET / bootloader-entry pins is transferred
+  # to `serial_proxy` `dtr_pin` / `rts_pin` so ZHA / zigpy-znp / bellows can
+  # drive the coordinator bootloader sequence over the encrypted API.
+  # See docs/design.md Phase 1 item 5 and docs/hardware-map.md §5.
 
-  hal_uart2_rst:   !include ../packages/buses/uarts/uart_ctrl/uart2_rst_gpio.yaml
-  hal_uart2_flash: !include ../packages/buses/uarts/uart_ctrl/uart2_flash_gpio.yaml
-
-  # --- UART stream servers ---
-  hal_uart1_ss_server: !include ../packages/stream_servers/ss_uart1.yaml
-  hal_uart2_ss_server: !include ../packages/stream_servers/ss_uart2.yaml
+  # --- UART serial proxies (secure Native API tunnel) ---
+  hal_uart1_serial_proxy: !include ../packages/serial_proxies/sp_uart1.yaml
+  hal_uart2_serial_proxy: !include ../packages/serial_proxies/sp_uart2.yaml
 
   # --- Inputs ---
   hal_btn1: !include ../packages/input/button1_gpio.yaml

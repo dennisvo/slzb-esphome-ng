@@ -1,0 +1,29 @@
+# hal/serial_proxies/sp_uart3_tca9555.yaml
+#
+# Z-Wave coordinator (ZW-800) on UART3, tunnelled through the encrypted
+# ESPHome Native API. Reset/bootloader-entry pins are on a TCA9555 IO
+# expander (Ultima variant).
+#
+# dtr_pin → ZW-800 nRESET, driven via TCA9555 output.
+# rts_pin → ZW-800 bootloader-entry, driven via TCA9555 output.
+#
+# port_name = "zwave" — surfaced to HA's Z-Wave JS integration (which
+# is a first-class serialx esphome-hass:// consumer) as:
+#   esphome-hass://esphome/{entry_id}?port_name=zwave
+#
+# See docs/design.md Phase 1 item 5, docs/serialx-inspection.md
+# (esphome:// / esphome-hass:// scheme registered by zwave_js).
+
+serial_proxy:
+  - id: sp_uart3
+    name: "zwave"
+    port_type: TTL
+    uart_id: hw_uart3
+    dtr_pin:
+      tca9555: ${tca9555_id}
+      number: ${tca_uart3_rst_num}
+      inverted: ${uart3_rst_inverted}
+    rts_pin:
+      tca9555: ${tca9555_id}
+      number: ${tca_uart3_flash_num}
+      inverted: ${uart3_flash_inverted}

@@ -92,7 +92,7 @@ substitutions:
   pin_uart2_rx: "GPIO10"
   pin_uart2_cts: "GPIO11"
   pin_uart2_rts: "GPIO12"
-  uart2_baud: 115200
+  uart2_baud: 460800
   uart2_default_port: 6638
 
   uart2_radio_name: EFR32
