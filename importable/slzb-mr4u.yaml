@@ -1,0 +1,33 @@
+# SLZB-MR4U — slzb-esphome-ng firmware (thin import file)
+#
+# Paste this file into your Home Assistant ESPHome dashboard:
+#   1. Open Settings → Add-ons → ESPHome Device Builder
+#   2. Click "+ New device" → give it a name → skip encryption key prompt
+#      (the dashboard's generated key is ignored; the fetched package uses
+#       your local `secrets.yaml` — see step 3).
+#   3. Replace the generated YAML with the contents of this file.
+#   4. Ensure `/config/esphome/secrets.yaml` contains:
+#        api_encryption_key: "<base64 32-byte key>"   # openssl rand -base64 32
+#        ota_password:       "<any strong secret>"
+#   5. Install → USB (first flash) → subsequently OTA.
+#
+# The `packages:` block below pulls the entire device composition from
+# github.com/dennisvo/slzb-esphome-ng at build time. Bump `ref:` to a tag
+# to pin a release; leave on branch name to always track latest.
+
+substitutions:
+  # Uncomment to override the stock device name (defaults to "mrxu-r1-73"
+  # from the hw_def). The value here must match the ESPHome node name.
+  # device_name:   "slzb-mr4u"
+  # friendly_name: "SLZB MR4U"
+
+  # No-op placeholder so the substitutions block is always valid YAML.
+  _empty: ""
+
+packages:
+  slzb_mr4u:
+    url: https://github.com/dennisvo/slzb-esphome-ng
+    ref: main                     # pin a tag (e.g. v1.0.0) for stability
+    files:
+      - devices/mr4u_r1_73.yaml
+    refresh: 1d

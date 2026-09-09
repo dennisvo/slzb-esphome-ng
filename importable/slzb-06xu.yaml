@@ -1,0 +1,16 @@
+# SLZB-06/07 (06xU) — slzb-esphome-ng firmware (thin import file)
+#
+# See importable/slzb-mr4u.yaml header for full instructions.
+
+substitutions:
+  # device_name:   "slzb-06xu"
+  # friendly_name: "SLZB 06xU"
+  _empty: ""
+
+packages:
+  slzb_06xu:
+    url: https://github.com/dennisvo/slzb-esphome-ng
+    ref: main
+    files:
+      - devices/06xu_r1_73.yaml
+    refresh: 1d

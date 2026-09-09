@@ -1,0 +1,16 @@
+# SLZB-MRxU (generic) — slzb-esphome-ng firmware (thin import file)
+#
+# See importable/slzb-mr4u.yaml header for full instructions.
+
+substitutions:
+  # device_name:   "slzb-mrxu"
+  # friendly_name: "SLZB MRxU"
+  _empty: ""
+
+packages:
+  slzb_mrxu:
+    url: https://github.com/dennisvo/slzb-esphome-ng
+    ref: main
+    files:
+      - devices/mrxu_r1_73.yaml
+    refresh: 1d

@@ -17,7 +17,7 @@ When a value is *not* present or *does not do what its name implies*, that is ca
 
 ## 0. Scope — which SMLIGHT devices this design targets
 
-Although this hardware map documents the MR4U in detail (because it is our reference test hardware), the secure-native-api variant is **not MR4U-specific**. Upstream's layered architecture (shared `packages/` consumed by every `devices/*.yaml` composition) means our security changes automatically apply to every device that uses those packages.
+Although this hardware map documents the MR4U in detail (because it is our reference test hardware), the slzb-esphome-ng variant is **not MR4U-specific**. Upstream's layered architecture (shared `packages/` consumed by every `devices/*.yaml` composition) means our security changes automatically apply to every device that uses those packages.
 
 | Device | Radios | Applicability of this fork |
 |---|:---:|---|

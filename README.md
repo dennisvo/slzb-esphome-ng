@@ -1,7 +1,7 @@
 # ESPHome Multi-Device Firmware Repository
 
 > **This is a security-hardened fork of [smlight-tech/slzb-esphome](https://github.com/smlight-tech/slzb-esphome).**
-> Branch: [`secure-native-api`](https://github.com/dennisvo/slzb-esphome/tree/secure-native-api).
+> Repository: [`dennisvo/slzb-esphome-ng`](https://github.com/dennisvo/slzb-esphome-ng) (default branch: `main`).
 > The radio UARTs (Zigbee / Thread / Z-Wave) are no longer exposed as plaintext TCP ports on the LAN.
 > They are proxied over an **encrypted ESPHome Native API** to Home Assistant (`serial_proxy` + `esphome-hass://` URLs).
 > See [Fork Differences](#fork-differences) below and [`docs/design.md`](docs/design.md) for the full rationale.
@@ -81,7 +81,7 @@ The architecture emphasizes clear separation between hardware definitions, low-l
 
 The radio UARTs are exposed to the network via [`oxan/esphome-stream-server`](https://github.com/oxan/esphome-stream-server) — one plaintext TCP port per radio (typically `6638`, `6640`, `6641`). Home Assistant integrations (ZHA, OpenThread Border Router, Z-Wave JS) connect to `socket://<device-ip>:<port>`. Anyone on the same L2 segment can read/write the raw coordinator UART.
 
-### This fork (`secure-native-api`)
+### This fork (`slzb-esphome-ng`)
 
 | Concern | Upstream | This fork |
 |---|---|---|
@@ -116,40 +116,81 @@ Manual radio reset from the HA dashboard is not required in normal operation —
 
 ### Setup
 
-1. Copy `secrets.example.yaml` → `secrets.yaml` and fill in:
-   - `api_encryption_key` — generate one at <https://esphome.io/components/api.html> (or via `openssl rand -base64 32`).
-   - `ota_password` — any strong secret.
-   - `wifi_ssid` / `wifi_password` — if not using Ethernet only.
+Two supported workflows depending on how much you want to customize the firmware.
 
-2. **Point ESPHome at one of the build targets at the repository root:**
+#### Which one should I pick?
+
+| I want to… | Use |
+|---|---|
+| Just flash the firmware, minimal fuss, get updates by bumping a git ref | **Workflow A — thin importable file** |
+| Customize the firmware, add sensors, tweak logic, hack on it | **Workflow B — clone the full repo** |
+
+Both workflows share the same `secrets.yaml` step below.
+
+#### Shared step — `secrets.yaml`
+
+Create `/config/esphome/secrets.yaml` (HA add-on) or `secrets.yaml` in your ESPHome working directory (CLI) with:
+
+```yaml
+api_encryption_key: "<base64 32-byte key>"    # openssl rand -base64 32
+ota_password: "<any strong secret>"
+# wifi_ssid: "..."                            # only if not Ethernet-only
+# wifi_password: "..."
+```
+
+A template is provided as [`secrets.example.yaml`](secrets.example.yaml).
+
+#### Workflow A — thin importable file (recommended for most users)
+
+The [`importable/`](importable/) directory contains 5 tiny files (~15 lines each). Each one uses ESPHome's [remote-package feature](https://esphome.io/components/packages.html) to pull the full device composition from this GitHub repo at build time.
+
+1. In the ESPHome dashboard, click **+ New device** → give it a name → skip the "install" step at the end.
+2. Open the generated YAML in the dashboard editor and **replace its contents** with the appropriate file from [`importable/`](importable/):
+
+   | Board | Copy from |
+   |---|---|
+   | SLZB-MR4U r1.73 | [`importable/slzb-mr4u.yaml`](importable/slzb-mr4u.yaml) |
+   | SLZB-MRxU r1.73 | [`importable/slzb-mrxu.yaml`](importable/slzb-mrxu.yaml) |
+   | SLZB-06 / 07 (`06xU`) r1.73 | [`importable/slzb-06xu.yaml`](importable/slzb-06xu.yaml) |
+   | Ultima r1.04 | [`importable/slzb-ultima.yaml`](importable/slzb-ultima.yaml) |
+   | SLWF-09U r1.01 | [`importable/slwf-09u.yaml`](importable/slwf-09u.yaml) |
+
+3. **Install → Manual download** (first flash, requires USB), or **Install → Wirelessly** if you're upgrading from an earlier build of this firmware.
+
+Bump the `ref:` inside the file to a tagged release (or a specific commit SHA) to pin a stable version. Leave it on `main` to always track latest.
+
+#### Workflow B — clone the full repo (for developers / customizers)
+
+Clone the whole tree into your ESPHome config directory:
+
+- **ESPHome dashboard (HA add-on):** clone into `/homeassistant/esphome/` on HA OS (or `/config/esphome/` on Supervised). The dashboard picks up the root `*.yaml` files automatically:
 
    | Board | Build target |
    |---|---|
    | SLZB-MR4U r1.73 | `mr4u-r1-73.yaml` |
-   | SLZB-MRxU r1.73 (generic MRxU) | `mrxu-r1-73.yaml` |
-   | SLZB-06 / 07 (`06xU`) r1.73 | `06xu-r1-73.yaml` |
-   | Ultima r1.04 (3 radios, IO expander) | `ultima-r1-04.yaml` |
-   | SLWF-09U r1.01 (no radios) | `slw09u-r1-01.yaml` |
+   | SLZB-MRxU r1.73 | `mrxu-r1-73.yaml` |
+   | SLZB-06 / 07 | `06xu-r1-73.yaml` |
+   | Ultima r1.04 | `ultima-r1-04.yaml` |
+   | SLWF-09U r1.01 | `slw09u-r1-01.yaml` |
 
-   Each root file is a one-line `!include` that pulls in the entire device composition. They are **not standalone** — they require the whole repo tree (`devices/`, `packages/`, `hw_defs/`, `libraries/`, `components/`) to be present alongside them. Two supported workflows:
+- **ESPHome CLI:**
 
-   - **ESPHome dashboard (Home Assistant add-on):** clone this repo into your ESPHome config directory (`/homeassistant/esphome/` on HA OS, or `/config/esphome/` on Supervised). The dashboard will pick up the root `*.yaml` files automatically. Select the one for your board and **Install → Wirelessly** (or **Manual download** for first-time USB flashing).
-   - **ESPHome CLI (any machine with ESPHome installed):**
-     ```bash
-     git clone https://github.com/dennisvo/slzb-esphome.git -b secure-native-api
-     cd slzb-esphome
-     # first-time flash over USB:
-     esphome run mr4u-r1-73.yaml
-     # subsequent updates over the encrypted OTA channel:
-     esphome upload mr4u-r1-73.yaml
-     ```
+  ```bash
+  git clone https://github.com/dennisvo/slzb-esphome-ng.git
+  cd slzb-esphome-ng
+  esphome run mr4u-r1-73.yaml       # first-time flash over USB
+  esphome upload mr4u-r1-73.yaml    # subsequent OTA updates
+  ```
 
-3. In Home Assistant, add the device via **ESPHome integration** using the same `api_encryption_key`.
+Each root file is a one-line `!include devices/*.yaml`; the full tree (`devices/`, `packages/`, `hw_defs/`, `libraries/`, `components/`) must be present alongside it.
 
-4. In ZHA / OTBR / Z-Wave JS, use the URL:
+#### After the first install (both workflows)
+
+1. In Home Assistant, add the device via **ESPHome integration** using the same `api_encryption_key`.
+2. In ZHA / OTBR / Z-Wave JS, use the URL:
    `esphome-hass://esphome/{entry_id}?port_name=zigbee` (or `thread` / `zwave` / `usb`).
 
-`{entry_id}` is the ESPHome config-entry id — visible in HA under **Settings → Devices & Services → ESPHome → (your device)**.
+   `{entry_id}` is the ESPHome config-entry id — visible under **Settings → Devices & Services → ESPHome → (your device)**.
 
 ---
 

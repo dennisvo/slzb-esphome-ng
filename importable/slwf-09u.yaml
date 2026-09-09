@@ -1,0 +1,19 @@
+# SLWF-09U (no radios) — slzb-esphome-ng firmware (thin import file)
+#
+# The SLWF-09U has no Zigbee/Thread/Z-Wave radios but still benefits from
+# encrypted Native API + password-protected OTA compared to stock firmware.
+#
+# See importable/slzb-mr4u.yaml header for full instructions.
+
+substitutions:
+  # device_name:   "slwf-09u"
+  # friendly_name: "SLWF 09U"
+  _empty: ""
+
+packages:
+  slwf_09u:
+    url: https://github.com/dennisvo/slzb-esphome-ng
+    ref: main
+    files:
+      - devices/slw09u_r1_01.yaml
+    refresh: 1d

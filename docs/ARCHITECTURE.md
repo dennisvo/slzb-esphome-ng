@@ -20,9 +20,14 @@ Result: on a running device, only **one** TCP port is open — `6053/tcp` (encry
 .
 ├── mr4u-r1-73.yaml        ← ESPHome build targets (top-level entry points,
 ├── mrxu-r1-73.yaml          each is a one-line `!include devices/…`)
-├── 06xu-r1-73.yaml
-├── ultima-r1-04.yaml
+├── 06xu-r1-73.yaml          Use these when the whole repo is cloned into
+├── ultima-r1-04.yaml        your ESPHome config directory.
 ├── slw09u-r1-01.yaml
+│
+├── importable/            ← Thin (~15-line) files that pull the device
+│   └── slzb-*.yaml          composition from GitHub via ESPHome's remote
+│                            `packages:` feature. Copy-paste one of these
+│                            into the ESPHome dashboard's New-Device flow.
 │
 ├── devices/               ← Device composition: which packages a given
 │   └── *.yaml               board wires together. NO pin numbers here.

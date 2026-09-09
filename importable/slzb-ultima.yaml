@@ -1,0 +1,16 @@
+# SLZB Ultima (3 radios + TCA9555 IO expander) — slzb-esphome-ng (thin import file)
+#
+# See importable/slzb-mr4u.yaml header for full instructions.
+
+substitutions:
+  # device_name:   "slzb-ultima"
+  # friendly_name: "SLZB Ultima"
+  _empty: ""
+
+packages:
+  slzb_ultima:
+    url: https://github.com/dennisvo/slzb-esphome-ng
+    ref: main
+    files:
+      - devices/ultima_r1_04.yaml
+    refresh: 1d

@@ -13,7 +13,7 @@ packages:
   platform_core: !include ../packages/core/core.yaml
   platform_diag: !include ../packages/diagnostics/diagnostics.yaml
   platform_ble:  !include ../packages/bluetooth/bluetooth.yaml
-  # NOTE (secure-native-api fork): `stream_server` and its per-UART bridges are
+  # NOTE (slzb-esphome-ng fork): `stream_server` and its per-UART bridges are
   # replaced by `serial_proxy` instances tunnelled through the encrypted Native
   # API. See docs/design.md §7 and Phase 1.
   # platform_wifi: !include ../packages/wifi/wifi.yaml   # enable if needed
@@ -32,7 +32,7 @@ packages:
   hal_uart2: !include ../packages/buses/uarts/uart2_hwfc.yaml
 
   # --- UART reset/flash control ---
-  # NOTE (secure-native-api fork): switch-based reset/flash controls are dropped.
+  # NOTE (slzb-esphome-ng fork): switch-based reset/flash controls are dropped.
   # GPIO ownership for CC26 nRESET/BSL_ENTRY and EFR32 nRESET/bootloader-entry
   # is transferred to `serial_proxy` `dtr_pin` / `rts_pin` so ZHA / zigpy-znp /
   # bellows can drive the coordinator bootloader sequence over the encrypted API.

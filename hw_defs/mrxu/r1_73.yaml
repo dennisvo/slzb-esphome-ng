@@ -1,5 +1,5 @@
 # ============================================================================
-# NOTE (secure-native-api fork observation, not upstream):
+# NOTE (slzb-esphome-ng fork observation, not upstream):
 #
 # This file is NOT currently included by any device composition in this repo.
 # The MR4U device uses `hw_defs/mrxu/mr4u_r1_73.yaml`, which has UART2 TX/RX

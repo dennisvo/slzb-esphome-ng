@@ -4,6 +4,11 @@
 /.esphome/
 /secrets.yaml
 
-# --- local-only working files (secure-native-api variant) ---
+# --- local-only working files (slzb-esphome-ng variant) ---
 # Private design document — do not publish
 /docs/design.md
+# Menu / UI analysis notes derived from the private screenshots — do not publish
+/docs/slzb-os-menu-analysis.md
+
+# Local reference material (SLZB-OS UI screenshots, not for publication)
+/slzb-os screenshots/
