@@ -54,7 +54,7 @@ Being honest about what you give up compared to running the stock firmware:
 - **No built-in web admin UI.** SLZB-OS's HTTP dashboard (device info, radio mode switching, VPN config, etc.) is gone by design. Configuration lives in YAML and is applied by re-flashing; runtime state is exposed as normal HA entities.
 - **You build and flash the firmware yourself.** No pre-built binaries are published here; you compile with the ESPHome CLI or dashboard against this repo. This is the normal ESPHome workflow but is a shift from downloading a signed vendor image.
 - **SLZB-OS-only features are not reproduced.** Vendor extras such as the built-in ZeroTier / WireGuard clients and the SMLIGHT cloud portal are not part of this firmware.
-- **Vendor support / warranty caveats.** Custom firmware is not supported by SMLIGHT. Recovery to the stock image is possible via the ESP32-S3 USB bootloader, but you take on that responsibility.
+- **Third-party fork, not SMLIGHT-supported.** SMLIGHT ships two supported firmware paths for the SLZB adapters: their proprietary SLZB-OS and their own upstream ESPHome build ([smlight-tech/slzb-esphome](https://github.com/smlight-tech/slzb-esphome)). This project is a security-hardened fork of the latter and is not the SMLIGHT-supported build. Before contacting SMLIGHT for anything hardware-related, reflash to one of the supported firmwares first (e.g. via the [SMLIGHT web flasher](https://smlight.tech/flasher/) or USB) so the conversation is about the hardware, not this fork.
 
 ## Choose this firmware if…
 
