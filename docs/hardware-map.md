@@ -196,6 +196,8 @@ So the first-boot flow is:
 
 ## 6. HW UART flow control — **declared but not wired**
 
+> **Superseded by Phase 0.2.** The "Decision: enable HW flow control by default in Phase 1" below reflects Phase 0.1 thinking. Phase 0.2 subsequently found that ESPHome's `uart:` component has no `cts_pin`/`rts_pin` YAML surface and never calls `uart_set_hw_flow_ctrl()` — enabling flow control requires an upstream ESPHome change. Current plan: **flow control deferred, not shipped in Phase 1.** See design.md Phase 1 item 7 and `serial-proxy-inspection.md` §7. The rest of §6 is preserved as the Phase 0.1 audit record.
+
 This is the most consequential finding of Phase 0.1 for the design.
 
 The hw_def files declare CTS/RTS pin assignments for both radios. However, the packages that instantiate ESPHome's `uart:` platform do **not** consume those substitutions:
@@ -326,11 +328,11 @@ To satisfy design doc §7 and §23:
    - Extend the `ota:` block with `password: !secret ota_password`.
    - Add `ota_password` to `secrets.yaml`.
 
-4. **Add `serial_proxy` in place of `stream_server`** *(pending Phase 0.2 verification that `serial_proxy` actually exists in current ESPHome)*
+4. **Add `serial_proxy` in place of `stream_server`**
    - Two instances, one per UART, subscribed via the Native API.
    - Package names TBD — likely `packages/buses/uarts/uart_ctrl/serial_proxy1.yaml` and `serial_proxy2.yaml` (following the existing pattern), or new folder `packages/serial_proxies/`.
 
-5. **Enable HW UART flow control** *(pending Phase 0.2 confirmation that ESPHome propagates `cts_pin`/`rts_pin` on ESP-IDF)*
+5. **Enable HW UART flow control** *(deferred — see §6 supersession note)*
    - Rewrite `packages/buses/uarts/uart1_hwfc.yaml` and `uart2_hwfc.yaml` to include `cts_pin: ${pin_uart1_cts}` and `rts_pin: ${pin_uart1_rts}` (and analogous for UART2).
    - Delete the byte-identical `_no_hwfc.yaml` siblings (they no longer add value).
    - See §6 for the full rationale and caveats.
