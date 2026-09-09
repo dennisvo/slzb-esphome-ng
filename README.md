@@ -120,8 +120,32 @@ Manual radio reset from the HA dashboard is not required in normal operation —
    - `api_encryption_key` — generate one at <https://esphome.io/components/api.html> (or via `openssl rand -base64 32`).
    - `ota_password` — any strong secret.
    - `wifi_ssid` / `wifi_password` — if not using Ethernet only.
-2. Build and flash a device YAML (e.g. `mr4u-r1-73.yaml`) with ESPHome as usual.
+
+2. **Point ESPHome at one of the build targets at the repository root:**
+
+   | Board | Build target |
+   |---|---|
+   | SLZB-MR4U r1.73 | `mr4u-r1-73.yaml` |
+   | SLZB-MRxU r1.73 (generic MRxU) | `mrxu-r1-73.yaml` |
+   | SLZB-06 / 07 (`06xU`) r1.73 | `06xu-r1-73.yaml` |
+   | Ultima r1.04 (3 radios, IO expander) | `ultima-r1-04.yaml` |
+   | SLWF-09U r1.01 (no radios) | `slw09u-r1-01.yaml` |
+
+   Each root file is a one-line `!include` that pulls in the entire device composition. They are **not standalone** — they require the whole repo tree (`devices/`, `packages/`, `hw_defs/`, `libraries/`, `components/`) to be present alongside them. Two supported workflows:
+
+   - **ESPHome dashboard (Home Assistant add-on):** clone this repo into your ESPHome config directory (`/homeassistant/esphome/` on HA OS, or `/config/esphome/` on Supervised). The dashboard will pick up the root `*.yaml` files automatically. Select the one for your board and **Install → Wirelessly** (or **Manual download** for first-time USB flashing).
+   - **ESPHome CLI (any machine with ESPHome installed):**
+     ```bash
+     git clone https://github.com/dennisvo/slzb-esphome.git -b secure-native-api
+     cd slzb-esphome
+     # first-time flash over USB:
+     esphome run mr4u-r1-73.yaml
+     # subsequent updates over the encrypted OTA channel:
+     esphome upload mr4u-r1-73.yaml
+     ```
+
 3. In Home Assistant, add the device via **ESPHome integration** using the same `api_encryption_key`.
+
 4. In ZHA / OTBR / Z-Wave JS, use the URL:
    `esphome-hass://esphome/{entry_id}?port_name=zigbee` (or `thread` / `zwave` / `usb`).
 
@@ -129,106 +153,11 @@ Manual radio reset from the HA dashboard is not required in normal operation —
 
 ---
 
-## Project Structure Overview
+## Project structure
 
-```
-.
-├── devices/      # Device composition files (select hardware defs, HAL, logic)
-├── hw_defs/      # Hardware definitions (pins, inversion, revision-specific constants)
-├── hal/          # Hardware Abstraction Layer (buses, expanders, low-level wiring)
-├── logic/        # Reusable logic blocks (features, actions, controls, sensors)
-├── libraries/    # Shared libraries used by logic (e.g. IR, protocol helpers)
-├── platform/     # Core platform setup (wifi, diagnostics, bluetooth, external components)
-├── docs/         # Architecture and design documentation
-└── *.yaml        # Root entry YAMLs per device (build/flash targets)
-```
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full layout, layer responsibilities, pin-abstraction rules, and instructions for adding a new device.
 
----
-
-## Directory Responsibilities
-
-### devices/
-Defines how a specific device firmware is assembled.
-Each file:
-- Selects a hardware definition from `hw_defs/`
-- Includes required HAL buses and expanders
-- Enables logic blocks and actions
-
-No low-level pin definitions should live here.
-
----
-
-### hw_defs/
-Pure hardware description layer:
-- GPIO pin assignments
-- Logic-level inversion (active-low / active-high)
-- Board revision and model constants
-- Presence flags for optional peripherals
-
-Purpose: keep all hardware differences isolated and readable.
-
----
-
-### hal/ (Hardware Abstraction Layer)
-Contains low-level, hardware-dependent wiring and primitives:
-- UART / I2C / SPI buses
-- Optional HW flow control variants
-- GPIO vs expander-based implementations
-- Reset / flash / power control wiring
-
-HAL does not implement business logic.
-
----
-
-### logic/
-Reusable functional and behavioral blocks:
-- Features (LEDs, buttons, buzzer, IR, radios, sensors)
-- Actions (confirmation, warning, error)
-- Control logic that may combine multiple features
-
-Logic is hardware-agnostic and relies on IDs/interfaces provided by HAL.
-
----
-
-### libraries/
-Shared helper libraries used by logic blocks.
-Typically protocol-level or domain-specific helpers that are reused across multiple logic modules.
-
----
-
-### platform/
-Common platform configuration shared by all devices:
-- ESPHome core configuration
-- Wi-Fi / networking
-- Diagnostics
-- Bluetooth
-- External components
-
----
-
-### docs/
-Additional documentation describing architectural decisions and design rules.
-
----
-
-## Adding a New Device
-
-1. Create or reuse a hardware definition in `hw_defs/`
-2. Add a new device composition file in `devices/`
-3. Include required HAL buses and logic blocks
-4. Build/flash using the corresponding root YAML file
-
-No changes to existing logic or HAL should be required.
-
----
-
-## Design Goals
-
-- Support many devices and hardware revisions
-- Single source of truth for hardware definitions
-- Clear separation of concerns
-- Minimal duplication
-- Easy long-term maintenance and extension
+Short version: `mr4u-r1-73.yaml` (and its four siblings) are one-line entry points that `!include devices/*.yaml`. Devices compose `packages/*.yaml`, which are parameterized by substitutions defined once in `hw_defs/`.
 
 ---
 

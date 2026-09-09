@@ -1,0 +1,59 @@
+name: esphome-config-check
+
+# Validates every device build target on every push and PR.
+#
+# Runs `esphome config <file>` inside the official ESPHome Docker image.
+# This catches YAML syntax errors, missing !include paths, unknown
+# substitutions, and component schema violations.
+#
+# It does NOT produce a firmware binary — full compile requires the
+# matching PlatformIO toolchain and adds ~15 minutes per target with
+# little added validation value for this repo's use case. Compile
+# firmware locally with `esphome compile <target>` before flashing.
+#
+# To add a new device: append its root YAML to the `target` matrix below.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  config-check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - mr4u-r1-73.yaml
+          - mrxu-r1-73.yaml
+          - 06xu-r1-73.yaml
+          - ultima-r1-04.yaml
+          - slw09u-r1-01.yaml
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Provide stub secrets.yaml
+        run: |
+          # ESPHome requires api_encryption_key to be a valid 32-byte base64
+          # string and ota_password to be non-empty. Substitute obviously-fake
+          # but well-formed values so `esphome config` accepts the file.
+          python <<'PY'
+          import base64, textwrap
+          fake_key = base64.b64encode(b'\x00' * 32).decode()
+          open('secrets.yaml', 'w').write(textwrap.dedent(f'''
+              api_encryption_key: "{fake_key}"
+              ota_password: "ci-fake-ota-password-do-not-use"
+              wifi_ssid: "ci-fake-ssid"
+              wifi_password: "ci-fake-password"
+          ''').strip() + '\n')
+          PY
+
+      - name: esphome config ${{ matrix.target }}
+        run: |
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}:/config" \
+            -w /config \
+            ghcr.io/esphome/esphome:latest \
+            config "${{ matrix.target }}"
