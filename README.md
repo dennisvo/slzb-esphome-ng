@@ -6,6 +6,70 @@
 > They are proxied over an **encrypted ESPHome Native API** to Home Assistant (`serial_proxy` + `esphome-hass://` URLs).
 > See [Fork Differences](#fork-differences) below and [`docs/design.md`](docs/design.md) for the full rationale.
 
+---
+
+## What is this?
+
+This is an **alternative firmware** for the SMLIGHT network-attached coordinator family (SLZB-MR4U and the other supported boards listed below). It is a full replacement for the stock **SLZB-OS** firmware that ships on the device.
+
+It is built on [ESPHome](https://esphome.io/) and is designed to be paired with [Home Assistant](https://www.home-assistant.io/): you flash it onto your coordinator once, adopt the device through HA's ESPHome integration, and point ZHA / OpenThread Border Router / Z-Wave JS at it over a single encrypted transport.
+
+## Why this fork exists
+
+The stock **SLZB-OS** firmware works, but its network security posture is weak for a device that terminates an entire home's Zigbee and Thread networks:
+
+- The Zigbee, Thread, and USB pass-through UARTs are exposed as **plain, unencrypted TCP sockets** (e.g. `:6638`, `:7638`, `:8638`). Anything on the same LAN that can reach those ports can sniff, inject, disrupt, or take over the radio's serial stream — including driving it into bootloader mode.
+- The only access control on those streams is an optional source-IP allow-list, which is **off by default**.
+- The management web UI runs on **plain HTTP** (`:80`, no TLS). The admin password — which gates changing radio modes, flashing IEEE addresses, entering the radio bootloader, configuring VPN, etc. — crosses the LAN in cleartext on every login, and so do any session cookies.
+- There is no application-level authentication of the coordinator ↔ Home Assistant path at all. Firewalling can hide ports but does not make the underlying protocol trustworthy.
+
+This fork replaces the transport with the **encrypted [ESPHome Native API](https://esphome.io/components/api.html)** (Noise `NNpsk0` + ChaCha20-Poly1305, pre-shared key), removes every plaintext TCP radio port from the network entirely, and closes the plain-HTTP admin surface by not shipping one. See [`docs/design.md`](docs/design.md) for the full threat model and design rationale.
+
+## What you get
+
+- Full functionality of your coordinator: **Zigbee (ZHA), Thread (OpenThread Border Router), Z-Wave JS**, and optional USB pass-through — all reachable from Home Assistant over one encrypted connection.
+- Home Assistant device entities for LEDs, buttons, buzzer / RTTTL, WS2812 effects, IR TX/RX, microphone sound level, and PoE / UPS / 4G-addon status — depending on which board you flash.
+- Firmware updates over **password-protected OTA** through the ESPHome dashboard.
+- Support for multiple boards from a single, structured codebase (see [Supported Devices](#supported-devices)): **ULTIMA**, **MRxU**, **06xU**, **SLWF-09U**.
+
+## Advantages over SLZB-OS
+
+| | SLZB-OS | This firmware |
+|---|---|---|
+| Radio UART transport | Plaintext TCP `stream_server` | Encrypted ESPHome Native API (`serial_proxy`) |
+| Access control on radio streams | Optional source-IP allow-list, off by default | Pre-shared key required (Noise `NNpsk0` + ChaCha20-Poly1305) |
+| Management surface | Plain HTTP on `:80`, cleartext admin password | No HTTP admin surface — device is managed through the ESPHome / HA integration |
+| OTA firmware update | Unauthenticated | Password-protected |
+| Radio reset / bootloader entry | Manual HA switches wired to GPIO | Automatic — the flasher's DTR/RTS are proxied to `nRESET` / `BOOT` |
+| Network ports exposed on the LAN | `:80`, `:6638`, `:7638`, `:8638`, … | Only `:6053` (ESPHome Native API, encrypted) |
+| Home Assistant integration | Per-radio `socket://ip:port` config | Adopted as a normal ESPHome device; radios addressed via `esphome-hass://…` URLs |
+| Configuration model | Vendor-managed image | Open ESPHome YAML — you can add sensors, buttons, automations, effects, etc. |
+
+## Trade-offs and downsides
+
+Being honest about what you give up compared to running the stock firmware:
+
+- **Home Assistant is effectively required.** The Native API transport is designed around the HA ESPHome integration and the `esphome-hass://` URL scheme. If you want to run a coordinator standalone (no HA, or with a non-HA host such as Zigbee2MQTT on bare Linux talking to `socket://`), this firmware is not the right choice — stick with the stock SLZB-OS TCP model.
+- **Recent HA versions are required.** You need a Home Assistant version whose ESPHome integration supports `serial_proxy`, and ZHA / OTBR / Z-Wave JS versions that accept the `esphome-hass://` URL scheme.
+- **No built-in web admin UI.** SLZB-OS's HTTP dashboard (device info, radio mode switching, VPN config, etc.) is gone by design. Configuration lives in YAML and is applied by re-flashing; runtime state is exposed as normal HA entities.
+- **You build and flash the firmware yourself.** No pre-built binaries are published here; you compile with the ESPHome CLI or dashboard against this repo. This is the normal ESPHome workflow but is a shift from downloading a signed vendor image.
+- **SLZB-OS-only features are not reproduced.** Vendor extras such as the built-in ZeroTier / WireGuard clients and the SMLIGHT cloud portal are not part of this firmware.
+- **Vendor support / warranty caveats.** Custom firmware is not supported by SMLIGHT. Recovery to the stock image is possible via the ESP32-S3 USB bootloader, but you take on that responsibility.
+
+## Choose this firmware if…
+
+- You run Home Assistant and want your Zigbee / Thread / Z-Wave coordinator to stop broadcasting a plaintext serial port on your LAN.
+- You already treat the coordinator as "one more ESPHome node" and want to configure it like the rest of your ESPHome fleet.
+- You are comfortable building and flashing ESPHome firmware.
+
+## Stick with SLZB-OS if…
+
+- You need the vendor web UI, cloud portal, or the built-in VPN clients.
+- You don't run Home Assistant, or your host software cannot use `esphome-hass://` URLs.
+- You want vendor support and a signed vendor firmware image.
+
+---
+
 This repository contains a structured ESPHome project designed to support multiple devices and hardware revisions from a single, maintainable codebase.
 The architecture emphasizes clear separation between hardware definitions, low-level hardware handling, reusable logic, and device composition.
 
