@@ -6,10 +6,18 @@
 # The per-UART packages register `uart_hw_flow:` entries but assume this
 # declaration has already happened.
 #
+# Fetches from GitHub so ESPHome-dashboard builds (which pull YAML packages
+# via `packages: url: ...`) can resolve the C++ source too. Local-clone dev
+# iteration on unpushed component changes: temporarily swap `type: git` for
+# `type: local, path: components`.
+#
 # See docs/v1-design.md §5 for design rationale.
 
 external_components:
   - source:
-      type: local
+      type: git
+      url: https://github.com/dennisvo/slzb-esphome-ng
+      ref: main
       path: components
+    refresh: 0s
     components: [uart_hw_flow]
