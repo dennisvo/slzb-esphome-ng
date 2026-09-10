@@ -1,0 +1,1381 @@
+{
+  "0": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/20260310/znp-SLZB-06-115200-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260311 (same as 20260310 with 115200 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 11 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 115200</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>115200 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260311",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/20260310/znp-SLZB-06-460800-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260310 (same as 20260311 with 460800 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 10 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>460800 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260310",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/znp-SLZB-06-20260307.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260307</b> &nbsp;<i>(Beta)</i><ul><li><b>Build Date:</b> 07 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>🚀 <b>Industry First - 460800 Baud on CC26xx</b><br>This is the <b>first ever test build</b> of a CC26xx Zigbee coordinator firmware running at <b>460800 baud</b> - a significant step up from the standard 115200. This opens the door to faster host-to-coordinator communication and improved throughput for high-density Zigbee networks. Released to the community for early evaluation and feedback.</p><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260307",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/znp-SLZB-06-20250325.bin",
+      "notes": "<br><b>IF YOU HAVE PAN ID ISSUE <a href='https://support.smlight.tech/supportcenter/public/en/blog/zdo_statechangeind' target='_blank' aria-current='true'>READ HERE</a>.</b>.<br><br>This firmware is for testing purposes. <br>Some users have reported a change in the PAN ID setting or <i>networking commissioning time out</i> after flashing this firmware. A PAN ID change may require re-pairing your Zigbee end devices to restore functionality. Please take this into account before flashing it to your working setup. Use this firmware only if you are okay with <u>potentially</u> having to re-pair your Zigbee devices (more info <a href='https://smlight.tech/2025/05/31/zigbee-firmware-release-note-20250325/' target='_blank' aria-current='true'><span>here</span></a>).<br><br><b>- SMLIGHT latest Zigbee Coordinator TEST/DEV release for CC2652P chips [30-May-2025]</b>;<br>- Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br>- Default Firmware Settings:<br>-- Adapter type: zstack;<br>-- Baudrate: 115200;<br>- SDK 8.30 based (latest);<br><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "rev": "20250325",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/CC1352P2_CC2652P_other_coordinator_20250321.bin",
+      "notes": "<b>Public Coordinator release for CC2652P chips</b>:<br><br><b>IMPORTANT</b>: This firmware is for testing purposes. Some users have reported a change in the PAN ID setting after flashing this firmware. A PAN ID change may require re-pairing your Zigbee end devices to restore functionality. Please take this into account before flashing it to your working setup. Use this firmware only if you are okay with <u>potentially</u> having to re-pair your devices.<br><br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/545' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/545</span></a><br>- SDK 8.30.01.01 based;<br>- Attempted to fix some BUFFER_FULL errors;<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "rev": "20250321",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/CC1352P2_CC2652P_other_coordinator_20240710.bin",
+      "notes": "<b>Public latest Coordinator release for CC2652P chips [10-Jul-2024]</b>:<br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/505' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/505</span></a><br>- SDK 7.41 based (latest);<br>- Supports 'transmit_power' levels [0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20];<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240710",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/CC2652P_coordinator_20240315.bin",
+      "notes": "<b>Public Coordinator release for CC2652P chips [15-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/496' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/496</span></a><br>- SDK 6.10 based;<br>- Some improvements which should reduce NWK errors;<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "rev": "20240315",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/CC1352P2_CC2652P_other_coordinator_20240315_patched_460800.bin",
+      "notes": "<b>Public Patched Coordinator release for CC2652P chips [15-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Andrik45719/Z-Stack-firmware' target='_blank' aria-current='true'><span>https://github.com/Andrik45719/Z-Stack-firmware</span></a>;<br>- SDK 6.10 based;<br>- Patched version of Public Coordinator release for CC2652P chips [15-Mar-2024] - baudrate changed to 460kbps from 115kbps;<br>- <b>IMPORTANT!!! Baudrate: 460800</b>;<br>- May help if 'spamming' devices are in Zigbee network;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "rev": "20240315",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/CC1352P2_CC2652P_other_coordinator_20230922.bin",
+      "notes": "<b>Public Coordinator release for CC2652P chips [22-Sep-2023]</b>:<br>- SDK 6.10 based;<br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/496' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/496</span></a>.",
+      "rev": "20230922",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/CC2652P_coordinator_20230507.bin",
+      "notes": "<b>Public Coordinator release for CC2652P chips [07-May-2023]</b>:<br>- SDK 7.10 based;<br>- Enable child aging to fix issues like #13478 (but not for older Xiaomi devices as they do not implement child aging correctly which gets them kicked out of the network);<br>- Increase message timeout from 7 to 8 seconds to increase message delivery success rate for devices using a 7.5 seconds poll interval (#13478);<br>- Improve performance with larger network;<br>- Optimize table sizes;<br>- Increase stack_size from 1024 to 8192;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "rev": "20230507",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/CC2652P_coordinator_20221226.bin",
+      "notes": "<b>Public Coordinator release for CC2652P chips [26-Dec-2022]</b>:<br>- SDK 6.10 based; <br>- Improve performance/reliability for larger network (100+ devices);<br>- Increase request retry attempts;<br>- Increase routing table sizes;;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20221226",
+      "type": "0"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/CC1352P2_CC2652P_other_router_20250403.bin",
+      "notes": "<b>Public Router release for CC2652P chips</b><br>Updated SimpleLink SDK to 8.30.01.01<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250403",
+      "type": "1"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/zr-ZR_SLZB-06-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT Router release for CC2652P chips [30-May-2025]</b>:<br>- SDK 8.30 based;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "1"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/CC2652P_router_20221102.bin",
+      "notes": "<b>Public Router release for CC2652P chips [02-Nov-2022]</b>:<br>- SDK 6.30 based;<br>- Allow to set transmit power<br>- Fix directly connected Xiaomi devices disconnecting;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20221102",
+      "type": "1"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/ot-rcp-SLZB-06-20260304.bin",
+      "notes": "<b>SMLIGHT latest Matter-over-Thread release for CC2652P chips [04-March-2026]</b>:<br>- Thread firmware release for SLZB-06;<br>- Baudrate: 460800;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20260304",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/ot-rcp-SLZB-06-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT latest Matter-over-Thread release for CC2652P chips [30-May-2025]</b>:<br>- Thread firmware release for SLZB-06;<br>- Baudrate: 460800;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/ot-rcp-SLZB-06-20240727.bin",
+      "notes": "<b>SMLIGHT latest Matter-over-Thread release for CC2652P chips [27-Jul-2024]</b>:<br>- Thread firmware release for SLZB-06;<br>- Baudrate: 460800;<br>- <a href='https://www.youtube.com/watch?v=WwYVRuVpAJI' target='_blank' aria-current='true'><span>Youtube tutorial</span></a><span> - connection Matter-over-Thread devices to Home Assistant with SLZB-06;<br>- Pairing Matter-over-Thread devices in <a href='https://smlight.tech/manual/slzb-06/guide/thread-matter/pair-thread-device.html' target='_blank' aria-current='true'><span>Home Assistant, text manual</span></a><span>;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240727",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/slzb-06-ot-20240401_BL2.bin",
+      "notes": "<b>SMLIGHT latest Matter-over-Thread release for CC2652P chips [01-Apr-2024]</b>:<br>- Thread firmware release for SLZB-06;<br>- Baudrate: 460800;<br>- <a href='https://www.youtube.com/watch?v=WwYVRuVpAJI' target='_blank' aria-current='true'><span>Youtube tutorial</span></a><span> - connection Matter-over-Thread devices to Home Assistant with SLZB-06;<br>- Pairing Matter-over-Thread devices in <a href='https://smlight.tech/manual/slzb-06/guide/thread-matter/pair-thread-device.html' target='_blank' aria-current='true'><span>Home Assistant, text manual</span></a><span>;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240401",
+      "type": "2"
+    }
+  ],
+  "1": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06m/20250220/slzb06m_zigbee_ncp_8.0.2.0_sw_flow_115200.gbl",
+      "notes": "For 'adapter: ember' adapter settings in Z2M!<br>SDK 8.0.2<br>Green LED is not supported in this firmware!<br>Change your config:<br>adapter: ember<br>rtscts: false",
+      "prod": true,
+      "rev": "20250220",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06m/ncp-uart-hw-v7.4.5.0-slzb-06m-115200.gbl",
+      "notes": "For 'adapter: ember' adapter settings in Z2M!<br>SDK 7.4.5<br>Please read https://github.com/Koenkk/zigbee2mqtt/discussions/21462<br>before flashing!<br>Green LED is not supported in this firmware!<br>Change your config:<br>adapter: ember<br>rtscts: false",
+      "rev": "20241127",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06m/ncp-uart-hw-v7.4.1.0-slzb-06m-115200.gbl",
+      "notes": "Updated version 10 May 2024<br>For 'adapter: ember' adapter settings in Z2M!<br>SDK 7.4.1<br>Please read https://github.com/Koenkk/zigbee2mqtt/discussions/21462<br>before flashing!<br>Green LED is not supported in this firmware!<br>Change your config:<br>adapter: ember<br>rtscts: false",
+      "rev": "20240510",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06m/ncp-uart-hw-v7.3.1.0-slzb-06m-115200.gbl",
+      "notes": "SDK 7.3.1",
+      "rev": "20240330",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06m/06M_768_0.2.gbl",
+      "notes": "Factory FW",
+      "prod": true,
+      "rev": "20231030",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06m/20251204/slzb06m_openthread_rcp_2.7.2.0_2025.6.2_no_flow_460800.gbl",
+      "notes": "This is DEV firmware which may contain bugs!\nThread RCP version: 2.7.2.0\nSDK version: 2025.6.2",
+      "prod": false,
+      "rev": "20251204",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06m/ot-rcp-v2.4.2.0-slzb-06m-460800.gbl",
+      "notes": "OpenThread Border Router firmware.<br>Please install OTBR addon in your HA to work with this firmware.",
+      "prod": true,
+      "rev": "20241105",
+      "type": "2"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06m/20250220/slzb06m_zigbee_router_8.0.2.0_115200.gbl",
+      "notes": "Router firmware",
+      "prod": true,
+      "rev": "20250220",
+      "type": "1"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06m/06M_router.gbl",
+      "notes": "Router firmware",
+      "prod": true,
+      "rev": "20231130",
+      "type": "1"
+    }
+  ],
+  "12": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/mrw10/20260402/slzb_MRW10_zwave_ncp_EU_1.0.0.gbl",
+      "notes": "SDK 7.24.3.0 EU firmware.<br>- Improved RSSI and stability.",
+      "prod": true,
+      "rev": "20260402",
+      "type": "5"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/mrw10/factory/zwave_stick_EU_7.22.2.0.gbl",
+      "notes": "EU Factory firmware",
+      "prod": true,
+      "rev": "20250623",
+      "type": "5"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/mrw10/20260402/slzb_MRW10_zwave_ncp_US_1.0.0.gbl",
+      "notes": "SDK 7.24.3.0 US firmware.<br>- Improved RSSI and stability.",
+      "prod": true,
+      "rev": "20260402",
+      "type": "6"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/mrw10/factory/zwave_stick_US_7.22.2.0.gbl",
+      "notes": "US Factory firmware",
+      "prod": true,
+      "rev": "20250623",
+      "type": "6"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/mrw10/20260402/slzb_MRW10_zwave_ncp_ANZ_1.0.0.gbl",
+      "notes": "SDK 7.24.3.0 ANZ firmware.<br>- Improved RSSI and stability.",
+      "prod": true,
+      "rev": "20260402",
+      "type": "7"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/mrw10/factory/zwave_stick_AU_7.22.2.0.gbl",
+      "notes": "ANZ Factory firmware",
+      "prod": true,
+      "rev": "20250623",
+      "type": "7"
+    }
+  ],
+  "13": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg26/factory/slzb06Mg26_zigbee_ncp_8.0.2.0_115200.gbl",
+      "notes": "Factory coordinator firmware",
+      "prod": true,
+      "rev": "20240602",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg26/smlight_slzb06Mg26_zigbee_router_8.0.2.0_115200_sw_flow.gbl",
+      "notes": "Zigbee router firmware",
+      "prod": true,
+      "rev": "20240602",
+      "type": "1"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg26/20260416/slzb06Mg26_openthread_rcp_3.0.1_gsdk_2025.12.2_460800.gbl",
+      "notes": "This is a Thread test firmware that is designed to fix problems with OTBR starting after device reboot",
+      "prod": false,
+      "rev": "20260416",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg26/20251218/slzb06Mg26_openthread_rcp_2.7.2.0_460800.gbl",
+      "notes": "Should fix PIN resets. This is DEV firmware which may contain bugs!\nThread RCP version: 2.7.2.0\nSDK: 2025.6.2",
+      "prod": true,
+      "rev": "20251218",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg26/20251204/slzb06Mg26_openthread_rcp_2.7.2.0_2025.6.2_460800.gbl",
+      "notes": "This is DEV firmware which may contain bugs!\nThread RCP version: 2.7.2.0\nSDK: 2025.6.2",
+      "prod": false,
+      "rev": "20251204",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg26/factory/slzb06Mg26_openthread_rcp_2.7.0.0_GitHub-fb0446f53_gsdk_2025.6.0_460800.gbl",
+      "notes": "Factory Thread firmware",
+      "prod": true,
+      "rev": "20250703",
+      "type": "2"
+    }
+  ],
+  "16": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06u/20260310/znp-SLZB-06U-115200-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260311 (same as 20260310 with 115200 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 11 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 115200</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>115200 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260311",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06u/20260310/znp-SLZB-06U-460800-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260310 (same as 20260311 with 460800 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 10 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>460800 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260310",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06u/znp-SLZB-06U-20260307.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260307</b> &nbsp;<i>(Beta)</i><ul><li><b>Build Date:</b> 07 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>🚀 <b>Industry First - 460800 Baud on CC26xx</b><br>This is the <b>first ever test build</b> of a CC26xx Zigbee coordinator firmware running at <b>460800 baud</b> - a significant step up from the standard 115200. This opens the door to faster host-to-coordinator communication and improved throughput for high-density Zigbee networks. Released to the community for early evaluation and feedback.</p><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260307",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06u/CC1352P2_CC2652P_launchpad_coordinator_20250321.bin",
+      "notes": "<b>Public Coordinator release for CC2652P chips</b><br>For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware' target='_blank' aria-current='true'>https://github.com/Koenkk/Z-Stack-firmware</a>",
+      "rev": "20250321",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06u/CC1352P2_CC2652P_launchpad_coordinator_20240710.bin",
+      "notes": "<b>Public Coordinator release for CC2652P chips</b><br>For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware' target='_blank' aria-current='true'>https://github.com/Koenkk/Z-Stack-firmware</a>",
+      "rev": "20240710",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06u/CC1352P2_CC2652P_launchpad_coordinator_20230507.bin",
+      "notes": "<b>Public Coordinator release for CC2652P chips</b><br>For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware' target='_blank' aria-current='true'>https://github.com/Koenkk/Z-Stack-firmware</a>",
+      "rev": "20230507",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06u/CC1352P2_CC2652P_launchpad_coordinator_20221226.bin",
+      "notes": "<b>Public Coordinator release for CC2652P chips</b><br>For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware' target='_blank' aria-current='true'>https://github.com/Koenkk/Z-Stack-firmware</a>",
+      "prod": true,
+      "rev": "20221226",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06u/CC1352P2_CC2652P_launchpad_router_20221102.bin",
+      "notes": "<b>Public Router release for CC2652P chips</b><br>For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware' target='_blank' aria-current='true'>https://github.com/Koenkk/Z-Stack-firmware</a>",
+      "prod": true,
+      "rev": "20221102",
+      "type": "1"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06u/CC1352P2_CC2652P_launchpad_router_20220125.bin",
+      "notes": "<b>Public Router release for CC2652P chips</b><br>For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware' target='_blank' aria-current='true'>https://github.com/Koenkk/Z-Stack-firmware</a>",
+      "prod": true,
+      "rev": "20220125",
+      "type": "1"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06u/ot-rcp-SLZB-06U-20260304.bin",
+      "notes": "<b>SMLIGHT latest Matter-over-Thread release for CC2652P chips [04-March-2026]</b>:<br>- Thread firmware release for SLZB-06U;<br>- Baudrate: 460800;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20260304",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06/slzb-06-ot-20240401_BL2.bin",
+      "notes": "<b>SMLIGHT latest Matter-over-Thread release for CC2652P chips [01-Apr-2024]</b>:<br>- Thread firmware release for SLZB-06;<br>- Baudrate: 460800;<br>- <a href='https://www.youtube.com/watch?v=WwYVRuVpAJI' target='_blank' aria-current='true'><span>Youtube tutorial</span></a><span> - connection Matter-over-Thread devices to Home Assistant with SLZB-06;<br>- Pairing Matter-over-Thread devices in <a href='https://smlight.tech/manual/slzb-06/guide/thread-matter/pair-thread-device.html' target='_blank' aria-current='true'><span>Home Assistant, text manual</span></a><span>;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240401",
+      "type": "2"
+    }
+  ],
+  "17": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/20260310/znp-SLZB-06P7U-115200-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260311 (same as 20260310 with 115200 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 11 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 115200</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>115200 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260311",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/20260310/znp-SLZB-06P7U-460800-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260310 (same as 20260311 with 460800 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 10 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>460800 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260310",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/znp-SLZB-06P7-EXT-20260307.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260307</b> &nbsp;<i>(Beta)</i><ul><li><b>Build Date:</b> 07 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>🚀 <b>Industry First - 460800 Baud on CC26xx</b><br>This is the <b>first ever test build</b> of a CC26xx Zigbee coordinator firmware running at <b>460800 baud</b> - a significant step up from the standard 115200. This opens the door to faster host-to-coordinator communication and improved throughput for high-density Zigbee networks. Released to the community for early evaluation and feedback.</p><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260307",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/znp-SLZB-06P7-EXT-20250325.bin",
+      "notes": "<br><b>IF YOU HAVE PAN ID ISSUE <a href='https://support.smlight.tech/supportcenter/public/en/blog/zdo_statechangeind' target='_blank' aria-current='true'>READ HERE</a>.</b>.<br><br>This firmware is for testing purposes. <br>Some users have reported a change in the PAN ID setting or <i>networking commissioning time out</i> after flashing this firmware. A PAN ID change may require re-pairing your Zigbee end devices to restore functionality. Please take this into account before flashing it to your working setup. Use this firmware only if you are okay with <u>potentially</u> having to re-pair your Zigbee devices (more info <a href='https://smlight.tech/2025/05/31/zigbee-firmware-release-note-20250325/' target='_blank' aria-current='true'><span>here</span></a>).<br><br><b>- SMLIGHT latest Zigbee Coordinator TEST/DEV release for CC2652P7 chips [30-May-2025]</b>;<br>- Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br>- Default Firmware Settings:<br>-- Adapter type: zstack;<br>-- Baudrate: 115200;<br>- SDK 8.30 based (latest);<br><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20250321.bin",
+      "notes": "<b>Public Coordinator release for CC2652P7 chips</b>:<br><br><b>IMPORTANT</b>: This firmware is for testing purposes. Some users have reported a change in the PAN ID setting after flashing this firmware. A PAN ID change may require re-pairing your Zigbee end devices to restore functionality. Please take this into account before flashing it to your working setup. Use this firmware only if you are okay with <u>potentially</u> having to re-pair your devices.<br><br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/545' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/545</span></a><br>- SDK 8.30.01.01 based;<br>- Attempted to fix some BUFFER_FULL errors;<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250321",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/znp-SLZB-06P7-EXT-20240716.bin",
+      "notes": "<b>SMLIGHT latest Coordinator release for CC2652P7 chips [16-Jul-2024]</b>:<br>- +20dB TRANSMIT POWER SUPPORT;<br>- SDK 7.41 based (latest);<br>- Supports 'transmit_power' levels [0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20];<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240716",
+      "type": "0"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/zr-ZR_SLZB-06P7-EXT-20240716.bin",
+      "notes": "<b>SMLIGHT latest ROUTER release for CC2652P7 chips [16-Jul-2024]</b>:<br>- SDK 7.41 based (latest);<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240716",
+      "type": "1"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240710.bin",
+      "notes": "<b>Public latest Coordinator release for CC2652P7 chips [10-Jul-2024]</b>:<br>- Max transmit_power limited to <b>10dB</b><br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/505' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/505</span></a><br>- SDK 7.41 based (latest);<br>- Supports 'transmit_power' levels [6;7;8;9;10];<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240710",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240316.bin",
+      "notes": "<b>Public Coordinator release for CC2652P7 chips [16-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/496' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/496</span></a><br>- SDK 6.10 based;<br>- Some improvements which should reduce NWK errors;<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240316",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240316_patched_460800.bin",
+      "notes": "<b>Public Patched Coordinator release for CC2652P7 chips [15-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Andrik45719/Z-Stack-firmware' target='_blank' aria-current='true'><span>https://github.com/Andrik45719/Z-Stack-firmware</span></a>;<br>- SDK 6.10 based;<br>- Patched version of Public Coordinator release for CC2652P chips [15-Mar-2024] - baudrate changed to 460kbps from 115kbps;<br>- <b>IMPORTANT!!! Baudrate: 460800</b>;<br>- May help if 'spamming' devices are in Zigbee network;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240315",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240315.bin",
+      "notes": "<b>Public Coordinator release for CC2652P7 chips [15-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/496' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/496</span></a><br>- SDK 6.10 based;<br>- Some improvements which should reduce NWK errors;<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240315",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20230507.bin",
+      "notes": "<b>Public Coordinator release for CC2652P7 chips [07-May-2023]</b>:<br>- SDK 7.10 based;<br>- Enable child aging to fix issues like #13478 (but not for older Xiaomi devices as they do not implement child aging correctly which gets them kicked out of the network);<br>- Increase message timeout from 7 to 8 seconds to increase message delivery success rate for devices using a 7.5 seconds poll interval (#13478);<br>- Improve performance with larger network;<br>- Optimize table sizes;<br>- Increase stack_size from 1024 to 8192;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20230507",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/ot-rcp-SLZB-06P7-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT latest Thread release for CC2652P7 chips [30-May-2025]</b><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/ot-rcp-SLZB-06P7-20260304.bin",
+      "notes": "<b>SMLIGHT latest Matter-over-Thread release for CC2652P7 chips [04-March-2026]</b>:<br>- Thread firmware release for SLZB-06p7;<br>- Baudrate: 460800;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20260304",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/ot-rcp-SLZB-06P7-EXT-20240727.bin",
+      "notes": "<b>SMLIGHT latest Matter-over-Thread release for CC2652P7 chips [27-Jul-2024]</b>:<br>- Thread firmware release for SLZB-06p7;<br>- Baudrate: 460800;<br>- <a href='https://www.youtube.com/watch?v=WwYVRuVpAJI' target='_blank' aria-current='true'><span>Youtube tutorial</span></a><span> - connection Matter-over-Thread devices to Home Assistant with SLZB-06;<br>- Pairing Matter-over-Thread devices in <a href='https://smlight.tech/manual/slzb-06/guide/thread-matter/pair-thread-device.html' target='_blank' aria-current='true'><span>Home Assistant, text manual</span></a><span>;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240727",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC2652P7_thread_v2_20240405_ext.bin",
+      "notes": "<b>SMLIGHT Matter-over-Thread release for CC2652P7 chips [05-Apr-2024]</b>:<br>- Thread firmware release for SLZB-06p7;<br>- Baudrate: 460800;<br>- <a href='https://www.youtube.com/watch?v=WwYVRuVpAJI' target='_blank' aria-current='true'><span>Youtube tutorial</span></a><span> - connection Matter-over-Thread devices to Home Assistant with SLZB-06;<br>- Pairing Matter-over-Thread devices in <a href='https://smlight.tech/manual/slzb-06/guide/thread-matter/pair-thread-device.html' target='_blank' aria-current='true'><span>Home Assistant, text manual</span></a><span>;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240405",
+      "type": "2"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/zr-ZR_SLZB-06P7-EXT-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT  ROUTER release for CC2652P7 chips [30-May-2025]</b>:<br>- SDK 8.30 based;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "1"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/router_CC1352P7_4_tirtos7_ticlang_SM_EXT.bin",
+      "notes": "<b>SMLIGHT  ROUTER release for CC2652P7 chips [13-May-2024]</b>:<br>- SDK 7.40 based;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240513",
+      "type": "1"
+    }
+  ],
+  "18": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/20260310/znp-SLZB-06P10-115200-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260311 (same as 20260310 with 115200 baudrate) (same as 20260310 with 115200 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 11 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 115200</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>115200 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260311",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/20260310/znp-SLZB-06P10-460800-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260310 (same as 20260311 with 460800 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 10 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>460800 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260310",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/znp-SLZB-06P10-20260307.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260307</b> &nbsp;<i>(Beta)</i><ul><li><b>Build Date:</b> 07 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>🚀 <b>Industry First - 460800 Baud on CC26xx</b><br>This is the <b>first ever test build</b> of a CC26xx Zigbee coordinator firmware running at <b>460800 baud</b> - a significant step up from the standard 115200. This opens the door to faster host-to-coordinator communication and improved throughput for high-density Zigbee networks. Released to the community for early evaluation and feedback.</p><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260307",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/ot-rcp-SLZB-06P10-20260304.bin",
+      "notes": "<b>SMLIGHT latest Thread release for CC2674P10 chips [04-March-2026]</b><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20260304",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/ot-rcp-SLZB-06P10-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT latest Thread release for CC2674P10 chips [30-May-2025]</b><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/ot-rcp-SLZB-06P10-20240727.bin",
+      "notes": "<b>SMLIGHT latest Thread release for CC2674P10 chips [27-Jul-2024]</b><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240727",
+      "type": "2"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/znp-SLZB-06P10-20250325.bin",
+      "notes": "<br><b>ONLY FOR TESTS PURPOSES. READ NOTE <a href='https://smlight.tech/2025/05/31/zigbee-firmware-release-note-20250325/' target='_blank' aria-current='true'><span>HERE</span></a>. PLEASE READ BEFORE FLASHING</b>.<br><br>This firmware is for testing purposes. <br>Some users have reported a change in the PAN ID setting or <i>networking commissioning time out</i> after flashing this firmware. A PAN ID change may require re-pairing your Zigbee end devices to restore functionality. Please take this into account before flashing it to your working setup. Use this firmware only if you are okay with <u>potentially</u> having to re-pair your Zigbee devices (more info <a href='https://smlight.tech/2025/05/31/zigbee-firmware-release-note-20250325/' target='_blank' aria-current='true'><span>here</span></a>).<br><br><b>- SMLIGHT latest Zigbee Coordinator TEST/DEV release for CC2674P10 chips [30-May-2025]</b>;<br>- Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br>- Default Firmware Settings:<br>-- Adapter type: zstack;<br>-- Baudrate: 115200;<br>- SDK 8.30 based (latest);<br><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/znp-SLZB-06P10-20240716.bin",
+      "notes": "<b>SMLIGHT latest Coordinator release for CC2674P10 chips [16-Jul-2024]</b>:<br>- +20dB TRANSMIT POWER SUPPORT;<br>- SDK 7.41 based (latest);<br>- Supports 'transmit_power' levels [0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20];<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240716",
+      "type": "0"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/zr-ZR_SLZB-06P10-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT latest ROUTER release for CC2674P10 chips [30-May-2025]</b>:<br>- SDK 8.30 based (latest);<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "1"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/zr-ZR_SLZB-06P10-20240716.bin",
+      "notes": "<b>SMLIGHT latest ROUTER release for CC2674P10 chips [16-Jul-2024]</b>:<br>- SDK 7.41 based (latest);<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240716",
+      "type": "1"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/znp_LP_EM_CC2674P10_SM_tirtos7_ticlangNR.bin",
+      "notes": "<b>SMLIGHT Coordinator release for CC2674P10 chips [15-Mar-2024]</b>:<br>- Engineering (dev) version, not recommended (INT);<br>- SDK 7.40 based (latest);<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240315",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/znp_LP_EM_CC2674P10_SM_tirtos7_ticlangNP.bin",
+      "notes": "<b>SMLIGHT Coordinator release for CC2674P10 chips [14-Mar-2024]</b>:<br>- Factory flashed firmware (EXT);<br>- SDK 7.40 based (latest);<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240314",
+      "type": "0"
+    }
+  ],
+  "2": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg24/20250212/slzb06Mg24_zigbee_ncp_8.0.2.0_115200_20250212.gbl",
+      "notes": "- Increase RX bugger to help with reliability of OTA.<br>- Based on SDK 8.0.2.0.397.<br>- Baudrate: 115200.",
+      "prod": true,
+      "rev": "20250212",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg24/20250119/slzb06Mg24_zigbee_ncp_8.0.2.0_115200_factory_20250119.gbl",
+      "notes": "- Factory FW.<br>- Based on SDK: 8.0.2.0.397.<br>- Baudrate: 115200.<br>- Reccomended to be updated to 20250212 or later.",
+      "prod": false,
+      "rev": "20250119",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg24/service/slzb06Mg24_blank_full.gbl",
+      "notes": "- BLANK firmware file (empty), could be used for full erasing Zigbee chip.<br>- <b>PLEASE USE THIS FIRMWARE ONLY IN EXCEPTIONAL CASES, WHEN YOUR CURRENT FIRMWARE IS CORRUPTED/WAS UNSUCCESFULLY FLASHED.</b><br>- Please note, erasing Zigbee chip does not affect Zigbee network (no need to repair Zigbee device after flashing Zigbee firmware).",
+      "prod": false,
+      "rev": "20250000",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg24/20250212/slzb06Mg24_zigbee_router_8.0.2.0_115200_20250212.gbl",
+      "notes": "- Based on SDK 8.0.2.0.397",
+      "prod": true,
+      "rev": "20250212",
+      "type": "1"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg24/service/slzb06Mg24_blank_full.gbl",
+      "notes": "- BLANK firmware file (empty), could be used for full erasing Zigbee chip.<br>- <b>PLEASE USE THIS FIRMWARE ONLY IN EXCEPTIONAL CASES, WHEN YOUR CURRENT FIRMWARE IS CORRUPTED/WAS UNSUCCESFULLY FLASHED.</b><br>- Please note, erasing Zigbee chip does not affect Zigbee network (no need to repair Zigbee device after flashing Zigbee firmware).",
+      "prod": false,
+      "rev": "20250000",
+      "type": "1"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg24/20260416/slzb06Mg24_openthread_rcp_3.0.1_gsdk_2025.12.2_no_flow_460800.gbl",
+      "notes": "This is a Thread test firmware that is designed to fix problems with OTBR starting after device reboot",
+      "prod": false,
+      "rev": "20260416",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg24/20251218/slzb06Mg24_openthread_rcp_2.7.2.0_no_flow_460800.gbl",
+      "notes": "Should fix PIN resets. This is DEV firmware which may contain bugs!\nThread RCP version: 2.7.2.0\nSDK: 2025.6.2",
+      "prod": true,
+      "rev": "20251218",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg24/20251204/slzb06Mg24_openthread_rcp_2.7.2.0_2025.6.2_no_flow_460800.gbl",
+      "notes": "This is DEV firmware which may contain bugs!\nThread RCP version: 2.7.2.0\nSDK version: 2025.6.2",
+      "prod": false,
+      "rev": "20251204",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg24/20250212/slzb06Mg24_opentread_rcp._2.5.2.0_gsdk_2024.6.2_460800_20250212.gbl",
+      "notes": "- Based on SDK 8.0.2.0.397",
+      "prod": true,
+      "rev": "20250212",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg24/service/slzb06Mg24_blank_full.gbl",
+      "notes": "- BLANK firmware file (empty), could be used for full erasing Zigbee chip.<br>- <b>PLEASE USE THIS FIRMWARE ONLY IN EXCEPTIONAL CASES, WHEN YOUR CURRENT FIRMWARE IS CORRUPTED/WAS UNSUCCESFULLY FLASHED.</b><br>- Please note, erasing Zigbee chip does not affect Zigbee network (no need to repair Zigbee device after flashing Zigbee firmware).",
+      "prod": false,
+      "rev": "20250000",
+      "type": "2"
+    }
+  ],
+  "21": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg26u/factory/slzb06Mg26U_zigbee_ncp_8.0.3.0_sw_flow_115200.gbl",
+      "notes": "Factory coordinator firmware",
+      "prod": true,
+      "rev": "20251223",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg26u/factory/slzb06Mg26U_zigbee_router_8.0.3.0_115200.gbl",
+      "notes": "Factory router firmware",
+      "prod": true,
+      "rev": "20251223",
+      "type": "1"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg26u/20260416/slzb07Mg26_openthread_rcp_3.0.1_gsdk_2025.12.2_460800.gbl",
+      "notes": "This is a Thread test firmware that is designed to fix problems with OTBR starting after device reboot",
+      "prod": false,
+      "rev": "20260416",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06Mg26u/20260129/slzb07Mg26_openthread_rcp_2.7.2.0_2025.6.2_460800.gbl",
+      "notes": "Thread RCP firmware",
+      "prod": true,
+      "rev": "20260129",
+      "type": "2"
+    }
+  ],
+  "23": [
+    {
+      "baud": 115200,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=slzb07Mg24_zigbee_ncp_8.0.2.0_115200.gbl",
+      "notes": "SDK 8.0.2.0",
+      "prod": false,
+      "rev": "20251122",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb-mr3u/factory/ncp-uart-hw-v7.4.4.0-slzb-07mg24-115200.gbl",
+      "notes": "Factory coordinator firmware",
+      "prod": true,
+      "rev": "20250718",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb-mr3u/factory/slzb07Mg24_zigbee_router_8.0.2.0_115200.gbl",
+      "notes": "Factory Zigbee router firmware",
+      "prod": true,
+      "rev": "20250718",
+      "type": "1"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb-mr3u/20260416/slzb07Mg24_openthread_rcp_3.0.1_gsdk_2025.12.2_460800.gbl",
+      "notes": "This is a Thread test firmware that is designed to fix problems with OTBR starting after device reboot",
+      "prod": false,
+      "rev": "20260416",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb-mr3u/20251218/slzb07Mg24_openthread_rcp_2.7.2.0_460800.gbl",
+      "notes": "<b>If you have a bootloader error please disable \"Hardware Flow Control (RTS/CTS)\"</b><br>Should fix PIN resets. This is DEV firmware which may contain bugs!\nThread RCP version: 2.7.2.0\nSDK: 2025.6.2",
+      "prod": true,
+      "rev": "20251218",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb-mr3u/factory/slzb07Mg24_openthread_rcp_2.7.2.0_2025.6.2_460800.gbl",
+      "notes": "This is DEV firmware which may contain bugs!\nThread RCP version: 2.7.2.0\nSDK: 2025.6.2",
+      "prod": false,
+      "rev": "20251204",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb-mr3u/factory/ot-rcp-v2.4.5.0-slzb-07mg24-460800.gbl",
+      "notes": "Factory Thread firmware",
+      "prod": true,
+      "rev": "20250718",
+      "type": "2"
+    }
+  ],
+  "3": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/20260310/znp-SLZB-06P7v1-115200-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260311 (same as 20260310 with 115200 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 11 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 115200</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>115200 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260311",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/20260310/znp-SLZB-06P7v1-460800-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260310 (same as 20260311 with 460800 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 10 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>460800 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260310",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/znp-SLZB-06P7-INT-20260307.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260307</b> &nbsp;<i>(Beta)</i><ul><li><b>Build Date:</b> 07 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>🚀 <b>Industry First - 460800 Baud on CC26xx</b><br>This is the <b>first ever test build</b> of a CC26xx Zigbee coordinator firmware running at <b>460800 baud</b> - a significant step up from the standard 115200. This opens the door to faster host-to-coordinator communication and improved throughput for high-density Zigbee networks. Released to the community for early evaluation and feedback.</p><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260307",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/znp-SLZB-06P7-INT-20250325.bin",
+      "notes": "<br><b>IF YOU HAVE PAN ID ISSUE <a href='https://support.smlight.tech/supportcenter/public/en/blog/zdo_statechangeind' target='_blank' aria-current='true'>READ HERE</a>.</b>. PLEASE READ BEFORE FLASHING</b>.<br><br>This firmware is for testing purposes. <br>Some users have reported a change in the PAN ID setting or <i>networking commissioning time out</i> after flashing this firmware. A PAN ID change may require re-pairing your Zigbee end devices to restore functionality. Please take this into account before flashing it to your working setup. Use this firmware only if you are okay with <u>potentially</u> having to re-pair your Zigbee devices (more info <a href='https://smlight.tech/2025/05/31/zigbee-firmware-release-note-20250325/' target='_blank' aria-current='true'><span>here</span></a>).<br><br><b>- SMLIGHT latest Zigbee Coordinator TEST/DEV release for CC2652P7 chips [30-May-2025]</b>;<br>- Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br>- Default Firmware Settings:<br>-- Adapter type: zstack;<br>-- Baudrate: 115200;<br>- SDK 8.30 based (latest);<br><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/znp-SLZB-06P7-INT-20240716.bin",
+      "notes": "<b>SMLIGHT latest Coordinator release for CC2652P7 chips [16-Jul-2024]</b>:<br>- +20dB TRANSMIT POWER SUPPORT;<br>- SDK 7.41 based (latest);<br>- Supports 'transmit_power' levels [0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20];<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240716",
+      "type": "0"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/zr-ZR_SLZB-06P7-INT-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT latest ROUTER release for CC2652P7 chips [30-May-2025]</b>:<br>- SDK 8.30 based (latest);<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "1"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/zr-ZR_SLZB-06P7-INT-20240716.bin",
+      "notes": "<b>SMLIGHT latest ROUTER release for CC2652P7 chips [16-Jul-2024]</b>:<br>- SDK 7.41 based (latest);<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240716",
+      "type": "1"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/CC2652P7_7p10d_202403014.bin",
+      "notes": "<b>SMLIGHT Coordinator release for CC2652P7 chips [01-Mar-2024]</b>:<br>- SDK 7.40 based;<br>- Solved pairing issues;<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240301",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/P7_coordinator_20230507.bin",
+      "notes": "Standard (factory) FW",
+      "prod": true,
+      "rev": "20230507",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/ot-rcp-SLZB-06P7-INT-20260304.bin",
+      "notes": "<br><b>SMLIGHT latest Matter-over-Thread release for CC2652P7 chips [04-March-2026]</b>:<br>- Thread firmware release for SLZB-06p7;<br>- Baudrate: 460800;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20260304",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/ot-rcp-SLZB-06P7-INT-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT latest Matter-over-Thread release for CC2652P7 chips [30-May-2025]</b>:<br>- Thread firmware release for SLZB-06p7;<br>- Baudrate: 460800;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/ot-rcp-SLZB-06P7-INT-20240727.bin",
+      "notes": "<b>SMLIGHT latest Matter-over-Thread release for CC2652P7 chips [27-Jul-2024]</b>:<br>- Thread firmware release for SLZB-06p7;<br>- Baudrate: 460800;<br>- <a href='https://www.youtube.com/watch?v=WwYVRuVpAJI' target='_blank' aria-current='true'><span>Youtube tutorial</span></a><span> - connection Matter-over-Thread devices to Home Assistant with SLZB-06;<br>- Pairing Matter-over-Thread devices in <a href='https://smlight.tech/manual/slzb-06/guide/thread-matter/pair-thread-device.html' target='_blank' aria-current='true'><span>Home Assistant, text manual</span></a><span>;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240727",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/CC2652P7_thread_v2_20240405_int.bin",
+      "notes": "<b>SMLIGHT Matter-over-Thread release for CC2652P7 chips [05-Apr-2024]</b>:<br>- Thread firmware release for SLZB-06p7;<br>- Baudrate: 460800;<br>- <a href='https://www.youtube.com/watch?v=WwYVRuVpAJI' target='_blank' aria-current='true'><span>Youtube tutorial</span></a><span> - connection Matter-over-Thread devices to Home Assistant with SLZB-06;<br>- Pairing Matter-over-Thread devices in <a href='https://smlight.tech/manual/slzb-06/guide/thread-matter/pair-thread-device.html' target='_blank' aria-current='true'><span>Home Assistant, text manual</span></a><span>;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240405",
+      "type": "2"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7/router_CC1352P7_4_tirtos7_ticlang_SM_INT.bin",
+      "notes": "<b>SMLIGHT  ROUTER release for CC2652P7 chips [13-May-2024]</b>:<br>- SDK 7.40 based;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240513",
+      "type": "1"
+    }
+  ],
+  "4": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/20260310/znp-SLZB-06P10-115200-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260311 (same as 20260310 with 115200 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 11 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 115200</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>115200 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260311",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/20260310/znp-SLZB-06P10-460800-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260310 (same as 20260311 with 460800 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 10 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>460800 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260310",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/znp-SLZB-06P10-20260307.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260307</b> &nbsp;<i>(Beta)</i><ul><li><b>Build Date:</b> 07 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>🚀 <b>Industry First - 460800 Baud on CC26xx</b><br>This is the <b>first ever test build</b> of a CC26xx Zigbee coordinator firmware running at <b>460800 baud</b> - a significant step up from the standard 115200. This opens the door to faster host-to-coordinator communication and improved throughput for high-density Zigbee networks. Released to the community for early evaluation and feedback.</p><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260307",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/ot-rcp-SLZB-06P10-20260304.bin",
+      "notes": "<br><b>SMLIGHT latest Thread release for CC2674P10 chips [04-March-2026]</b><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20260304",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/ot-rcp-SLZB-06P10-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT latest Thread release for CC2674P10 chips [30-May-2025]</b><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/ot-rcp-SLZB-06P10-20240727.bin",
+      "notes": "<b>SMLIGHT latest Thread release for CC2674P10 chips [27-Jul-2024]</b><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240727",
+      "type": "2"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/znp-SLZB-06P10-20250325.bin",
+      "notes": "<br><b>ONLY FOR TESTS PURPOSES. READ NOTE <a href='https://smlight.tech/2025/05/31/zigbee-firmware-release-note-20250325/' target='_blank' aria-current='true'><span>HERE</span></a>. PLEASE READ BEFORE FLASHING</b>.<br><br>This firmware is for testing purposes. <br>Some users have reported a change in the PAN ID setting or <i>networking commissioning time out</i> after flashing this firmware. A PAN ID change may require re-pairing your Zigbee end devices to restore functionality. Please take this into account before flashing it to your working setup. Use this firmware only if you are okay with <u>potentially</u> having to re-pair your Zigbee devices (more info <a href='https://smlight.tech/2025/05/31/zigbee-firmware-release-note-20250325/' target='_blank' aria-current='true'><span>here</span></a>).<br><br><b>- SMLIGHT latest Zigbee Coordinator TEST/DEV release for CC2674P10 chips [30-May-2025]</b>;<br>- Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br>- Default Firmware Settings:<br>-- Adapter type: zstack;<br>-- Baudrate: 115200;<br>- SDK 8.30 based (latest);<br><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/znp-SLZB-06P10-20240716.bin",
+      "notes": "<b>SMLIGHT latest Coordinator release for CC2674P10 chips [16-Jul-2024]</b>:<br>- +20dB TRANSMIT POWER SUPPORT;<br>- SDK 7.41 based (latest);<br>- Supports 'transmit_power' levels [0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20];<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240716",
+      "type": "0"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/zr-ZR_SLZB-06P10-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT latest ROUTER release for CC2674P10 chips [30-May-2025]</b>:<br>- SDK 8.30 based (latest);<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "1"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/zr-ZR_SLZB-06P10-20240716.bin",
+      "notes": "<b>SMLIGHT latest ROUTER release for CC2674P10 chips [16-Jul-2024]</b>:<br>- SDK 7.41 based (latest);<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240716",
+      "type": "1"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/znp_LP_EM_CC2674P10_SM_tirtos7_ticlangNR.bin",
+      "notes": "<b>SMLIGHT Coordinator release for CC2674P10 chips [15-Mar-2024]</b>:<br>- Engineering (dev) version, not recommended (INT);<br>- SDK 7.40 based (latest);<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240315",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p10/znp_LP_EM_CC2674P10_SM_tirtos7_ticlangNP.bin",
+      "notes": "<b>SMLIGHT Coordinator release for CC2674P10 chips [14-Mar-2024]</b>:<br>- Factory flashed firmware (EXT);<br>- SDK 7.40 based (latest);<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240314",
+      "type": "0"
+    }
+  ],
+  "5": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/20260310/znp-SLZB-06P7U-115200-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260311 (same as 20260310 with 115200 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 11 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 115200</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>115200 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260311",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/20260310/znp-SLZB-06P7U-460800-20260310.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260310 (same as 20260311 with 460800 baudrate)</b>  <i>(Beta)</i><ul><li><b>Build Date:</b> 10 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>⚡ <b>Performance and Stability Optimizations</b><br>This build focuses on <b>low-level UART, DMA, and task optimizations</b> to improve overall responsiveness, efficiency, and reliability of the CC26xx coordinator firmware at <b>460800 baud</b>. These changes further refine host-to-coordinator communication and help strengthen performance for demanding Zigbee deployments.</p><ul><li>Removed one layer of abstraction in the UART path</li><li>Optimized UART RX/TX ring buffers for P7/P10 SoCs</li><li>Optimized NPI task stack usage</li><li>Optimized DMA and UART priorities</li><li>Optimized FIFO thresholds</li><li>Added custom reset handler with reboot reason tracking</li></ul><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260310",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/znp-SLZB-06P7-EXT-20260307.bin",
+      "notes": "<b>Zigbee Coordinator Firmware - CC26xx Series - Build 20260307</b> &nbsp;<i>(Beta)</i><ul><li><b>Build Date:</b> 07 Mar 2026</li><li><b>SDK:</b> 8.32.00.07 (released 22 Dec 2025)</li><li><b>Adapter Type:</b> zstack</li><li><b>Baudrate:</b> 460800</li></ul><p>🚀 <b>Industry First - 460800 Baud on CC26xx</b><br>This is the <b>first ever test build</b> of a CC26xx Zigbee coordinator firmware running at <b>460800 baud</b> - a significant step up from the standard 115200. This opens the door to faster host-to-coordinator communication and improved throughput for high-density Zigbee networks. Released to the community for early evaluation and feedback.</p><p><small>By downloading and installing this firmware, you agree to the <a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank'>Terms of Use</a>.</small></p>",
+      "rev": "20260307",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/znp-SLZB-06P7-EXT-20250325.bin",
+      "notes": "<br><b>IF YOU HAVE PAN ID ISSUE <a href='https://support.smlight.tech/supportcenter/public/en/blog/zdo_statechangeind' target='_blank' aria-current='true'>READ HERE</a>.</b>.<br><br>This firmware is for testing purposes. <br>Some users have reported a change in the PAN ID setting or <i>networking commissioning time out</i> after flashing this firmware. A PAN ID change may require re-pairing your Zigbee end devices to restore functionality. Please take this into account before flashing it to your working setup. Use this firmware only if you are okay with <u>potentially</u> having to re-pair your Zigbee devices (more info <a href='https://smlight.tech/2025/05/31/zigbee-firmware-release-note-20250325/' target='_blank' aria-current='true'><span>here</span></a>).<br><br><b>- SMLIGHT latest Zigbee Coordinator TEST/DEV release for CC2652P7 chips [30-May-2025]</b>;<br>- Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br>- Default Firmware Settings:<br>-- Adapter type: zstack;<br>-- Baudrate: 115200;<br>- SDK 8.30 based (latest);<br><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20250321.bin",
+      "notes": "<b>Public Coordinator release for CC2652P7 chips</b>:<br><br><b>IMPORTANT</b>: This firmware is for testing purposes. Some users have reported a change in the PAN ID setting after flashing this firmware. A PAN ID change may require re-pairing your Zigbee end devices to restore functionality. Please take this into account before flashing it to your working setup. Use this firmware only if you are okay with <u>potentially</u> having to re-pair your devices.<br><br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/545' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/545</span></a><br>- SDK 8.30.01.01 based;<br>- Attempted to fix some BUFFER_FULL errors;<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250321",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/znp-SLZB-06P7-EXT-20240716.bin",
+      "notes": "<b>SMLIGHT latest Coordinator release for CC2652P7 chips [16-Jul-2024]</b>:<br>- +20dB TRANSMIT POWER SUPPORT;<br>- SDK 7.41 based (latest);<br>- Supports 'transmit_power' levels [0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20];<br>- Baudrate: 115200;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240716",
+      "type": "0"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/zr-ZR_SLZB-06P7-EXT-20240716.bin",
+      "notes": "<b>SMLIGHT latest ROUTER release for CC2652P7 chips [16-Jul-2024]</b>:<br>- SDK 7.41 based (latest);<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240716",
+      "type": "1"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240710.bin",
+      "notes": "<b>Public latest Coordinator release for CC2652P7 chips [10-Jul-2024]</b>:<br>- Max transmit_power limited to <b>10dB</b><br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/505' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/505</span></a><br>- SDK 7.41 based (latest);<br>- Supports 'transmit_power' levels [6;7;8;9;10];<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240710",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240316.bin",
+      "notes": "<b>Public Coordinator release for CC2652P7 chips [16-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/496' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/496</span></a><br>- SDK 6.10 based;<br>- Some improvements which should reduce NWK errors;<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240316",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240316_patched_460800.bin",
+      "notes": "<b>Public Patched Coordinator release for CC2652P7 chips [15-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Andrik45719/Z-Stack-firmware' target='_blank' aria-current='true'><span>https://github.com/Andrik45719/Z-Stack-firmware</span></a>;<br>- SDK 6.10 based;<br>- Patched version of Public Coordinator release for CC2652P chips [15-Mar-2024] - baudrate changed to 460kbps from 115kbps;<br>- <b>IMPORTANT!!! Baudrate: 460800</b>;<br>- May help if 'spamming' devices are in Zigbee network;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240315",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20240315.bin",
+      "notes": "<b>Public Coordinator release for CC2652P7 chips [15-Mar-2024]</b>:<br>- For source, please read: <a href='https://github.com/Koenkk/Z-Stack-firmware/discussions/496' target='_blank' aria-current='true'><span>https://github.com/Koenkk/Z-Stack-firmware/discussions/496</span></a><br>- SDK 6.10 based;<br>- Some improvements which should reduce NWK errors;<br>- Baudrate: 115200;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240315",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC1352P7_coordinator_20230507.bin",
+      "notes": "<b>Public Coordinator release for CC2652P7 chips [07-May-2023]</b>:<br>- SDK 7.10 based;<br>- Enable child aging to fix issues like #13478 (but not for older Xiaomi devices as they do not implement child aging correctly which gets them kicked out of the network);<br>- Increase message timeout from 7 to 8 seconds to increase message delivery success rate for devices using a 7.5 seconds poll interval (#13478);<br>- Improve performance with larger network;<br>- Optimize table sizes;<br>- Increase stack_size from 1024 to 8192;<br><a href='https://github.com/Koenkk/Z-Stack-firmware/blob/master/LICENSE' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20230507",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/ot-rcp-SLZB-06P7-20260304.bin",
+      "notes": "<b>SMLIGHT latest Thread release for CC2652P7 chips [04-March-2026]</b><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20260304",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/ot-rcp-SLZB-06P7-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT latest Thread release for CC2652P7 chips [30-May-2025]</b><br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/ot-rcp-SLZB-06P7-EXT-20240727.bin",
+      "notes": "<b>SMLIGHT latest Matter-over-Thread release for CC2652P7 chips [27-Jul-2024]</b>:<br>- Thread firmware release for SLZB-06p7;<br>- Baudrate: 460800;<br>- <a href='https://www.youtube.com/watch?v=WwYVRuVpAJI' target='_blank' aria-current='true'><span>Youtube tutorial</span></a><span> - connection Matter-over-Thread devices to Home Assistant with SLZB-06;<br>- Pairing Matter-over-Thread devices in <a href='https://smlight.tech/manual/slzb-06/guide/thread-matter/pair-thread-device.html' target='_blank' aria-current='true'><span>Home Assistant, text manual</span></a><span>;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240727",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/CC2652P7_thread_v2_20240405_ext.bin",
+      "notes": "<b>SMLIGHT Matter-over-Thread release for CC2652P7 chips [05-Apr-2024]</b>:<br>- Thread firmware release for SLZB-06p7;<br>- Baudrate: 460800;<br>- <a href='https://www.youtube.com/watch?v=WwYVRuVpAJI' target='_blank' aria-current='true'><span>Youtube tutorial</span></a><span> - connection Matter-over-Thread devices to Home Assistant with SLZB-06;<br>- Pairing Matter-over-Thread devices in <a href='https://smlight.tech/manual/slzb-06/guide/thread-matter/pair-thread-device.html' target='_blank' aria-current='true'><span>Home Assistant, text manual</span></a><span>;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": true,
+      "rev": "20240405",
+      "type": "2"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/zr-ZR_SLZB-06P7-EXT-20250325.bin",
+      "notes": "<b>Please update to SLZB-OS v2.8.5.dev12 or higher to flash this firmware!</b><br><b>SMLIGHT  ROUTER release for CC2652P7 chips [30-May-2025]</b>:<br>- SDK 8.30 based;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20250325",
+      "type": "1"
+    },
+    {
+      "baud": 0,
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb06p7v2/router_CC1352P7_4_tirtos7_ticlang_SM_EXT.bin",
+      "notes": "<b>SMLIGHT  ROUTER release for CC2652P7 chips [13-May-2024]</b>:<br>- SDK 7.40 based;<br><a href='https://smlight.tech/legal/licenses/restrictive-smlight-slzb06-v20240328.txt' target='_blank' aria-current='true'><span>Terms of use</span></a><span> - by downloading and installing this firmware, you agree to the aforementioned terms.",
+      "prod": false,
+      "rev": "20240513",
+      "type": "1"
+    }
+  ],
+  "65": [
+    {
+      "baud": 115200,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07/dl.php?file=ncp-uart-hw-v7.4.1.0-slzb-07-115200.gbl",
+      "notes": "Factory coordinator firmware",
+      "prod": true,
+      "rev": "7.4.1.0",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07/dl.php?file=slzb07_zigbee_router_8.0.2.0_115200.gbl",
+      "notes": "Factory Zigbee router firmware",
+      "prod": true,
+      "rev": "8.0.2.0",
+      "type": "1"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07/dl.php?file=ot-rcp-v2.4.5.0-slzb-07-460800.gbl",
+      "notes": "Thread firmware",
+      "prod": true,
+      "rev": "2.4.5.0",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07/dl.php?file=ot-rcp_hw_460800.gbl",
+      "notes": "Factory Thread firmware",
+      "prod": true,
+      "rev": "2.2.2.0",
+      "type": "2"
+    }
+  ],
+  "66": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/essential/cc26x/CC1352P2_CC2652P_launchpad_coordinator_20250321.hex",
+      "notes": "[Recommended] Coordinator 20250321 Koenn firmware",
+      "prod": true,
+      "rev": "20250321",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/essential/cc26x/CC1352P2_CC2652P_launchpad_coordinator_20240710.hex",
+      "notes": "Coordinator 20240710 Koenn firmware",
+      "prod": true,
+      "rev": "20240710",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/essential/cc26x/CC1352P2_CC2652P_launchpad_coordinator_20221226.hex.hex",
+      "notes": "Coordinator 20221226 Koenn firmware",
+      "prod": true,
+      "rev": "20221226",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/essential/cc26x/znp-SLZB-06-20250325.hex",
+      "notes": "[Default] Coordinator firmware",
+      "prod": true,
+      "rev": "20250325",
+      "type": "0"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/essential/cc26x/ot-rcp-SLZB-06-20250325.hex",
+      "notes": "Thread firmware",
+      "prod": true,
+      "rev": "20250325",
+      "type": "2"
+    }
+  ],
+  "67": [
+    {
+      "baud": 115200,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=slzb07Mg24_zigbee_ncp_8.0.2.0_115200.gbl",
+      "notes": "Factory coordinator firmware",
+      "prod": true,
+      "rev": "8.0.2.0",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=ncp-uart-hw-v7.4.4.0-slzb-07mg24-115200.gbl",
+      "notes": "Coordinator firmware, 7x (old) SDK",
+      "prod": true,
+      "rev": "7.4.4.0",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=/20260416/slzb07Mg24_zigbee_router_9.0.1.0_115200.gbl",
+      "notes": "SDK 9.0.1.0 Zigbee router firmware",
+      "prod": false,
+      "rev": "9.0.1.0",
+      "type": "1"
+    },
+    {
+      "baud": 115200,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=slzb07Mg24_zigbee_router_8.0.2.0_115200.gbl",
+      "notes": "Factory Zigbee router firmware",
+      "prod": true,
+      "rev": "8.0.2.0",
+      "type": "1"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=/20260416/slzb07Mg24_openthread_rcp_3.0.1_gsdk_2025.12.2_460800.gbl",
+      "notes": "Thread firmware",
+      "prod": false,
+      "rev": "3.0.1.0",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=ot-rcp-v2.4.5.0-slzb-07mg24-460800.gbl",
+      "notes": "Thread firmware Factory",
+      "prod": true,
+      "rev": "2.4.5.0",
+      "type": "2"
+    },
+    {
+      "baud": 460800,
+      "hwFlow": true,
+      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=ot-rcp-v2.4.4.0-slzb-07mg24-460800.gbl",
+      "notes": "Thread firmware",
+      "prod": true,
+      "rev": "2.4.4.0",
+      "type": "2"
+    }
+  ],
+  "68": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/smhub-mg26/8-0-3/slzb06Mg26U_zigbee_ncp_8.0.3.0_sw_flow_115200_signed.gbl",
+      "notes": "[Default] Coordinator firmware",
+      "prod": true,
+      "rev": "SDK v8.0.3",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/smhub-mg26/8-0-3/slzb06Mg26_zigbee_router_8.0.3.0_115200_signed.gbl",
+      "notes": "[Default] Router firmware",
+      "prod": true,
+      "rev": "SDK v8.0.3",
+      "type": "1"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/smhub-mg26/8-0-3/slzb06Mg26_openthread_rcp_2.7.2.0_GitHub-fb0446f53_gsdk_2025.6.2_460800_signed.gbl",
+      "notes": "[Default] Thread firmware",
+      "prod": true,
+      "rev": "2.7.2 sdk 2025.6.2",
+      "type": "2"
+    }
+  ],
+  "69": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/smhub-ccp7/CC1352P7_coordinator_20250321.hex",
+      "notes": "Coordinator 20250321 Koenn firmware",
+      "prod": true,
+      "rev": "20251212",
+      "type": "0"
+    }
+  ],
+  "70": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/essential/cc26x/cc2674p10/znp-SLZB-06P10-20250325_signed.hex",
+      "notes": "[Default] Coordinator firmware",
+      "prod": true,
+      "rev": "20251212",
+      "type": "0"
+    },
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/essential/cc26x/cc2674p10/zr-ZR_SLZB-06P10-20250325_signed.hex",
+      "notes": "[Default] Router firmware",
+      "prod": true,
+      "rev": "20251212",
+      "type": "1"
+    },
+    {
+      "baud": 460800,
+      "link": "https://updates.smlight.tech/firmware/smhub/radio/essential/cc26x/cc2674p10/ot-rcp-SLZB-06P10-20250325_signed.hex",
+      "notes": "[Default] Thread firmware",
+      "prod": true,
+      "rev": "20251212",
+      "type": "2"
+    }
+  ],
+  "91": [
+    {
+      "baud": 115200,
+      "link": "https://updates.smlight.tech/firmware/zrel/siMg24_zigbee_bridge_9.1.1.0_115200.gbl",
+      "notes": "[Default] ZREL firmware",
+      "prod": true,
+      "rev": "20260909",
+      "type": "0"
+    }
+  ]
+}

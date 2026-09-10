@@ -12,7 +12,13 @@ packages:
   ############################################################
   platform_core: !include ../packages/core/core.yaml
   platform_diag: !include ../packages/diagnostics/diagnostics.yaml
-  platform_ble:  !include ../packages/bluetooth/bluetooth.yaml
+  # BLE proxy is off by default — it shares CPU / interrupts / RF frontend
+  # with the radio UART loops. Uncomment to opt in; see
+  # docs/development-considerations.md §11.3.
+  # platform_ble:  !include ../packages/bluetooth/bluetooth.yaml
+  # SLW09U has no radio UART — the v1 radio_firmware_info packages are
+  # intentionally not included. See docs/v1-radio-firmware.md §6f.
+  # (BLE-off default still applies for consistency and image size.)
   # platform_wifi: !include ../packages/wifi/wifi.yaml   # enable if needed
 
 
@@ -45,9 +51,6 @@ packages:
   # TODO: Add LED power switch package when available
   # hal_led_power: !include ../packages/ws2812/led_power_switch.yaml
   # hal_ws2812:    !include ../packages/ws2812/ws2812.yaml
-
-  # --- Microphone (ICS-41414) ---
-  # hal_mic: !include ../packages/buses/i2s_mic.yaml
 
   # --- I2S Audio Output ---
   # hal_i2s_speaker: !include ../packages/buses/i2s_speaker.yaml

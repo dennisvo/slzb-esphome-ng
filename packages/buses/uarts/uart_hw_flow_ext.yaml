@@ -1,0 +1,15 @@
+# packages/buses/uarts/uart_hw_flow_ext.yaml
+#
+# Declares the `uart_hw_flow` custom component as an external component.
+#
+# Include this once per device before any `packages/buses/uarts/uartN_hwfc.yaml`.
+# The per-UART packages register `uart_hw_flow:` entries but assume this
+# declaration has already happened.
+#
+# See docs/v1-design.md §5 for design rationale.
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [uart_hw_flow]

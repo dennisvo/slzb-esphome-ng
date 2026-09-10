@@ -9,7 +9,7 @@
 #
 # port_name = "zigbee"
 #
-# See docs/design.md Phase 1 item 5, docs/serial-proxy-inspection.md §2.
+# See docs/design.md Phase 1 item 5, docs/research/serial-proxy-inspection.md §2.
 
 serial_proxy:
   - id: sp_uart1

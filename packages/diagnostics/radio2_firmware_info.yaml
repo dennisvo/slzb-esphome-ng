@@ -1,0 +1,80 @@
+# packages/diagnostics/radio2_firmware_info.yaml
+#
+# Radio 2 (UART2) firmware version diagnostics.
+#
+# v1 shape: static metadata sensors from `radio2_*` substitutions +
+# `installed_firmware` populated by the `radio_probe` custom component.
+# For MR4U this is a spinel/rcp stub in v1 (publishes
+# "unknown (spinel probe not implemented in v1)"); the real Spinel probe
+# ships in v1.x per roadmap.md.
+#
+# Design authority: docs/v1-radio-firmware.md §§3, 5, 6c, 6d.
+#
+# Prerequisites: `packages/diagnostics/radio_probe_ext.yaml` must be
+# included in the device config (declares the external component) and
+# `hal_uart2` must expose the UART bus with id `hw_uart2`.
+
+radio_probe:
+  - id: radio2_probe
+    uart_id: ${radio2_uart_id}
+    chip: ${radio2_chip}
+    smlight_id: ${radio2_smlight_id}
+    protocol: ${radio2_protocol}
+    role: ${radio2_role}
+    firmware_channel: ${radio2_firmware_channel}
+    uart_baud: ${radio2_uart_baud}
+    installed_firmware:
+      name: "${friendly_name} Radio 2 installed firmware"
+      id: radio2_installed_firmware_sensor
+      entity_category: diagnostic
+
+text_sensor:
+  - platform: template
+    name: "${friendly_name} Radio 2 chip"
+    id: radio2_chip_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio2_chip}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 2 SMLIGHT id"
+    id: radio2_smlight_id_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio2_smlight_id}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 2 protocol"
+    id: radio2_protocol_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio2_protocol}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 2 role"
+    id: radio2_role_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio2_role}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 2 firmware channel"
+    id: radio2_firmware_channel_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio2_firmware_channel}"};
+    update_interval: never
+
+sensor:
+  - platform: template
+    name: "${friendly_name} Radio 2 UART baud"
+    id: radio2_uart_baud_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return ${radio2_uart_baud};
+    accuracy_decimals: 0
+    update_interval: never

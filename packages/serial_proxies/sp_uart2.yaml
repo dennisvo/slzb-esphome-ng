@@ -13,7 +13,7 @@
 #   esphome-hass://esphome/{entry_id}?port_name=thread
 #
 # See docs/design.md Phase 1 item 5 and §11, docs/hardware-map.md §5,
-# docs/serial-proxy-inspection.md §2.
+# docs/research/serial-proxy-inspection.md §2.
 
 serial_proxy:
   - id: sp_uart2

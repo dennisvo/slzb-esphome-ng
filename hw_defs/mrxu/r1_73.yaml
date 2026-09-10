@@ -87,6 +87,7 @@ substitutions:
   pin_uart1_cts: "GPIO15"
   pin_uart1_rts: "GPIO14"
   uart1_baud: 115200
+  uart1_hw_flow: false                # Default matches CC26 ZNP baseline; override in per-device hw_def when needed.
   uart1_default_port: 7638
 
   uart1_radio_name: CC26
@@ -105,6 +106,7 @@ substitutions:
   pin_uart2_cts: "GPIO11"
   pin_uart2_rts: "GPIO12"
   uart2_baud: 115200
+  uart2_hw_flow: false                # Default; override in per-device hw_def when the installed radio firmware requires HW FC.
   uart2_default_port: 6638
 
   uart2_radio_name: EFR32

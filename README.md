@@ -10,9 +10,11 @@
 
 ## What is this?
 
-This is an **alternative firmware** for the SMLIGHT network-attached coordinator family (SLZB-MR4U and the other supported boards listed below). It is a full replacement for the stock **SLZB-OS** firmware that ships on the device.
+This is an **alternative firmware** for SMLIGHT's family of network-attached ESP32 serial devices — the SLZB-… Zigbee / Thread / Z-Wave coordinators (SLZB-MR4U, SLZB-MRxU, SLZB-06/07, SLZB-Ultima) and the SLWF-09U USB-over-network gateway. It is a full replacement for the stock SMLIGHT firmware (**SLZB-OS** on the coordinators, the equivalent stock firmware on the SLWF).
 
-It is built on [ESPHome](https://esphome.io/) and is designed to be paired with [Home Assistant](https://www.home-assistant.io/): you flash it onto your coordinator once, adopt the device through HA's ESPHome integration, and point ZHA / OpenThread Border Router / Z-Wave JS at it over a single encrypted transport.
+All of these boards share the same underlying problem: they expose one or more serial streams (integrated radios on the SLZB family, whatever USB device is plugged into the SLWF) as plaintext TCP ports on the LAN. This firmware replaces that transport with the encrypted ESPHome Native API.
+
+It is built on [ESPHome](https://esphome.io/) and is designed to be paired with [Home Assistant](https://www.home-assistant.io/): you flash it onto the device once, adopt it through HA's ESPHome integration, and point ZHA / OpenThread Border Router / Z-Wave JS at it over a single encrypted transport.
 
 ## Why this fork exists
 
@@ -27,10 +29,19 @@ This fork replaces the transport with the **encrypted [ESPHome Native API](https
 
 ## What you get
 
-- Full functionality of your coordinator: **Zigbee (ZHA), Thread (OpenThread Border Router), Z-Wave JS**, and optional USB pass-through — all reachable from Home Assistant over one encrypted connection.
-- Home Assistant device entities for LEDs, buttons, buzzer / RTTTL, WS2812 effects, IR TX/RX, microphone sound level, and PoE / UPS / 4G-addon status — depending on which board you flash.
+- Full functionality of your coordinator: **Zigbee (ZHA), Thread (OpenThread Border Router), Z-Wave JS** — reachable from Home Assistant over one encrypted connection.
+- Home Assistant device entities for LEDs, buttons, buzzer / RTTTL, WS2812 effects, IR TX/RX, and PoE / UPS / 4G-addon status — depending on which board you flash.
 - Firmware updates over **password-protected OTA** through the ESPHome dashboard.
+- **Radio firmware version reported to Home Assistant (v1: CC26xx ZNP only).** Each radio publishes its installed firmware version as a diagnostic sensor. In v1 the **CC26xx ZNP probe is live** (returns the actual firmware version straight from the coordinator). **Spinel (EFR32 Thread), EZSP (EFR32 Zigbee) and Z-Wave sensors ship as stubs** that publish `"unknown (<protocol> probe not implemented in v1)"` until the real probes land in v1.x. A small HA template snippet reads SMLIGHT's public firmware catalog and shows an **"update available"** entity per radio, filtered by the `prod` / `dev` channel declared in your device YAML. Read-only; radio flashing itself is not part of v1.
 - Support for multiple boards from a single, structured codebase (see [Supported Devices](#supported-devices)): **ULTIMA**, **MRxU**, **06xU**, **SLWF-09U**.
+
+## Status at a glance
+
+This is a living project. High-level snapshot of where things stand — see [`docs/roadmap.md`](docs/roadmap.md) for the full plan with per-item status, deferred work, and explicit non-goals.
+
+- **Shipped in v1 (today):** encrypted `serial_proxy` transport for every radio UART (no plaintext TCP on the LAN); password-protected OTA; automatic DTR/RTS reset/bootloader entry driven by the flasher; CC26xx ZNP live firmware-version probe published to HA as a diagnostic sensor + optional HA template snippet that compares against SMLIGHT's public catalog for "update available" cards.
+- **In flight for v1.x (stubs today, real probes coming):** Spinel / EZSP / Z-Wave firmware-version probes (currently publish `"unknown (<protocol> probe not implemented in v1)"`); catalog-schema follow-ups surfaced by the first snapshot; auto-detect `prod`/`dev` channel from the running revision.
+- **Planned for v2:** flash radio firmware end-to-end from Home Assistant (HA add-on drives our ESP32 to reflash the radio over the Native API); HA `select` entities for radio `protocol` / `role` / `channel` that trigger real reflashes when you change them.
 
 ## How this firmware compares
 
@@ -46,23 +57,25 @@ Compared against the two SMLIGHT-supported firmwares — proprietary SLZB-OS and
 | Radio reset / bootloader entry | Manual HA switches wired to GPIO | Manual HA switches wired to GPIO | Automatic — the flasher's DTR/RTS are proxied to `nRESET` / `BOOT` |
 | Network ports exposed on the LAN | `:80`, `:6638`, `:7638`, `:8638`, … | `:6053` (plaintext API) plus `:6638`, `:7638`, `:8638` (plaintext `stream_server`) | Only `:6053` (ESPHome Native API, encrypted) |
 | Home Assistant integration | Per-radio `socket://ip:port` config | ESPHome device in HA, but radios still consumed via `socket://ip:port` | Adopted as a normal ESPHome device; radios addressed via `esphome-hass://…` URLs |
+| Radio firmware version visibility in HA | Vendor web UI shows it; nothing in HA | Not exposed | Boot-time probe per radio, published as diagnostic sensor over the Native API. Live in v1 for CC26xx ZNP only; Spinel / EZSP / Z-Wave are stub sensors reporting `"unknown (… not implemented in v1)"` until v1.x. Optional HA template snippet compares the live sensor against SMLIGHT's public catalog to flag updates for the channel (`prod`/`dev`) declared in device YAML |
+| Sound-reactive WS2812 effects (mic-driven) | Vendor implementation (Ultima only) | Enabled by default via third-party [`music_leds`](https://github.com/andrewjswan/esphome-components) / `fastled_helper` (WLED-derived FFT + FastLED pipeline) | Not shipped — SoC CPU / interrupt / timing budget is reserved for the radio UARTs (see [`docs/design.md §18`](docs/design.md)) |
 | Configuration model | Vendor-managed image | Open ESPHome YAML — extensible with sensors, buttons, automations, effects, etc. | Open ESPHome YAML — extensible with sensors, buttons, automations, effects, etc. |
 
 ## Trade-offs and downsides
 
-Being honest about what you give up compared to running the stock firmware (SLZB-OS):
+What you give up compared to running the stock firmware (SLZB-OS):
 
-- **Home Assistant is effectively required.** The Native API transport is designed around the HA ESPHome integration and the `esphome-hass://` URL scheme. If you want to run a coordinator standalone (no HA, or with a non-HA host such as Zigbee2MQTT on bare Linux talking to `socket://`), this firmware is not the right choice — stick with the stock SLZB-OS TCP model.
+- **Home Assistant is effectively required.** The Native API transport is designed around the HA ESPHome integration and the `esphome-hass://` URL scheme. If you want to run the device standalone (no HA, or with a non-HA host such as Zigbee2MQTT on bare Linux talking to `socket://`), this firmware is not the right choice — stick with the stock SMLIGHT firmware.
 - **Recent HA versions are required.** You need a Home Assistant version whose ESPHome integration supports `serial_proxy`, and ZHA / OTBR / Z-Wave JS versions that accept the `esphome-hass://` URL scheme.
 - **No built-in web admin UI.** SLZB-OS's HTTP dashboard (device info, radio mode switching, VPN config, etc.) is gone by design. Configuration lives in YAML and is applied by re-flashing; runtime state is exposed as normal HA entities.
-- **You build and flash the firmware yourself.** No pre-built binaries are published here; you compile with the ESPHome CLI or dashboard against this repo. This is the normal ESPHome workflow but is a shift from downloading a signed vendor image.
+- **You build and flash the firmware yourself.** No pre-built binaries are published here; you compile with the ESPHome CLI or dashboard against this repo. This is the normal ESPHome workflow but is a shift from downloading a consumer-ready vendor image.
 - **SLZB-OS-only features are not reproduced.** Vendor extras such as the built-in ZeroTier / WireGuard clients and the SMLIGHT cloud portal are not part of this firmware.
-- **Third-party fork, not SMLIGHT-supported.** SMLIGHT ships two supported firmware paths for the SLZB adapters: their proprietary SLZB-OS and their own upstream ESPHome build ([smlight-tech/slzb-esphome](https://github.com/smlight-tech/slzb-esphome)). This project is a security-hardened fork of the latter and is not the SMLIGHT-supported build. Before contacting SMLIGHT for anything hardware-related, reflash to one of the supported firmwares first (e.g. via the [SMLIGHT web flasher](https://smlight.tech/flasher/) or USB) so the conversation is about the hardware, not this fork.
+- **Third-party fork, not SMLIGHT-supported.** SMLIGHT ships two supported firmware paths for the SLZB adapters: their proprietary SLZB-OS and their own upstream ESPHome build ([smlight-tech/slzb-esphome](https://github.com/smlight-tech/slzb-esphome)). This project is a security-hardened fork of the latter and is not the SMLIGHT-supported build. Don't contact SMLIGHT for anything related to this custom firmware. Reflash to one of the supported firmwares first (e.g. via the [SMLIGHT web flasher](https://smlight.tech/flasher/) or USB) so the conversation is about the hardware, not this fork.
 
 ## Choose this firmware if…
 
-- You run Home Assistant and want your Zigbee / Thread / Z-Wave coordinator to stop broadcasting a plaintext serial port on your LAN.
-- You already treat the coordinator as "one more ESPHome node" and want to configure it like the rest of your ESPHome fleet.
+- You run Home Assistant and want your SMLIGHT device (SLZB coordinator or SLWF USB-over-network gateway) to stop broadcasting a plaintext serial port on your LAN.
+- You already treat the device as "one more ESPHome node" and want to configure it like the rest of your ESPHome fleet.
 - You are comfortable building and flashing ESPHome firmware.
 
 ## Stick with SLZB-OS if…
@@ -70,11 +83,6 @@ Being honest about what you give up compared to running the stock firmware (SLZB
 - You need the vendor web UI, cloud portal, or the built-in VPN clients.
 - You don't run Home Assistant, or your host software cannot use `esphome-hass://` URLs.
 - You want vendor support and a signed vendor firmware image.
-
----
-
-This repository contains a structured ESPHome project designed to support multiple devices and hardware revisions from a single, maintainable codebase.
-The architecture emphasizes clear separation between hardware definitions, low-level hardware handling, reusable logic, and device composition.
 
 ---
 
@@ -91,31 +99,12 @@ The radio UARTs are exposed to the network via [`oxan/esphome-stream-server`](ht
 | Radio UART transport | Plaintext TCP (`stream_server`) | Encrypted [ESPHome Native API](https://esphome.io/components/api.html) via [`serial_proxy`](https://esphome.io/components/serial_proxy.html) |
 | HA-side URL | `socket://<ip>:<port>` | `esphome-hass://esphome/{entry_id}?port_name=<zigbee\|thread\|zwave>` |
 | Auth | None (open TCP) | Pre-shared `api_encryption_key` (Noise / ChaCha20-Poly1305) |
-| Radio reset / bootloader entry | HA switches writing GPIO | Automatic — `serial_proxy` drives `dtr_pin` (nRESET) and `rts_pin` (bootloader) from the client's DTR/RTS modem-control signals (matches `zigpy-znp`, `universal-silabs-flasher`, `bellows`, `zwave-js`) |
+| Radio reset / bootloader entry | HA switches writing GPIO | Automatic — `serial_proxy` drives `dtr_pin` (nRESET) and `rts_pin` (bootloader) from the client's DTR/RTS modem-control signals |
 | OTA | Unauthenticated | Password-protected (`ota_password`) |
-| USB pass-through (`packages/usb/usb_uart.yaml`) | Plaintext TCP `:9638` | `serial_proxy` (port name `usb`) — no plaintext port even for the future USB-host variant |
+| USB pass-through (`packages/usb/usb_uart.yaml`) | Plaintext TCP `:9638` | `serial_proxy` (port name `usb`) — package exists but is not `!include`d by any shipping device build in v1 |
+| Radio firmware version reporting | Not exposed to HA | One-shot boot-time probe per radio (ZNP live for CC26xx in v1; Spinel / EZSP / Z-Wave stubs until v1.x); diagnostic sensors + HA template snippet vs. SMLIGHT's public catalog. See [`docs/ha-integrations/`](docs/ha-integrations/) |
 
-### What is preserved
-
-- All hardware definitions, HAL packages, LEDs / buttons / buzzer / IR / WS2812 / microphone logic.
-- All supported devices (ULTIMA, MRxU, 06xU, SLWF-09U).
-- The device-composition-driven build model.
-
-### What is removed
-
-- `packages/stream_servers/` (whole directory)
-- `packages/external_components/stream_server.yaml` — `serial_proxy` is a first-class ESPHome component, no external source needed
-- `packages/buses/uarts/uart_ctrl/` (whole directory) — the per-radio `RST` / `FLASH` GPIO-switch wrappers. Their function is now performed automatically by `serial_proxy` on behalf of the connected client.
-
-### HA-side entity changes
-
-Per-radio, the following Home Assistant entities are **no longer created**:
-
-- `<friendly> <radio> RST` switch
-- `<friendly> <radio> FLASH` switch
-- `<friendly> <radio> TCP Connected` binary_sensor
-
-Manual radio reset from the HA dashboard is not required in normal operation — the flasher / integration handles DTR/RTS itself over the Native API.
+For the full delta reference — everything preserved, removed, disabled-by-default, and no-longer-exposed as HA entities, with rationale — see [`docs/design.md §30 Delta from upstream`](docs/design.md).
 
 ### Setup
 
@@ -191,7 +180,7 @@ Each root file is a one-line `!include devices/*.yaml`; the full tree (`devices/
 
 1. In Home Assistant, add the device via **ESPHome integration** using the same `api_encryption_key`.
 2. In ZHA / OTBR / Z-Wave JS, use the URL:
-   `esphome-hass://esphome/{entry_id}?port_name=zigbee` (or `thread` / `zwave` / `usb`).
+   `esphome-hass://esphome/{entry_id}?port_name=zigbee` (or `thread` / `zwave`, depending on which radio the integration is talking to).
 
    `{entry_id}` is the ESPHome config-entry id — visible under **Settings → Devices & Services → ESPHome → (your device)**.
 
@@ -199,7 +188,7 @@ Each root file is a one-line `!include devices/*.yaml`; the full tree (`devices/
 
 ## Project structure
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full layout, layer responsibilities, pin-abstraction rules, and instructions for adding a new device.
+See [`docs/architecture.md`](docs/architecture.md) for the full layout, layer responsibilities, pin-abstraction rules, and instructions for adding a new device.
 
 Short version: `mr4u-r1-73.yaml` (and its four siblings) are one-line entry points that `!include devices/*.yaml`. Devices compose `packages/*.yaml`, which are parameterized by substitutions defined once in `hw_defs/`.
 
@@ -220,7 +209,6 @@ Short version: `mr4u-r1-73.yaml` (and its four siblings) are one-line entry poin
 | **Buzzer** | Yes | - | - | - |
 | **IR TX** | Yes | - | - | - |
 | **IR RX** | Yes | - | - | - |
-| **Microphone** | Yes (I2S) | - | - | Yes (I2S) |
 | **UPS I2C** | Yes | - | - | - |
 | **I2C Expander** | Yes | - | - | - |
 | **4G/LTE Addon** | Yes | - | - | - |
@@ -229,147 +217,6 @@ Short version: `mr4u-r1-73.yaml` (and its four siblings) are one-line entry poin
 
 ---
 
-## Usage Examples
+## Usage examples
 
-### Buzzer / RTTTL Melodies
-
-Devices with a buzzer (e.g., Ultima) support RTTTL melody playback. You can play melodies from Home Assistant.
-
-**Play a custom RTTTL melody:**
-```yaml
-service: esphome.<device_name>_rtttl_input_set
-data:
-  value: "mario:d=4,o=5,b=100:16e6,16e6,32p,8e6,16c6,8e6,8g6,8p,8g"
-```
-
-**Play a preset melody:**
-```yaml
-service: esphome.<device_name>_rtttl_preset_set
-data:
-  option: "Doorbell"
-```
-
-Available presets: `Doorbell`, `Notification`, `Alert`, `Success`, `Error`, `Mario`, `Zelda`, `Pacman`, `Star Wars`, `Nokia`
-
-**RTTTL Format:**
-```
-name:d=duration,o=octave,b=bpm:notes
-```
-
-**Resources for RTTTL melodies:**
-- [PICAXE RTTTL Collection](https://picaxe.com/rtttl-ringtones-for-tune-command/)
-- [Online RTTTL Player/Editor](https://adamonsoon.github.io/rtttl-play/)
-
----
-
-### WS2812 LED Effects
-
-Devices with WS2812 LEDs (e.g., Ultima) support various light effects controllable from Home Assistant.
-
-**RMT symbol buffer (advanced):**
-
-The WS2812 driver uses the ESP32-S3 RMT peripheral. The TX symbol pool is shared with the IR transmitter (192 symbols total across 4 channels). The default allocation is 96 symbols for WS2812 and 96 for IR TX. If you are not using IR and want to allocate more symbols to WS2812, override the substitution in your device YAML:
-
-```yaml
-substitutions:
-  ws2812_rmt_symbols: "192"   # increase only if IR TX is disabled
-  ir_tx_rmt_symbols: "0"      # set to 0 if not used
-```
-
-**Turn on with effect:**
-```yaml
-service: light.turn_on
-target:
-  entity_id: light.<device_name>_ws2812
-data:
-  effect: "Rainbow"
-```
-
-**Available effects:**
-
-| Category | Effects |
-|----------|---------|
-| Common | Rainbow, Color Wipe, Scan, Twinkle, Random Twinkle, Fireworks, Flicker, Pulse, Strobe |
-| Lambda | Fire, FastLED Fire, Confetti, Candy Cane, Meteor, Running Lights, Breathing RGB, Color Chase, Sparkle, Christmas |
-| Music Reactive | Music: Grav, Music: Gravicenter, Music: Pixels, Music: DJ Light, Music: Waterfall, and more |
-
-**Quick presets via dropdown:**
-```yaml
-service: esphome.<device_name>_ws2812_preset_set
-data:
-  option: "Rainbow"
-```
-
-Available presets:
-
-| Category | Presets |
-|----------|---------|
-| Solid Colors | White, Warm White, Red, Green, Blue, Purple, Cyan, Orange |
-| Moods | Night Light, Cozy |
-| Effects | Rainbow, Fire, Twinkle, Confetti, Party, Christmas |
-| Alerts | Alert |
-
-**Note:** Music reactive effects require the microphone to be enabled via the "Mic Enabled" switch.
-
-**Short notification blinks (status indicators):**
-```yaml
-service: esphome.<device_name>_ws2812_notify_set
-data:
-  option: "OK"
-```
-
-| Notification | Color | Pattern |
-|--------------|-------|---------|
-| OK | Green | Double blink |
-| Warning | Orange | Triple blink |
-| Error | Red | Rapid 5x blink |
-| Info | Blue | Single long blink |
-| Busy | Yellow | Fade out |
-| Ready | Cyan | Pulse up then off |
-| Attention | Magenta | Double flash |
-| Boot | White | Sweep fade |
-
----
-
-### Microphone / Sound Level
-
-Devices with a microphone (e.g., Ultima) expose sound level sensors.
-
-**Enable microphone:**
-```yaml
-service: switch.turn_on
-target:
-  entity_id: switch.<device_name>_mic_enabled
-```
-
-**Sensors available:**
-- `sensor.<device_name>_mic_rms` - RMS sound level
-- `sensor.<device_name>_mic_peak` - Peak sound level
-
-**Warning:** The microphone consumes a lot of CPU and memory resources. It is not recommended to use it simultaneously with Zigbee/Thread/Z-Wave UART-to-Ethernet connections, as it may cause instability or packet loss on those interfaces.
-
----
-
-### IR Remote (Transmit)
-
-Devices with IR transmitter can send IR codes to control TVs, ACs, etc.
-
-**Send a raw IR code:**
-```yaml
-service: esphome.<device_name>_ir_send
-data:
-  code: "0x20DF10EF"  # Example: LG TV Power
-```
-
-Check `libraries/ir/codes/` for available IR code packs.
-
-**RMT symbol buffer (advanced):**
-
-The IR transmitter and WS2812 share the ESP32-S3 RMT TX symbol pool (192 symbols total). Defaults are 96 each. Override in your device YAML if needed:
-
-```yaml
-substitutions:
-  ir_tx_rmt_symbols: "128"    # increase if WS2812 is not used
-  ir_rx_rmt_symbols: "96"     # RX pool is independent (192 symbols total)
-  ws2812_rmt_symbols: "64"    # reduce if giving more to IR TX
-```
+See [`docs/usage.md`](docs/usage.md) for the full feature cookbook — buzzer / RTTTL melodies, WS2812 LED effects and presets, and IR transmit examples — including RMT symbol buffer overrides for boards that share the pool between IR TX and WS2812.

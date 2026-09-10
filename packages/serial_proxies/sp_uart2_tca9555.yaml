@@ -9,7 +9,7 @@
 #
 # port_name = "thread"
 #
-# See docs/design.md Phase 1 item 5 and §11, docs/serial-proxy-inspection.md §2.
+# See docs/design.md Phase 1 item 5 and §11, docs/research/serial-proxy-inspection.md §2.
 
 serial_proxy:
   - id: sp_uart2

@@ -1,5 +1,25 @@
+# packages/buses/uarts/uart1_hwfc.yaml
+#
+# UART1 (Radio 1) with optional hardware flow control.
+#
+# The `uart:` block declares TX/RX only — upstream ESPHome exposes no YAML
+# for classic CTS/RTS handshake. Our fork-local `uart_hw_flow:` block
+# (custom component, see components/uart_hw_flow/) reaches into the
+# ESP-IDF UART driver to enable it when ${uart1_hw_flow} is true.
+#
+# Prerequisites: `packages/buses/uarts/uart_hw_flow_ext.yaml` must be
+# included once by the device before this file.
+#
+# See docs/v1-design.md §5.
+
 uart:
   - id: hw_uart1
     tx_pin: ${pin_uart1_tx}
     rx_pin: ${pin_uart1_rx}
     baud_rate: ${uart1_baud}
+
+uart_hw_flow:
+  - uart_id: hw_uart1
+    cts_pin: ${pin_uart1_cts}
+    rts_pin: ${pin_uart1_rts}
+    enabled: ${uart1_hw_flow}

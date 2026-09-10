@@ -1,9 +1,19 @@
-# packages/base/bluetooth.yaml
+# packages/bluetooth/bluetooth.yaml
+#
+# OPT-IN. Not !include'd by any shipping device build in v1.
+# See docs/development-considerations.md §11.3 for the rationale.
+#
+# BLE on the ESP32-S3 shares CPU, interrupts and the RF frontend with
+# `serial_proxy`'s radio UART loops. Aggressive scanning and an active GATT
+# proxy starve those loops and produce intermittent byte drops on 115200–
+# 460800-baud Zigbee / Thread / Z-Wave streams. Defaults below are deliberately
+# tame so opt-in users do not lose radio-transport reliability. Only raise
+# these values after validating against your own workload.
 esp32_ble_tracker:
   scan_parameters:
-    interval: 1100ms
-    window: 1100ms
-    active: true
+    interval: 320ms
+    window: 30ms        # ~10% duty cycle (30 / 320)
+    active: false       # passive scan only — no probe-request TX
 
 bluetooth_proxy:
-  active: true
+  active: false         # advertise/observe only — no live GATT proxy connections

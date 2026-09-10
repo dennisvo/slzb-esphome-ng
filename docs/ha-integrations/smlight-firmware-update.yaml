@@ -1,0 +1,123 @@
+# Home Assistant integration snippet — SMLIGHT radio firmware update entity
+#
+# One-file drop-in for `configuration.yaml` (or as a HA `packages/` entry).
+# Ships one update entity per (device, radio) pair by joining:
+#
+#   1. The ESPHome device's per-radio diagnostic sensors (chip, smlight_id,
+#      protocol, role, firmware_channel, uart_baud, installed_firmware).
+#   2. SMLIGHT's public firmware catalog fetched via `rest:`.
+#
+# See docs/v1-radio-firmware.md §§4, 5, 7 for the design.
+#
+# Usage:
+#   1. Copy the `rest:` block below into your HA config once. It's device-
+#      independent — a single `rest:` sensor caches the catalog for all
+#      SMLIGHT devices on your network.
+#   2. For each (device, radio) you want an update card for, copy one
+#      `- update:` block from the `template:` section and replace the
+#      three `!DEVICE_SLUG!` markers with your ESPHome device slug (the
+#      lowercase name of the device in HA, e.g. `mr4u_r1_73`, `ultima_r1_04`),
+#      and `!RADIO!` with `radio_1`, `radio_2`, or `radio_3` as needed.
+#   3. See `README.md` in this directory for recorder-exclusion tuning
+#      and per-radio v1 coverage caveats.
+
+rest:
+  - resource: https://updates.smlight.tech/services/api/slzb-06x-ota.php?type=ZB&format=slzb
+    scan_interval: 86400        # once per day
+    timeout: 15
+    sensor:
+      - name: SMLIGHT firmware catalog raw
+        unique_id: smlight_fw_catalog_raw
+        value_template: "ok"
+        json_attributes_path: "$"
+        # SMLIGHT chip catalog ids we care about — see v1-radio-firmware.md §2.
+        json_attributes:
+          ["0", "1", "2", "3", "4", "5",
+           "12", "13", "16", "17", "18", "21", "23",
+           "65", "66", "67", "68", "69", "70", "91"]
+
+template:
+  # -------------------------------------------------------------------
+  # Copy this block per (device, radio) and edit the two placeholder
+  # tokens. The template body itself is generic — it looks up SMLIGHT's
+  # catalog by the chip id, firmware type (derived from `role`), baud,
+  # and channel that the ESPHome device already publishes.
+  # -------------------------------------------------------------------
+  - update:
+      - name: "!DEVICE_SLUG! !RADIO! firmware"
+        unique_id: "!DEVICE_SLUG!_!RADIO!_firmware_update"
+
+        # Installed version — the ESPHome device's live-probed value.
+        # ZNP publishes YYYYMMDD; unimplemented probes publish
+        # "unknown (…)" which HA renders as no-op (see availability).
+        installed_version: >
+          {{ states('sensor.!DEVICE_SLUG!_!RADIO!_installed_firmware') }}
+
+        # Suppress the update card entirely when installed_firmware is
+        # "unknown …" (v1 stub) or "unavailable" (device offline).
+        availability: >
+          {% set inst = states('sensor.!DEVICE_SLUG!_!RADIO!_installed_firmware') %}
+          {{ inst not in ('unknown', 'unavailable', 'none')
+             and not inst.startswith('unknown (') }}
+
+        # Latest available — filter SMLIGHT catalog by chip → SMLIGHT
+        # type (derived from role) → baud → channel (dev vs prod).
+        latest_version: >
+          {% set chip    = states('sensor.!DEVICE_SLUG!_!RADIO!_smlight_id') %}
+          {% set role    = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
+          {% set channel = states('sensor.!DEVICE_SLUG!_!RADIO!_firmware_channel') %}
+          {% set baud    = states('sensor.!DEVICE_SLUG!_!RADIO!_uart_baud') | int(0) %}
+          {# role → SMLIGHT catalog "type" (see v1-radio-firmware.md §6f) #}
+          {% set ftype = {'coord': '0', 'router': '1', 'rcp': '2', 'ncp': '2'}[role]
+                        if role in ['coord', 'router', 'rcp', 'ncp'] else '' %}
+          {% set entries = state_attr('sensor.smlight_firmware_catalog_raw', chip) or [] %}
+          {% set want_prod = channel == 'prod' %}
+          {% set match = entries
+                | selectattr('type', 'eq', ftype)
+                | selectattr('prod', 'eq', want_prod)
+                | selectattr('baud', 'eq', baud)
+                | list %}
+          {{ match[0].rev if match
+             else states('sensor.!DEVICE_SLUG!_!RADIO!_installed_firmware') }}
+
+        release_summary: >
+          {% set chip    = states('sensor.!DEVICE_SLUG!_!RADIO!_smlight_id') %}
+          {% set role    = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
+          {% set channel = states('sensor.!DEVICE_SLUG!_!RADIO!_firmware_channel') %}
+          {% set baud    = states('sensor.!DEVICE_SLUG!_!RADIO!_uart_baud') | int(0) %}
+          {% set ftype = {'coord': '0', 'router': '1', 'rcp': '2', 'ncp': '2'}[role]
+                        if role in ['coord', 'router', 'rcp', 'ncp'] else '' %}
+          {% set entries = state_attr('sensor.smlight_firmware_catalog_raw', chip) or [] %}
+          {% set want_prod = channel == 'prod' %}
+          {% set match = entries
+                | selectattr('type', 'eq', ftype)
+                | selectattr('prod', 'eq', want_prod)
+                | selectattr('baud', 'eq', baud)
+                | list %}
+          {{ match[0].notes if match else '' }}
+
+        release_url: >
+          {% set chip    = states('sensor.!DEVICE_SLUG!_!RADIO!_smlight_id') %}
+          {% set role    = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
+          {% set channel = states('sensor.!DEVICE_SLUG!_!RADIO!_firmware_channel') %}
+          {% set baud    = states('sensor.!DEVICE_SLUG!_!RADIO!_uart_baud') | int(0) %}
+          {% set ftype = {'coord': '0', 'router': '1', 'rcp': '2', 'ncp': '2'}[role]
+                        if role in ['coord', 'router', 'rcp', 'ncp'] else '' %}
+          {% set entries = state_attr('sensor.smlight_firmware_catalog_raw', chip) or [] %}
+          {% set want_prod = channel == 'prod' %}
+          {% set match = entries
+                | selectattr('type', 'eq', ftype)
+                | selectattr('prod', 'eq', want_prod)
+                | selectattr('baud', 'eq', baud)
+                | list %}
+          {{ match[0].link if match else '' }}
+
+        entity_picture: https://smlight.tech/wp-content/uploads/2024/06/logo.png
+
+# Recommended: exclude the raw catalog sensor from recorder — the ~15 KB
+# json_attributes payload is fine functionally but pollutes history DB.
+#
+# recorder:
+#   exclude:
+#     entities:
+#       - sensor.smlight_firmware_catalog_raw

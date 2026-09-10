@@ -21,7 +21,11 @@ psram:
   mode: ${esp32_psram_mode}
   speed: ${esp32_psram_speed}  
 
+# INFO by default — DEBUG-level logging at the ESPHome loop level is expensive
+# when the loop is also servicing `serial_proxy` bytes for the radio UARTs.
+# Override in a device file (or via substitution) for dev builds.
 logger:
+  level: INFO
 
 api:
   encryption:

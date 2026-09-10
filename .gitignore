@@ -5,10 +5,17 @@
 /secrets.yaml
 
 # --- local-only working files (slzb-esphome-ng variant) ---
-# Private design document — do not publish
-/docs/design.md
-# Menu / UI analysis notes derived from the private screenshots — do not publish
-/docs/slzb-os-menu-analysis.md
+# Private appendices — do not publish
+/docs/design-private.md
+/docs/research/
 
-# Local reference material (SLZB-OS UI screenshots, not for publication)
-/slzb-os screenshots/
+# Mirrored SLZB-OS web UI (not for publication)
+/web-os/
+
+
+# Personal per-device configs (e.g. mr4u-local.yaml). Never committed.
+/*-local.yaml
+
+# Python bytecode from external components
+__pycache__/
+*.pyc

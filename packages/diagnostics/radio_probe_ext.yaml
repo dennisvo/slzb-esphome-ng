@@ -1,0 +1,15 @@
+# packages/diagnostics/radio_probe_ext.yaml
+#
+# Declares the `radio_probe` custom component as an external component.
+#
+# Include this once per device before any `packages/diagnostics/radioN_firmware_info.yaml`.
+# The per-radio packages register `radio_probe:` entries but assume this
+# declaration has already happened.
+#
+# See docs/v1-radio-firmware.md §5 for the shipping form.
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [radio_probe]

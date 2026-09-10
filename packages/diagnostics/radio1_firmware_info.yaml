@@ -1,0 +1,79 @@
+# packages/diagnostics/radio1_firmware_info.yaml
+#
+# Publishes v1 radio firmware version diagnostics for Radio 1 (UART1):
+#   - Static metadata sourced from `hw_defs/**` substitutions (chip,
+#     smlight_id, protocol, role, firmware_channel, uart_baud).
+#   - Live-probed `installed_firmware` filled at boot by the `radio_probe`
+#     custom component. Value is a decimal YYYYMMDD string for ZNP, or
+#     "unknown (<reason>)" for stubs / failures.
+#
+# Design authority: docs/v1-radio-firmware.md §§3, 5, 6a, 6d.
+#
+# Prerequisites: `packages/diagnostics/radio_probe_ext.yaml` must be
+# included first (declares the external component) and `hal_uart1` must
+# expose the UART bus with id `hw_uart1`.
+
+radio_probe:
+  - id: radio1_probe
+    uart_id: ${radio1_uart_id}
+    chip: ${radio1_chip}
+    smlight_id: ${radio1_smlight_id}
+    protocol: ${radio1_protocol}
+    role: ${radio1_role}
+    firmware_channel: ${radio1_firmware_channel}
+    uart_baud: ${radio1_uart_baud}
+    installed_firmware:
+      name: "${friendly_name} Radio 1 installed firmware"
+      id: radio1_installed_firmware_sensor
+      entity_category: diagnostic
+
+text_sensor:
+  - platform: template
+    name: "${friendly_name} Radio 1 chip"
+    id: radio1_chip_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio1_chip}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 1 SMLIGHT id"
+    id: radio1_smlight_id_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio1_smlight_id}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 1 protocol"
+    id: radio1_protocol_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio1_protocol}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 1 role"
+    id: radio1_role_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio1_role}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 1 firmware channel"
+    id: radio1_firmware_channel_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio1_firmware_channel}"};
+    update_interval: never
+
+sensor:
+  - platform: template
+    name: "${friendly_name} Radio 1 UART baud"
+    id: radio1_uart_baud_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return ${radio1_uart_baud};
+    accuracy_decimals: 0
+    update_interval: never

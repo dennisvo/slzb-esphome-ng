@@ -157,11 +157,6 @@ substitutions:
   pin_i2s_sclk: "GPIO45"
   pin_i2s_sdata: "GPIO18"
 
-  # Mic addon pinouts
-  pin_mic_sc: "GPIO36"
-  pin_mic_ws: "GPIO37"
-  pin_mic_sd: "GPIO38"
-
 
   # ==========================================================
   # UART1 (pins + TCA control lines)
@@ -171,6 +166,7 @@ substitutions:
   pin_uart1_cts: "GPIO41"
   pin_uart1_rts: "GPIO42"
   uart1_baud: 115200
+  uart1_hw_flow: false                # Default; flip when installed radio firmware advertises hwFlow.
   uart1_default_port: 7638
   
   uart1_radio_name: CC26
@@ -181,6 +177,16 @@ substitutions:
   tca_uart1_rst_num: 4                # UART1 RESET control via TCA9555
   uart1_rst_inverted: true
 
+  # Radio 1 identity for the v1 firmware-version probe.
+  # See docs/v1-radio-firmware.md §§3, 6g.
+  radio1_chip: cc2674p10
+  radio1_smlight_id: "70"
+  radio1_protocol: znp
+  radio1_role: coord
+  radio1_firmware_channel: dev
+  radio1_uart_id: hw_uart1
+  radio1_uart_baud: 115200
+
 
   # ==========================================================
   # UART2 (pins + TCA control lines)
@@ -190,6 +196,7 @@ substitutions:
   pin_uart2_cts: "GPIO12"
   pin_uart2_rts: "GPIO13"
   uart2_baud: 115200
+  uart2_hw_flow: false                # Default; flip when installed radio firmware advertises hwFlow.
   uart2_default_port: 6638
 
   uart2_radio_name: EFR32
@@ -200,6 +207,15 @@ substitutions:
   tca_uart2_rst_num: 8
   uart2_rst_inverted: true
 
+  # Radio 2 identity (v1 stub — Spinel probe ships in v1.x).
+  radio2_chip: efr32mg26
+  radio2_smlight_id: "68"
+  radio2_protocol: spinel
+  radio2_role: rcp
+  radio2_firmware_channel: dev
+  radio2_uart_id: hw_uart2
+  radio2_uart_baud: 115200
+
 
   # ==========================================================
   # UART3 (pins + TCA control lines)
@@ -209,6 +225,7 @@ substitutions:
   pin_uart3_cts: "GPIO17"
   pin_uart3_rts: "GPIO16"
   uart3_baud: 115200
+  uart3_hw_flow: false                # ZW800 Z-Wave; catalog does not advertise hwFlow. Default off.
   uart3_default_port: 8638
   
   uart3_radio_name: ZW-800
@@ -218,4 +235,15 @@ substitutions:
 
   tca_uart3_rst_num: 1
   uart3_rst_inverted: true
+
+  # Radio 3 identity (v1 stub — Z-Wave probe ships in v1.x/v2).
+  # smlight_id is intentionally empty: ZW-800 firmware is not in the
+  # SMLIGHT ZB catalog (see docs/v1-radio-firmware.md §6f).
+  radio3_chip: zw800
+  radio3_smlight_id: ""
+  radio3_protocol: zwave
+  radio3_role: primary_ctrl
+  radio3_firmware_channel: dev
+  radio3_uart_id: hw_uart3
+  radio3_uart_baud: 115200
 

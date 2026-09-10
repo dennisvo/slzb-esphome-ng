@@ -12,7 +12,17 @@ packages:
   ############################################################
   platform_core: !include ../packages/core/core.yaml
   platform_diag: !include ../packages/diagnostics/diagnostics.yaml
-  platform_ble:  !include ../packages/bluetooth/bluetooth.yaml
+  # BLE proxy is off by default — it shares CPU / interrupts / RF frontend
+  # with the radio UART loops. Uncomment to opt in; see
+  # docs/development-considerations.md §11.3.
+  # platform_ble:  !include ../packages/bluetooth/bluetooth.yaml
+
+  # --- Radio firmware version diagnostics (v1) ---
+  # `radio_probe_ext` declares the custom component; the per-radio packages
+  # attach probe instances + template sensors. See docs/v1-radio-firmware.md.
+  platform_radio_probe_ext: !include ../packages/diagnostics/radio_probe_ext.yaml
+  platform_radio1_fw_info:  !include ../packages/diagnostics/radio1_firmware_info.yaml
+  platform_radio2_fw_info:  !include ../packages/diagnostics/radio2_firmware_info.yaml
   # NOTE (slzb-esphome-ng fork): `stream_server` and its per-UART bridges are
   # replaced by `serial_proxy` instances tunnelled through the encrypted Native
   # API. See docs/design.md §7 and Phase 1.
@@ -26,6 +36,11 @@ packages:
 
   # --- I2C Bus ---
   hal_i2c: !include ../packages/buses/i2c.yaml
+
+  # --- UART HW flow control ext (fork-local custom component) ---
+  # Declares components/uart_hw_flow/ so the uartN_hwfc.yaml packages can
+  # register per-UART flow-control instances. See docs/v1-design.md §5.
+  platform_uart_hw_flow_ext: !include ../packages/buses/uarts/uart_hw_flow_ext.yaml
 
   # --- UART buses (with HW flow control) ---
   hal_uart1: !include ../packages/buses/uarts/uart1_hwfc.yaml

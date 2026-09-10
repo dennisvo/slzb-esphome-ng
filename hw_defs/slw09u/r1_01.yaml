@@ -67,20 +67,11 @@ substitutions:
   poe_to_usb_power_inverted: false
 
   # ==========================================================
-  # WS2812B / Addressable LEDs (WLED)
+  # WS2812B / Addressable LEDs
   # ==========================================================
   # LED power line switch (turns on/off VCC to LEDs)
   pin_led_power: "GPIO48"
   led_power_inverted: false
-
-  # ==========================================================
-  # Microphone (ICS-41414 Digital Mic)
-  # ==========================================================
-  # Note: pin_mic_sc (GPIO16) shares with pin_w5500_int
-  #       Use only one feature at a time if conflict occurs
-  pin_mic_ws: "GPIO15"
-  pin_mic_sc: "GPIO16"
-  pin_mic_sd: "GPIO17"
 
   # ==========================================================
   # I2S Audio Output (3.5mm Jack)

@@ -1,0 +1,80 @@
+# packages/diagnostics/radio3_firmware_info.yaml
+#
+# Radio 3 (UART3) firmware version diagnostics. Used by Ultima's ZW-800
+# Z-Wave controller.
+#
+# v1 shape: static metadata sensors + `installed_firmware` populated by
+# the `radio_probe` custom component. v1 ships a Z-Wave stub (publishes
+# "unknown (zwave probe not implemented in v1)"); the real Z-Wave Serial
+# API probe ships in v1.x/v2 per roadmap.md.
+#
+# Design authority: docs/v1-radio-firmware.md §§3, 5, 6d, 6f.
+#
+# Prerequisites: `packages/diagnostics/radio_probe_ext.yaml` must be
+# included in the device config and `hal_uart3` must expose the UART bus
+# with id `hw_uart3`.
+
+radio_probe:
+  - id: radio3_probe
+    uart_id: ${radio3_uart_id}
+    chip: ${radio3_chip}
+    smlight_id: ${radio3_smlight_id}
+    protocol: ${radio3_protocol}
+    role: ${radio3_role}
+    firmware_channel: ${radio3_firmware_channel}
+    uart_baud: ${radio3_uart_baud}
+    installed_firmware:
+      name: "${friendly_name} Radio 3 installed firmware"
+      id: radio3_installed_firmware_sensor
+      entity_category: diagnostic
+
+text_sensor:
+  - platform: template
+    name: "${friendly_name} Radio 3 chip"
+    id: radio3_chip_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio3_chip}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 3 SMLIGHT id"
+    id: radio3_smlight_id_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio3_smlight_id}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 3 protocol"
+    id: radio3_protocol_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio3_protocol}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 3 role"
+    id: radio3_role_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio3_role}"};
+    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 3 firmware channel"
+    id: radio3_firmware_channel_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return {"${radio3_firmware_channel}"};
+    update_interval: never
+
+sensor:
+  - platform: template
+    name: "${friendly_name} Radio 3 UART baud"
+    id: radio3_uart_baud_sensor
+    entity_category: diagnostic
+    lambda: |-
+      return ${radio3_uart_baud};
+    accuracy_decimals: 0
+    update_interval: never

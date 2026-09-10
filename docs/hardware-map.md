@@ -1,13 +1,12 @@
 # Hardware map — SLZB-MR4U (rev 1.73)
 
-**Phase 0.1 inspection artifact.**
-This document is the ground-truth reference for the MR4U hardware surface as declared in the current upstream firmware.
-Every pin, port, and configuration value here is copied from actual source files — nothing is inferred or assumed.
-When a value is *not* present or *does not do what its name implies*, that is called out explicitly.
+Current-state reference for the MR4U hardware surface: pins, radios, and network exposure, together with how this fork's package tree wires them.
+Every value here is copied directly from `hw_defs/**` and `packages/**` in this repo.
+Where upstream (`smlight-tech/slzb-esphome`) does something different, the difference is called out inline.
 
 | Field | Value |
 |---|---|
-| Reflects upstream commit | `3397f6f` — *Merge pull request #4 from robelmes/fix/esphome-2026-warnings* (2026-06-13) |
+| Upstream reference commit | `3397f6f` — *Merge pull request #4 from robelmes/fix/esphome-2026-warnings* (2026-06-13) — the commit this fork was branched from |
 | Upstream source | https://github.com/smlight-tech/slzb-esphome |
 | Board | SLZB-MR4U rev 1.73 |
 | Root YAML | `mr4u-r1-73.yaml` → `devices/mr4u_r1_73.yaml` |
@@ -28,9 +27,9 @@ Although this hardware map documents the MR4U in detail (because it is our refer
 
 **Support levels defined:**
 
-- **✓ Full, tested**: MR4U only. Firmware built, flashed, and reliability-tested in Phases 3 and 5.
-- **✓ Full, expected-to-work-by-construction**: ULTIMA, MRxU siblings, 06xU. Same shared packages, same architecture. Not personally validated. Users of these boards contribute test evidence.
-- **Partial**: SLWF-09U. Encryption/password improvements apply but the raison d'être of this fork (secure Zigbee/Thread radio transport) doesn't.
+- **✓ Full, tested**: MR4U only. Reference test hardware — firmware built, flashed, and validated here first.
+- **✓ Full, expected-to-work-by-construction**: ULTIMA, MRxU siblings, 06xU. Same shared packages, same architecture. Not personally validated on physical hardware; user test reports welcome.
+- **Partial**: SLWF-09U. Native API encryption and password-protected OTA apply, but the fork's core purpose (secure Zigbee/Thread radio transport) doesn't — there are no radios to protect.
 
 The rest of this document uses MR4U as the concrete example throughout. Where a pin or port is specific to MR4U (as opposed to shared MRxU family or generic SMLIGHT convention), that is called out.
 
@@ -104,7 +103,7 @@ Sorted by GPIO number. All values pulled from `hw_defs/mrxu/mr4u_r1_73.yaml`.
 
 ## 4. Radio 1 — CC26 (Zigbee / Thread on TI CC2674P10)
 
-Declared in `hw_defs/mrxu/mr4u_r1_73.yaml` under the "UART1" heading.
+Declared in `hw_defs/mrxu/mr4u_r1_73.yaml` under the "UART1" heading. The table below records the physical wiring and the upstream `stream_server` bridge on port 7638. This fork replaces that bridge with a `serial_proxy` instance carried over the encrypted Native API; port 7638 is not exposed. See [design.md](design.md) for the transport model.
 
 | Aspect | Value | Source |
 |---|---|---|
@@ -119,11 +118,11 @@ Declared in `hw_defs/mrxu/mr4u_r1_73.yaml` under the "UART1" heading.
 | **Current TCP exposure** | Port **7638**, plaintext | `packages/stream_servers/ss_uart1.yaml` + `uart1_default_port: 7638` |
 | Stream server implementation | `oxan/esphome-stream-server` external component | `packages/external_components/stream_server.yaml` |
 
-The runtime behavior today: any host on the same L2 segment as the MR4U can `nc <mr4u-ip> 7638` and get a raw bidirectional pipe to the CC26 UART with no authentication and no encryption. This is what design doc §2 identifies as the primary attack surface.
+The runtime behavior of upstream on port 7638: any host on the same L2 segment as the MR4U can `nc <mr4u-ip> 7638` and get a raw bidirectional pipe to the CC26 UART with no authentication and no encryption. This is the primary attack surface this fork removes; see [design.md](design.md) §2.
 
 ## 5. Radio 2 — EFR32 (Zigbee / Thread on Silicon Labs EFR32MG26)
 
-Declared in `hw_defs/mrxu/mr4u_r1_73.yaml` under the "UART2" heading.
+Declared in `hw_defs/mrxu/mr4u_r1_73.yaml` under the "UART2" heading. Same pattern as §4: upstream exposes port 6638 as a plaintext bridge; this fork replaces it with a `serial_proxy` instance over the encrypted Native API. Port 6638 is not exposed.
 
 ### 5.1 Nominal pin mapping
 
@@ -156,101 +155,56 @@ The generic `r1_73.yaml` file appears to be unused by any composition file curre
 
 ### 5.3 Vendor firmware observations (SLZB-OS on the reference MR4U)
 
-The user's reference MR4U hardware currently runs **SMLIGHT SLZB-OS** (the proprietary vendor firmware, not the SMLIGHT ESPHome firmware). Screenshot of the SLZB-OS serial-options web UI on that unit reveals:
+The reference MR4U hardware initially shipped with **SMLIGHT SLZB-OS** (the proprietary vendor firmware, not SMLIGHT's ESPHome firmware). The SLZB-OS serial-options web UI on that unit shows:
 
 | Radio | Baud | Flow control | Socket port | Radiomodule mode |
 |---|:---:|:---:|:---:|---|
 | CC2674P10 | 115 200 | **ON** (RTS/CTS) | 7638 | Zigbee coordinator |
 | EFR32MG26 | **460 800** | **ON** (RTS/CTS) | 6638 | Matter-over-Thread |
 
-The UI's own text states: *"Only enable [flow control] if the Zigbee/Thread firmware release notes confirm HW flow control support; otherwise leave disabled."* — which means vendor engineering has **explicitly verified** that both radio firmwares honor CTS. This retires uncertainty (a) from §6's caveats: our Phase 1 flow-control-by-default plan is safe on stock radio firmware.
+Two facts to carry forward:
 
-#### Baud rate discrepancy
+**Radio firmware honors CTS.** The UI's own text states: *"Only enable [flow control] if the Zigbee/Thread firmware release notes confirm HW flow control support; otherwise leave disabled."* Both radios ship with flow control on, so both firmwares honor CTS. In this fork, HW flow control is an opt-in axis via the `uart*_hw_flow: true|false` substitution (see §6); MR4U ships with it `false` to match SMLIGHT's ESPHome firmware default.
 
-SMLIGHT SLZB-OS talks to the EFR32MG26 at **460 800** by default; the SMLIGHT ESPHome fork YAML (`uart2_baud: 115200`) initializes at **115 200**. The mismatch is bridged by a runtime `select` entity in `packages/buses/uarts/uart_baud_runtime_selector/uart2_baud_selector.yaml`:
-
-```yaml
-select:
-  - id: change_baud_rate_uart2
-    options: ["115200", "230400", "460800", "921600"]
-    initial_option: "115200"
-    restore_value: true
-    # ...set_action changes UART baud at runtime
-```
-
-So the first-boot flow is:
-1. ESP inits `hw_uart2` at 115 200.
-2. EFR32MG26 is talking at 460 800 (radio-firmware-controlled).
-3. No communication until the user opens Home Assistant and switches the select to `460800`.
-4. `restore_value: true` persists the choice.
-
-**UX consequence:** zero-config first boot doesn't work on EFR32. Phase 1 should set the `uart2_baud` substitution *and* the selector's `initial_option` to `460800` so the fork Just Works on factory MR4U hardware. CC2674P10 stays at 115 200 (matches factory).
-
-#### What this means for the design doc
-
-- Chip identifications tightened: **CC2674P10** and **EFR32MG26** (not generic "CC26xx" / "EFR32MG"). Update design.md §4 hardware description.
-- Design doc §6's flow-control caveat ("needs verification whether radio firmware honors CTS") can be downgraded from "unknown" to "confirmed on stock SLZB-OS — verify same on our fork after Phase 1 flash".
-- Design doc's implicit assumption that both radios run at 115 200 is wrong for EFR32; needs a small correction.
+**EFR32 baud is 460 800, not 115 200.** SLZB-OS talks to the EFR32MG26 at 460 800; SMLIGHT's own ESPHome YAML sets `uart2_baud: 115200` and relies on a runtime `select` entity (`packages/buses/uarts/uart_baud_runtime_selector/uart2_baud_selector.yaml`) to switch — first boot doesn't work until the user changes the option in Home Assistant. This fork sets `uart2_baud: 460800` in `hw_defs/mrxu/mr4u_r1_73.yaml` and pins the selector's `initial_option` to the substitution, so first boot works without intervention. CC2674P10 stays at 115 200 (matches factory).
 
 ---
 
-## 6. HW UART flow control — **declared but not wired**
+## 6. HW UART flow control — shipped via fork-local custom component
 
-> **Superseded by Phase 0.2.** The "Decision: enable HW flow control by default in Phase 1" below reflects Phase 0.1 thinking. Phase 0.2 subsequently found that ESPHome's `uart:` component has no `cts_pin`/`rts_pin` YAML surface and never calls `uart_set_hw_flow_ctrl()` — enabling flow control requires an upstream ESPHome change. Current plan: **flow control deferred, not shipped in Phase 1.** See design.md Phase 1 item 7 and `serial-proxy-inspection.md` §7. The rest of §6 is preserved as the Phase 0.1 audit record.
+The hw_def files declare CTS/RTS pin assignments for both radios (see §4, §5). Upstream ESPHome's `uart:` platform has no YAML surface for classic RTS/CTS handshake (`flow_control_pin` is for RS485 driver-enable only) and never calls ESP-IDF's `uart_set_hw_flow_ctrl()`. This fork closes that gap with a custom external component.
 
-This is the most consequential finding of Phase 0.1 for the design.
-
-The hw_def files declare CTS/RTS pin assignments for both radios. However, the packages that instantiate ESPHome's `uart:` platform do **not** consume those substitutions:
+The `uart{1,2,3}_hwfc.yaml` packages declare both blocks:
 
 ```yaml
-# packages/buses/uarts/uart1_hwfc.yaml
+# packages/buses/uarts/uart1_hwfc.yaml (excerpt)
 uart:
   - id: hw_uart1
     tx_pin: ${pin_uart1_tx}
     rx_pin: ${pin_uart1_rx}
     baud_rate: ${uart1_baud}
+
+uart_hw_flow:
+  - uart_id: hw_uart1
+    cts_pin: ${pin_uart1_cts}
+    rts_pin: ${pin_uart1_rts}
+    enabled: ${uart1_hw_flow}
 ```
 
-Note: no `cts_pin:` or `rts_pin:` keys. The corresponding `uart1_no_hwfc.yaml` file is **byte-identical** — despite the naming distinction, there is no functional difference between the two. Same for `uart2_hwfc.yaml` / `uart2_no_hwfc.yaml`.
+The `uart{1,2,3}_no_hwfc.yaml` siblings are byte-identical to the `_hwfc` versions except for the missing `uart_hw_flow:` block; no shipping device uses the `_no_hwfc` variant.
 
-### Consequences and decision
+Behavior:
 
-1. **The MR4U firmware today does not use HW flow control.** Design doc §21.3 previously listed this as a "key unknown"; it is now a **confirmed fact**: flow control is off today.
-2. **The physical MR4U board *has* the CTS/RTS pins routed to the radio flow-control inputs** (that's why the substitutions exist). Enabling flow control is a firmware-only change, no hardware modification needed.
-3. **Decision: enable HW flow control by default in Phase 1** (secure firmware). Rationale:
-   - Enabling ESP-side flow control is **strictly non-negative**: if the radio firmware honors CTS, we prevent RX FIFO overflow; if it doesn't, ESPHome's UART draining still runs normally, so we lose nothing.
-   - Cost is 2 YAML lines per UART.
-   - Aligns with correctness-by-construction: don't leave a known lever unpulled just because the failure mode hasn't been observed.
+1. **Custom component runs after the UART driver is up.** `components/uart_hw_flow/` (setup priority 250, same slot as `radio_probe`) looks up the ESP-IDF port number for the referenced `uart:` id and calls `uart_set_pin()` + `uart_set_hw_flow_ctrl(port, UART_HW_FLOWCTRL_CTS_RTS, 122)` when `enabled` is true. `enabled: false` makes it a no-op — the config surface stays stable regardless of the substitution value.
+2. **The upstream limitation is in ESPHome, not on the MR4U.** The physical board *has* CTS/RTS routed to the radio flow-control inputs, so enabling flow control is a firmware-only change with no hardware modification needed.
 
-### Caveats to verify during reliability testing (Phase 3 / 5)
+### Radio firmware compatibility
 
-Flow control works end-to-end only if **both** sides participate:
+SLZB-OS ships both radios with flow control on by default (see §5.3), so both the CC2674P10 ZNP image and the EFR32MG26 Spinel image honor CTS. Enabling ESP-side flow control is safe on both stock radio firmwares.
 
-- **CC26 ZNP firmware** — TI's Z-Stack ZNP images can be built with UART HW flow control (build-time option). Whether SMLIGHT's shipped ZNP image has it on is unknown; will be validated by observing whether the CC26 responds to ESP-driven RTS deassertion under sustained traffic.
-- **EFR32 Spinel (RCP) firmware** — Silicon Labs' RCP has flow control as a config option. Same story: needs empirical validation.
+### Status in this fork
 
-If either radio firmware ignores CTS, ESP-side flow control still helps (drains its own FIFO faster than a passive receiver would) but does not fully prevent overflow. In that case Phase 6 becomes relevant — investigating the underlying cause rather than re-deciding whether to enable flow control.
-
-### ESPHome-side prerequisite
-
-Before Phase 1 can actually enable flow control, we need to confirm during Phase 0.2 (ESPHome inspection) that:
-
-- `uart:` component's `cts_pin` / `rts_pin` keys are honored on the ESP-IDF framework (not just Arduino)
-- Those keys ultimately call `uart_set_hw_flow_ctrl(UART_HW_FLOWCTRL_CTS_RTS)` at driver level
-
-If ESPHome's ESP-IDF UART component doesn't propagate flow control (historically Arduino-first), Phase 1 has two options:
-- **(a)** Upstream a fix to ESPHome. Preferred per §22.
-- **(b)** Ship an external component wrapping `uart_component_esp_idf.cpp` with the flow-control call. Fallback only.
-
-### Naming cleanup
-
-The existing `_hwfc.yaml` / `_no_hwfc.yaml` distinction is misleading (both files are byte-identical). Phase 1 collapses this to a single package file per UART with flow control actually enabled:
-
-- **Delete** `packages/buses/uarts/uart1_no_hwfc.yaml`, `uart2_no_hwfc.yaml`, `uart3_no_hwfc.yaml`
-- **Rewrite** `packages/buses/uarts/uart1_hwfc.yaml`, `uart2_hwfc.yaml`, `uart3_hwfc.yaml` to actually include `cts_pin` and `rts_pin`
-- **Alternative**: rename `_hwfc.yaml` → just `uart{n}.yaml` since the distinction no longer exists (cleaner but slightly bigger diff from upstream)
-
-Exact naming choice deferred until we write the Phase 1 patches.
+The component ships and is wired into every device with a radio UART. MR4U defaults keep flow control `false` on both UARTs — matching SMLIGHT's ESPHome firmware baseline — with the axis available for opt-in per UART via the `uart*_hw_flow: true|false` substitution in `hw_defs/**`. Chiefly relevant for future EFR32MG24 Thread builds, whose catalog entries advertise `hwFlow: true`; the Home Assistant Jinja filter chain refuses to offer a mismatched firmware image.
 
 ---
 
@@ -264,7 +218,7 @@ Exact naming choice deferred until we write the Phase 1 patches.
 | Interrupt | GPIO38 | |
 | Reset | GPIO40 | |
 | RJ45 LED(s) | GPIO1, active-low | Physical activity LEDs on the jack. |
-| Configuration package | `packages/ethernet/w5500_gpio.yaml` + `packages/ethernet/rj45_leds_gpio.yaml` | Not read as part of Phase 0.1; likely just wraps `ethernet:` platform with these pins. Worth confirming during Phase 1. |
+| Configuration package | `packages/ethernet/w5500_gpio.yaml` + `packages/ethernet/rj45_leds_gpio.yaml` | Wraps the ESPHome `ethernet:` platform with these pins. |
 
 ## 8. USB and power
 
@@ -275,7 +229,7 @@ Exact naming choice deferred until we write the Phase 1 patches.
 | USB-C CC1 sense | 4 | ADC in | Analog voltage on CC1 pin — used to detect USB-C source/sink orientation and current-advertising resistors. |
 | USB-C CC2 sense | 5 | ADC in | Same for CC2. |
 
-Full USB behavior lives in `packages/usb/` (not read for Phase 0.1 — hardware wiring only). If we later add a Phase 9 USB build variant (design doc §25 / §26), understanding how these pins interact with the ESP32-S3's native USB PHY becomes critical.
+Full USB behavior lives in `packages/usb/`. See [design.md](design.md) for the post-v1 USB build variant.
 
 ## 9. LEDs and buttons
 
@@ -289,86 +243,34 @@ No second button on MR4U (design doc §4 correctly matches this).
 
 ---
 
-## 10. Current security surface (what Phase 1 must change)
+## 10. Network exposure and what this fork changes
 
-This section maps the design doc's abstract "kill the plaintext ports" objective onto the *specific* config we'll modify.
+Compare the plaintext-ports baseline in upstream `smlight-tech/slzb-esphome` with what this fork ships.
 
-### 10.1 What's currently exposed on the network
+### 10.1 Upstream exposure (baseline)
 
 | Port | Protocol | Purpose | Auth | Encryption |
 |:---:|---|---|:---:|:---:|
 | **7638/tcp** | Raw TCP | CC26 UART bridge (`stream_server` on `hw_uart1`) | None | None |
 | **6638/tcp** | Raw TCP | EFR32 UART bridge (`stream_server` on `hw_uart2`) | None | None |
-| **6053/tcp** | ESPHome Native API | Device control + telemetry | Optional | **Currently disabled** — `api:` block in `packages/core/core.yaml` has no `encryption:` key |
-| **3232/tcp** | ESPHome OTA | Firmware updates | Optional | The `esphome` OTA platform can require a password; **currently no password configured** in `packages/core/core.yaml` |
-| **80/tcp** | Web server | N/A | N/A | **Not enabled** — `web_server:` block in `core.yaml` is commented out |
+| **6053/tcp** | ESPHome Native API | Device control + telemetry | Optional | Disabled — `api:` block in `packages/core/core.yaml` has no `encryption:` key |
+| **3232/tcp** | ESPHome OTA | Firmware updates | Optional | No password configured |
+| **80/tcp** | Web server | N/A | N/A | Not enabled — `web_server:` block commented out |
 | **5353/udp** | mDNS | Device discovery | — | Not a threat surface per se |
 
-### 10.2 Phase 1 concrete deltas (what our fork will change)
+### 10.2 This fork's changes
 
-To satisfy design doc §7 and §23:
-
-1. **Remove `stream_server` from both radios**
-   - Delete `hal_uart1_ss_server` and `hal_uart2_ss_server` includes from `devices/mr4u_r1_73.yaml`
-   - Delete `stream_server` external component from `packages/external_components/stream_server.yaml` (or delete the file and remove the include)
-   - Delete `packages/stream_servers/` entirely (or at least the `ss_uart*.yaml` files we use)
-   - This eliminates ports 7638 and 6638.
-
-2. **Enable Native API encryption**
-   - In `packages/core/core.yaml`, extend the `api:` block with:
-     ```yaml
-     api:
-       encryption:
-         key: !secret api_encryption_key
-     ```
-   - Add `api_encryption_key` to `secrets.yaml` (which is already gitignored per line 5 of `.gitignore`).
-   - This closes port 6053 against unauthenticated access — connections without the correct key are rejected during Noise handshake.
-
-3. **Password-protect OTA**
-   - Extend the `ota:` block with `password: !secret ota_password`.
-   - Add `ota_password` to `secrets.yaml`.
-
-4. **Add `serial_proxy` in place of `stream_server`**
-   - Two instances, one per UART, subscribed via the Native API.
-   - Package names TBD — likely `packages/buses/uarts/uart_ctrl/serial_proxy1.yaml` and `serial_proxy2.yaml` (following the existing pattern), or new folder `packages/serial_proxies/`.
-
-5. **Enable HW UART flow control** *(deferred — see §6 supersession note)*
-   - Rewrite `packages/buses/uarts/uart1_hwfc.yaml` and `uart2_hwfc.yaml` to include `cts_pin: ${pin_uart1_cts}` and `rts_pin: ${pin_uart1_rts}` (and analogous for UART2).
-   - Delete the byte-identical `_no_hwfc.yaml` siblings (they no longer add value).
-   - See §6 for the full rationale and caveats.
-
-Web server does NOT need removal — upstream already leaves it commented out. Design doc §7 language about "remove `web_server`" can be softened to "keep `web_server` disabled (already the case)."
+1. **`stream_server` removed from both radios.** Deleted `stream_server` external component; ports 7638 and 6638 are no longer opened.
+2. **Native API encryption on.** `api.encryption.key: !secret api_encryption_key` in `packages/core/core.yaml`. Connections without the correct PSK are rejected during Noise handshake.
+3. **OTA password-protected.** `password: !secret ota_password` on the `ota:` block.
+4. **`serial_proxy` in place of `stream_server`.** One instance per radio UART, carried over the encrypted Native API. See `packages/serial_proxies/`.
+5. **HW UART flow control — planned, not yet shipped.** See §6.
+6. **Web server stays off.** Upstream already leaves it disabled; this fork keeps it that way.
 
 ---
 
-## 11. Cross-references to the design document
+## 11. Related docs
 
-Findings from this inspection that should be reflected back into `docs/design.md`:
-
-| Finding | Affects design doc section | Nature of change |
-|---|---|---|
-| MR4U runs on ESP32-S3 with PSRAM, 16 MB flash | §4 Hardware architecture | Confirmed — no change needed |
-| Radios are CC26 (Zigbee/Thread) and EFR32 (Zigbee/Thread) | §4, §5, §9, §11 | Confirmed — matches design assumptions |
-| HW flow control declared but not wired in ESPHome UART bus | §21.3 (key unknown) | Downgrade §21.3 from "unknown" to "confirmed disabled today; needs enabling only if reliability testing demands it" |
-| `web_server` already disabled upstream | §7 target-state description | Soften wording — no removal work needed, just keep it disabled |
-| `stream_server` uses `oxan/esphome-stream-server` external component (not built-in) | §7 firmware structure | Add note: our fork removes an external component dependency, not a built-in ESPHome feature. Slightly reduces future maintenance risk (no need to track upstream ESPHome changes for that component). |
-| UART2 TX/RX are swapped between `mr4u_r1_73.yaml` and generic `r1_73.yaml` | §4 Hardware architecture — not currently mentioned | Add a brief note so future readers don't get confused editing the wrong file |
-| Native API is present but unencrypted; OTA has no password | §2 problem statement | Confirmed — the "unencrypted by default" premise is real, verified in `core.yaml` |
-
-These are captured as *observations*; whether to edit the design document is the user's call. Recommendation: batch these small corrections into a single design-doc revision after all Phase 0 targets complete, so the doc is updated once against fully-validated ground truth.
-
----
-
-## 12. What Phase 0.1 did NOT inspect
-
-To keep this document scoped and honest:
-
-- `packages/ethernet/*.yaml` — pin usage extracted but the actual `ethernet:` platform config not read
-- `packages/usb/*.yaml` — USB mode-switching logic not analyzed
-- `packages/diagnostics/diagnostics.yaml` — diagnostic sensors config not read
-- `packages/bluetooth/bluetooth.yaml` — whether Bluetooth proxy is enabled (relevant to design doc §21.8)
-- `packages/buses/uarts/uart_baud_runtime_selector/*.yaml` — runtime baud-rate switching mechanism, likely relevant to Phase 7 (radio maintenance actions)
-- Whether ESPHome's `uart:` component actually propagates `cts_pin`/`rts_pin` to the ESP-IDF UART driver's HW flow control — needs Phase 0.2 (ESPHome source inspection)
-- Whether `serial_proxy` still exists in current ESPHome and what its config schema looks like — this is Phase 0.2
-
-These are deferred to their appropriate Phase 0 targets or later phases.
+- [design.md](design.md) — architecture and phase model, including the transport and flow-control designs summarized above.
+- [architecture.md](architecture.md) — repo layout and package model.
+- [roadmap.md](roadmap.md) — what's shipped, planned, and deferred (including `components/uart_hw_flow/`).

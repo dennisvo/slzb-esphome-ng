@@ -146,8 +146,12 @@ No changes to any `packages/*` should be required.
 ## 8. Where to read next
 
 - `docs/design.md` — full design rationale, threat model, phased roadmap.
+- `docs/roadmap.md` — phase-by-phase status and open work items.
+- `docs/v1-design.md` — v1 substitution surface, package inventory, feature-parity strategy.
+- `docs/v1-radio-firmware.md` — v1 radio firmware version visibility design.
+- `docs/integration-recipes.md` — HA integration paths (URL schemes, ZHA, OTBR).
 - `docs/hardware-map.md` — MR4U pin map (UARTs, resets, boot pins, LEDs) plus per-board variants.
-- `docs/serial-proxy-inspection.md` — deep dive on the upstream `serial_proxy` component.
-- `docs/serialx-inspection.md` — the HA-side `serialx` package and `esphome-hass://` scheme.
-- `docs/zha-zigpy-inspection.md` — the ZHA → zigpy → radio-backend chain.
-- `docs/otbr-inspection.md` — the HA OTBR add-on architecture.
+- `docs/research/serial-proxy-inspection.md` — deep dive on the upstream `serial_proxy` component.
+- `docs/research/serialx-inspection.md` — the HA-side `serialx` package and `esphome-hass://` scheme.
+- `docs/research/zha-zigpy-inspection.md` — the ZHA → zigpy → radio-backend chain.
+- `docs/research/otbr-inspection.md` — the HA OTBR add-on architecture.

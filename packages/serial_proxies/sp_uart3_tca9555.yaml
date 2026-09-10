@@ -11,7 +11,7 @@
 # is a first-class serialx esphome-hass:// consumer) as:
 #   esphome-hass://esphome/{entry_id}?port_name=zwave
 #
-# See docs/design.md Phase 1 item 5, docs/serialx-inspection.md
+# See docs/design.md Phase 1 item 5, docs/research/serialx-inspection.md
 # (esphome:// / esphome-hass:// scheme registered by zwave_js).
 
 serial_proxy:
