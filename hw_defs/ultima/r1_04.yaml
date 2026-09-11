@@ -185,7 +185,7 @@ substitutions:
   radio1_role: coord
   radio1_firmware_channel: dev
   radio1_uart_id: hw_uart1
-  radio1_uart_baud: 115200
+  radio1_uart_baud: "115200"
   radio1_uart_hw_flow: "false"        # Mirrors uart1_hw_flow; diagnostic-only string.
 
 
@@ -215,7 +215,8 @@ substitutions:
   radio2_role: rcp
   radio2_firmware_channel: dev
   radio2_uart_id: hw_uart2
-  radio2_uart_baud: 115200
+  radio2_uart_baud: "115200"
+  radio2_uart_hw_flow: "false"        # Mirrors uart2_hw_flow; diagnostic-only string.
 
 
   # ==========================================================
@@ -246,5 +247,6 @@ substitutions:
   radio3_role: primary_ctrl
   radio3_firmware_channel: dev
   radio3_uart_id: hw_uart3
-  radio3_uart_baud: 115200
+  radio3_uart_baud: "115200"
+  radio3_uart_hw_flow: "false"        # Mirrors uart3_hw_flow; diagnostic-only string.
 

@@ -28,53 +28,67 @@ radio_probe:
       id: radio2_installed_firmware_sensor
       entity_category: diagnostic
 
+# Static metadata sourced from hw_defs substitutions. Values change only
+# on reflash, so we publish once at boot and never poll — see on_boot
+# block at the bottom of this file.
 text_sensor:
   - platform: template
     name: "${friendly_name} Radio 2 chip"
     id: radio2_chip_sensor
     entity_category: diagnostic
-    lambda: |-
-      return {"${radio2_chip}"};
-    update_interval: never
 
   - platform: template
     name: "${friendly_name} Radio 2 SMLIGHT id"
     id: radio2_smlight_id_sensor
     entity_category: diagnostic
-    lambda: |-
-      return {"${radio2_smlight_id}"};
-    update_interval: never
 
   - platform: template
     name: "${friendly_name} Radio 2 protocol"
     id: radio2_protocol_sensor
     entity_category: diagnostic
-    lambda: |-
-      return {"${radio2_protocol}"};
-    update_interval: never
 
   - platform: template
     name: "${friendly_name} Radio 2 role"
     id: radio2_role_sensor
     entity_category: diagnostic
-    lambda: |-
-      return {"${radio2_role}"};
-    update_interval: never
 
   - platform: template
     name: "${friendly_name} Radio 2 firmware channel"
     id: radio2_firmware_channel_sensor
     entity_category: diagnostic
-    lambda: |-
-      return {"${radio2_firmware_channel}"};
-    update_interval: never
 
-sensor:
   - platform: template
     name: "${friendly_name} Radio 2 UART baud"
     id: radio2_uart_baud_sensor
     entity_category: diagnostic
-    lambda: |-
-      return ${radio2_uart_baud};
-    accuracy_decimals: 0
-    update_interval: never
+
+  - platform: template
+    name: "${friendly_name} Radio 2 UART flow control"
+    id: radio2_uart_hw_flow_sensor
+    entity_category: diagnostic
+
+esphome:
+  on_boot:
+    priority: -100  # after all components have finished setup
+    then:
+      - text_sensor.template.publish:
+          id: radio2_chip_sensor
+          state: "${radio2_chip}"
+      - text_sensor.template.publish:
+          id: radio2_smlight_id_sensor
+          state: "${radio2_smlight_id}"
+      - text_sensor.template.publish:
+          id: radio2_protocol_sensor
+          state: "${radio2_protocol}"
+      - text_sensor.template.publish:
+          id: radio2_role_sensor
+          state: "${radio2_role}"
+      - text_sensor.template.publish:
+          id: radio2_firmware_channel_sensor
+          state: "${radio2_firmware_channel}"
+      - text_sensor.template.publish:
+          id: radio2_uart_baud_sensor
+          state: "${radio2_uart_baud}"
+      - text_sensor.template.publish:
+          id: radio2_uart_hw_flow_sensor
+          state: "${radio2_uart_hw_flow}"
