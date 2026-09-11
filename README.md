@@ -11,7 +11,7 @@
 
 This is an **alternative firmware** for SMLIGHT's family of network-attached ESP32 serial devices — the SLZB-… Zigbee / Thread / Z-Wave coordinators (SLZB-MR4U, SLZB-MRxU, SLZB-06/07, SLZB-Ultima) and the SLWF-09U USB-over-network gateway. It is a full replacement for the stock SMLIGHT firmware (**SLZB-OS** on the coordinators, the equivalent stock firmware on the SLWF).
 
-All of these boards share the same underlying problem: they expose one or more serial streams (integrated radios on the SLZB family, whatever USB device is plugged into the SLWF) as plaintext TCP ports on the LAN. This firmware replaces that transport with the encrypted ESPHome Native API.
+All of these boards share the same underlying problem: they expose one or more serial streams (integrated radios on the SLZB family, whatever USB device is plugged into the SLWF) as plaintext TCP ports on the LAN. This firmware replaces that transport with an encrypted channel to Home Assistant.
 
 It is built on [ESPHome](https://esphome.io/) and is designed to be paired with [Home Assistant](https://www.home-assistant.io/): you flash it onto the device once, adopt it through HA's ESPHome integration, and point ZHA / OpenThread Border Router / Z-Wave JS at it over a single encrypted transport.
 
