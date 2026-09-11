@@ -17,6 +17,7 @@ namespace esphome {
 namespace radio_probe {
 
 void RadioProbe::setup() {
+  this->setup_ran_ = true;
   ESP_LOGE(TAG, "*** setup() entered — protocol=%s chip=%s ***",
            this->protocol_.c_str(), this->chip_.c_str());
   this->dispatch_();
@@ -24,6 +25,10 @@ void RadioProbe::setup() {
 }
 
 void RadioProbe::dump_config() {
+  ESP_LOGE(TAG, "[DEBUG] protocol=%s setup_ran=%d component_state=0x%02X",
+           this->protocol_.c_str(),
+           this->setup_ran_ ? 1 : 0,
+           static_cast<unsigned>(this->get_component_state()));
   ESP_LOGCONFIG(TAG, "Radio Probe:");
   ESP_LOGCONFIG(TAG, "  Chip: %s", this->chip_.c_str());
   ESP_LOGCONFIG(TAG, "  SMLIGHT id: %s", this->smlight_id_.c_str());

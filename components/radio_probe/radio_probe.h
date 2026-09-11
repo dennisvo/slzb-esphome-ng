@@ -52,6 +52,8 @@ class RadioProbe : public Component, public uart::UARTDevice {
   std::string firmware_channel_;
   std::string uart_baud_;
   text_sensor::TextSensor *installed_{nullptr};
+  // Temporary diagnostic: flipped true from setup(); read from dump_config().
+  bool setup_ran_{false};
 };
 
 }  // namespace radio_probe
