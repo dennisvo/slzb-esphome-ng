@@ -56,12 +56,15 @@ text_sensor:
     id: radio1_firmware_channel_sensor
     entity_category: diagnostic
 
-sensor:
   - platform: template
     name: "${friendly_name} Radio 1 UART baud"
     id: radio1_uart_baud_sensor
     entity_category: diagnostic
-    accuracy_decimals: 0
+
+  - platform: template
+    name: "${friendly_name} Radio 1 UART flow control"
+    id: radio1_uart_hw_flow_sensor
+    entity_category: diagnostic
 
 esphome:
   on_boot:
@@ -82,6 +85,9 @@ esphome:
       - text_sensor.template.publish:
           id: radio1_firmware_channel_sensor
           state: "${radio1_firmware_channel}"
-      - sensor.template.publish:
+      - text_sensor.template.publish:
           id: radio1_uart_baud_sensor
-          state: ${radio1_uart_baud}
+          state: "${radio1_uart_baud}"
+      - text_sensor.template.publish:
+          id: radio1_uart_hw_flow_sensor
+          state: "${radio1_uart_hw_flow}"

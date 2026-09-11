@@ -101,3 +101,4 @@ substitutions:
   radio1_firmware_channel: dev
   radio1_uart_id: hw_uart2
   radio1_uart_baud: 115200
+  radio1_uart_hw_flow: "false"        # Mirrors uart2_hw_flow (Radio 1 is on UART2 for 06xU).

@@ -186,6 +186,7 @@ lands does the "protocol/role as HA `select`" surface become honest (see
 - ⚪ HA `select` for `radioN_protocol`, `radioN_role`, `radioN_firmware_channel` — each pick triggers a real flash operation via the add-on
 - ⚪ Options list computed from §6g permutation matrix per chip (dropdown never shows an invalid triple)
 - ⚪ Explicit "confirm reflash" step before action; NVS-persisted post-flash
+- ⚪ **`uartN_hw_flow` follows firmware channel automatically.** Today (v1) hwFlow is a static YAML substitution baked into the ESPHome build (see `hw_defs/*/*.yaml` → `radio1_uart_hw_flow`). That's correct for the shipped curated firmware set but breaks the moment the flash chain lets users switch to a channel with a different `hwFlow` value (e.g. a future ZNP build that enables CTS/RTS). v2 fix: derive the effective hwFlow from `(chip, firmware_channel)` via a compile-time lookup table mirroring the SMLIGHT catalog, reconfigure the ESP-IDF UART driver (`uart_set_hw_flow_ctrl()`) at the same NVS-persist point as channel selection, and expose a `Radio N UART flow control override` `select` (`default | force_off | force_on`) as an escape hatch for user-flashed exotic firmware. Component work already in place: `components/uart_hw_flow/` runs its own `setup()` and can be extended to reconfigure post-boot.
 
 ### Multi-PAN 🔵
 
