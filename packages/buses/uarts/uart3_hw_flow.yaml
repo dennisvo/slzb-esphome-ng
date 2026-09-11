@@ -1,8 +1,8 @@
-# packages/buses/uarts/uart3_hwfc.yaml
+# packages/buses/uarts/uart3_hw_flow.yaml
 #
-# UART3 (Radio 3, ultima-only) with optional hardware flow control.
+# UART3 (Radio 3, ultima-only) bus + optional hardware flow control.
 #
-# See uart1_hwfc.yaml for the rationale. Prerequisites:
+# See uart1_hw_flow.yaml for the rationale. Prerequisites:
 # `packages/buses/uarts/uart_hw_flow_ext.yaml` must be included once by
 # the device before this file.
 #

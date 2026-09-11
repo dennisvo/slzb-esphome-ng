@@ -77,7 +77,7 @@ Upstream ESPHome's `uart:` platform has no YAML surface for classic RTS/CTS hand
 - 🟢 `packages/buses/uarts/uart_hw_flow_ext.yaml` — declares the external component (mirrors `radio_probe_ext.yaml`)
 - 🟢 `packages/buses/uarts/uart{1,2,3}_hwfc.yaml` — add `uart_hw_flow:` block wired to `${pin_uartN_cts}`/`${pin_uartN_rts}` + `enabled: ${uartN_hw_flow}`
 - 🟢 `hw_defs/**/*.yaml` — add `uartN_hw_flow: false` next to each `uartN_baud` (MR4U, MRxU, 06xU, Ultima; slw09u has no radios)
-- 🟢 `devices/{mr4u,mrxu,06xu,ultima}*.yaml` — include `uart_hw_flow_ext.yaml` before the `uartN_hwfc.yaml` block
+- 🟢 `devices/{mr4u,mrxu,06xu,ultima}*.yaml` — include `uart_hw_flow_ext.yaml` before the `uartN_hw_flow.yaml` block
 
 Success: `esphome compile mr4u-r1-73.yaml` links against `IDFUARTComponent::get_hw_serial_number()`; log line `[uart_hw_flow] Enabled: no` appears once per UART at boot with defaults. Flip a `uartN_hw_flow: true` locally and confirm `Enabled: yes` + `uart_set_hw_flow_ctrl` succeeds against a stock CTS-honoring radio image.
 

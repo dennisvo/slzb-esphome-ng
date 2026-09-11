@@ -1,4 +1,4 @@
-# packages/diagnostics/radio3_firmware_info.yaml
+# packages/diagnostics/radio3_probe.yaml
 #
 # Radio 3 (UART3) firmware version diagnostics. Used by Ultima's ZW-800
 # Z-Wave controller.

@@ -23,9 +23,9 @@ packages:
   # upgraded to a live probe in a later v1.x point release.
   # See docs/v1-radio-firmware.md.
   platform_radio_probe_ext: !include ../packages/diagnostics/radio_probe_ext.yaml
-  platform_radio1_fw_info:  !include ../packages/diagnostics/radio1_firmware_info.yaml
-  platform_radio2_fw_info:  !include ../packages/diagnostics/radio2_firmware_info.yaml
-  platform_radio3_fw_info:  !include ../packages/diagnostics/radio3_firmware_info.yaml
+  platform_radio1_probe:    !include ../packages/diagnostics/radio1_probe.yaml
+  platform_radio2_probe:    !include ../packages/diagnostics/radio2_probe.yaml
+  platform_radio3_probe:    !include ../packages/diagnostics/radio3_probe.yaml
   # NOTE (slzb-esphome-ng fork): `stream_server` and its per-UART bridges are
   # replaced by `serial_proxy` instances tunnelled through the encrypted Native
   # API. See docs/design.md §7 and Phase 1.
@@ -40,14 +40,14 @@ packages:
   hal_tca9555: !include ../packages/ioexp/tca9555.yaml
 
   # --- UART HW flow control ext (fork-local custom component) ---
-  # Declares components/uart_hw_flow/ so the uartN_hwfc.yaml packages can
+  # Declares components/uart_hw_flow/ so the uartN_hw_flow.yaml packages can
   # register per-UART flow-control instances. See docs/v1-design.md §5.
   platform_uart_hw_flow_ext: !include ../packages/buses/uarts/uart_hw_flow_ext.yaml
 
   # --- UART buses (with HW flow control) ---
-  hal_uart1: !include ../packages/buses/uarts/uart1_hwfc.yaml
-  hal_uart2: !include ../packages/buses/uarts/uart2_hwfc.yaml
-  hal_uart3: !include ../packages/buses/uarts/uart3_hwfc.yaml
+  hal_uart1: !include ../packages/buses/uarts/uart1_hw_flow.yaml
+  hal_uart2: !include ../packages/buses/uarts/uart2_hw_flow.yaml
+  hal_uart3: !include ../packages/buses/uarts/uart3_hw_flow.yaml
 
   # --- UART reset/flash control ---
   # NOTE (slzb-esphome-ng fork): TCA9555-switch-based reset/flash controls are

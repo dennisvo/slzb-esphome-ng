@@ -1,6 +1,6 @@
-# packages/buses/uarts/uart1_hwfc.yaml
+# packages/buses/uarts/uart1_hw_flow.yaml
 #
-# UART1 (Radio 1) with optional hardware flow control.
+# UART1 (Radio 1) bus + optional hardware flow control.
 #
 # The `uart:` block declares TX/RX only — upstream ESPHome exposes no YAML
 # for classic CTS/RTS handshake. Our fork-local `uart_hw_flow:` block

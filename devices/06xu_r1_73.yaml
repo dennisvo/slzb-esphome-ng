@@ -23,7 +23,7 @@ packages:
   # (SLZB-06P10), which gets a live probe; EFR32-based variants get the
   # stub in v1 and a real probe in v1.x. See docs/v1-radio-firmware.md.
   platform_radio_probe_ext: !include ../packages/diagnostics/radio_probe_ext.yaml
-  platform_radio1_fw_info:  !include ../packages/diagnostics/radio1_firmware_info.yaml
+  platform_radio1_probe:    !include ../packages/diagnostics/radio1_probe.yaml
   # NOTE (slzb-esphome-ng fork): `stream_server` and its per-UART bridge are
   # replaced by a `serial_proxy` instance tunnelled through the encrypted Native
   # API. See docs/design.md §7 and Phase 1.
@@ -39,13 +39,13 @@ packages:
   hal_i2c: !include ../packages/buses/i2c.yaml
 
   # --- UART HW flow control ext (fork-local custom component) ---
-  # Declares components/uart_hw_flow/ so uart2_hwfc.yaml can register a
+  # Declares components/uart_hw_flow/ so uart2_hw_flow.yaml can register a
   # per-UART flow-control instance. See docs/v1-design.md §5.
   platform_uart_hw_flow_ext: !include ../packages/buses/uarts/uart_hw_flow_ext.yaml
 
   # --- UART bus (with HW flow control) ---
   # Note: 06xU has only ONE radio connected to UART2
-  hal_uart2: !include ../packages/buses/uarts/uart2_hwfc.yaml
+  hal_uart2: !include ../packages/buses/uarts/uart2_hw_flow.yaml
 
   # --- UART reset/flash control ---
   # NOTE (slzb-esphome-ng fork): switch-based reset/flash controls are dropped.

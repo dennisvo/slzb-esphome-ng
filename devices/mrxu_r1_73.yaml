@@ -31,13 +31,13 @@ packages:
   hal_i2c: !include ../packages/buses/i2c.yaml
 
   # --- UART HW flow control ext (fork-local custom component) ---
-  # Declares components/uart_hw_flow/ so the uartN_hwfc.yaml packages can
+  # Declares components/uart_hw_flow/ so the uartN_hw_flow.yaml packages can
   # register per-UART flow-control instances. See docs/v1-design.md §5.
   platform_uart_hw_flow_ext: !include ../packages/buses/uarts/uart_hw_flow_ext.yaml
 
   # --- UART buses (with HW flow control) ---
-  hal_uart1: !include ../packages/buses/uarts/uart1_hwfc.yaml
-  hal_uart2: !include ../packages/buses/uarts/uart2_hwfc.yaml
+  hal_uart1: !include ../packages/buses/uarts/uart1_hw_flow.yaml
+  hal_uart2: !include ../packages/buses/uarts/uart2_hw_flow.yaml
 
   # --- UART reset/flash control ---
   # NOTE (slzb-esphome-ng fork): switch-based reset/flash controls are dropped.

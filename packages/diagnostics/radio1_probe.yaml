@@ -1,4 +1,4 @@
-# packages/diagnostics/radio1_firmware_info.yaml
+# packages/diagnostics/radio1_probe.yaml
 #
 # Publishes v1 radio firmware version diagnostics for Radio 1 (UART1):
 #   - Static metadata sourced from `hw_defs/**` substitutions (chip,

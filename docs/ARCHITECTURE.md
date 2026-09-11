@@ -64,8 +64,8 @@ mr4u-r1-73.yaml
     └─ devices/mr4u_r1_73.yaml
          ├─ hw_defs/mrxu/mr4u_r1_73.yaml        ← pins + flags
          ├─ packages/core/core.yaml              ← encrypted API, OTA
-         ├─ packages/buses/uarts/uart1_hwfc.yaml
-         ├─ packages/buses/uarts/uart2_hwfc.yaml
+         ├─ packages/buses/uarts/uart1_hw_flow.yaml
+         ├─ packages/buses/uarts/uart2_hw_flow.yaml
          ├─ packages/serial_proxies/sp_uart1.yaml  ← Zigbee, encrypted
          ├─ packages/serial_proxies/sp_uart2.yaml  ← Thread, encrypted
          └─ … (LEDs, buttons, ethernet, diagnostics)

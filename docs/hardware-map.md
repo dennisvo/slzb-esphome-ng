@@ -174,10 +174,10 @@ Two facts to carry forward:
 
 The hw_def files declare CTS/RTS pin assignments for both radios (see §4, §5). Upstream ESPHome's `uart:` platform has no YAML surface for classic RTS/CTS handshake (`flow_control_pin` is for RS485 driver-enable only) and never calls ESP-IDF's `uart_set_hw_flow_ctrl()`. This fork closes that gap with a custom external component.
 
-The `uart{1,2,3}_hwfc.yaml` packages declare both blocks:
+The `uart{1,2,3}_hw_flow.yaml` packages declare both blocks:
 
 ```yaml
-# packages/buses/uarts/uart1_hwfc.yaml (excerpt)
+# packages/buses/uarts/uart1_hw_flow.yaml (excerpt)
 uart:
   - id: hw_uart1
     tx_pin: ${pin_uart1_tx}
@@ -191,7 +191,7 @@ uart_hw_flow:
     enabled: ${uart1_hw_flow}
 ```
 
-The `uart{1,2,3}_no_hwfc.yaml` siblings are byte-identical to the `_hwfc` versions except for the missing `uart_hw_flow:` block; no shipping device uses the `_no_hwfc` variant.
+The `uart{1,2,3}_no_hwfc.yaml` siblings are byte-identical to the `_hw_flow` versions except for the missing `uart_hw_flow:` block; no shipping device uses the `_no_hwfc` variant.
 
 Behavior:
 

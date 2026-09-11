@@ -388,7 +388,7 @@ Still open:
 
 3. **HACS or vanilla HA `packages:`?** The snippets in `docs/ha-integrations/` can be pasted into `configuration.yaml`, or bundled as a HA packages directory the user drops in. HACS custom repository would be nicer discoverability but adds installation burden. Recommend: vanilla, with clear copy-paste instructions.
 
-4. **UART package rename**: `packages/buses/uarts/uart1_hwfc.yaml` now carries the `uart_hw_flow:` block from §5, but its `uart1_no_hwfc.yaml` sibling is still a byte-identical dead file. Housekeeping — collapse to one file (e.g. `uart1.yaml`) next time we're touching this area.
+4. **UART package dead-sibling cleanup**: `packages/buses/uarts/uart1_hw_flow.yaml` carries the `uart_hw_flow:` block from §5, but its `uart1_no_hwfc.yaml` sibling is still a byte-identical dead file. Housekeeping — delete `uart{1,2,3}_no_hwfc.yaml` next time we're touching this area.
 
 5. **README warning on firmware ↔ config matching**: when v1 lands, [README.md](../README.md) needs a prominent section explaining that radio firmware protocol/role/baud/hwFlow must match the ESPHome substitutions. See §6 "User responsibility" for the shape.
 
