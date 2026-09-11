@@ -16,7 +16,12 @@
 namespace esphome {
 namespace radio_probe {
 
-void RadioProbe::setup() { this->dispatch_(); }
+void RadioProbe::setup() {
+  ESP_LOGE(TAG, "*** setup() entered — protocol=%s chip=%s ***",
+           this->protocol_.c_str(), this->chip_.c_str());
+  this->dispatch_();
+  ESP_LOGE(TAG, "*** setup() exit — protocol=%s ***", this->protocol_.c_str());
+}
 
 void RadioProbe::dump_config() {
   ESP_LOGCONFIG(TAG, "Radio Probe:");
