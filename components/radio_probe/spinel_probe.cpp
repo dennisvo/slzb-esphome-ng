@@ -36,6 +36,7 @@
 #include "radio_probe.h"
 
 #include "esphome/core/hal.h"
+#include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
 
 namespace esphome {
@@ -85,6 +86,8 @@ bool RadioProbe::probe_spinel_(std::string &result) {
 
   this->write_array(framed, frame_len);
   this->flush();
+  ESP_LOGV(TAG, "spinel TX %u bytes: %s", static_cast<unsigned>(frame_len),
+           format_hex_pretty(framed, frame_len).c_str());
 
   // ── Read one framed response ────────────────────────────────────────────
   uint8_t rx[SPINEL_RX_BUF];
@@ -124,12 +127,19 @@ bool RadioProbe::probe_spinel_(std::string &result) {
   ESP_LOGW(TAG, "spinel: probe timeout after %u ms (%u bytes, in_frame=%d)",
            static_cast<unsigned>(PROBE_TIMEOUT_MS), static_cast<unsigned>(pos),
            static_cast<int>(in_frame));
+  if (pos > 0) {
+    ESP_LOGV(TAG, "spinel RX (partial): %s", format_hex_pretty(rx, pos).c_str());
+  }
   return false;
 
 have_frame:
-  // ── Unescape + verify CRC ───────────────────────────────────────────────
+  ESP_LOGV(TAG, "spinel RX %u bytes (raw): %s", static_cast<unsigned>(pos),
+           format_hex_pretty(rx, pos).c_str());
+  // ── Unescape + verify CRC ─────────────────────────────────────────────────
   uint8_t unesc[SPINEL_RX_BUF];
   size_t unesc_len = hdlc_unescape(rx, pos, unesc, sizeof(unesc));
+  ESP_LOGV(TAG, "spinel RX unescape %u bytes: %s", static_cast<unsigned>(unesc_len),
+           format_hex_pretty(unesc, unesc_len).c_str());
   if (unesc_len < 5) {
     // Need at least: header + cmd + prop + 2-byte CRC.
     ESP_LOGW(TAG, "spinel: frame too short (%u bytes after unescape)",
