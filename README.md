@@ -108,36 +108,16 @@ For the full delta reference — everything preserved, removed, disabled-by-defa
 
 ### Setup
 
-Two supported workflows depending on how much you want to customize the firmware.
+Install the **ESPHome Device Builder** add-on in Home Assistant, create a new device, copy-paste the YAML file for your board, adjust to your liking, make sure `secrets.yaml` contains the `api_encryption_key` and `ota_password` entries the file references, and hit **Install**.
 
-#### Which one should I pick?
+The walkthrough below spells that out; the ESPHome CLI works the same way with the equivalent commands.
 
-| I want to… | Use |
-|---|---|
-| Just flash the firmware, minimal fuss, get updates by bumping a git ref | **Workflow A — thin importable file** |
-| Customize the firmware, add sensors, tweak logic, hack on it | **Workflow B — clone the full repo** |
+#### 1. Create the device in the ESPHome dashboard
 
-Both workflows share the same `secrets.yaml` step below.
-
-#### Shared step — `secrets.yaml`
-
-Create `/config/esphome/secrets.yaml` (HA add-on) or `secrets.yaml` in your ESPHome working directory (CLI) with:
-
-```yaml
-api_encryption_key: "<base64 32-byte key>"    # openssl rand -base64 32
-ota_password: "<any strong secret>"
-# wifi_ssid: "..."                            # only if not Ethernet-only
-# wifi_password: "..."
-```
-
-A template is provided as [`secrets.example.yaml`](secrets.example.yaml).
-
-#### Workflow A — thin importable file (recommended for most users)
-
-The [`importable/`](importable/) directory contains 5 tiny files (~15 lines each). Each one uses ESPHome's [remote-package feature](https://esphome.io/components/packages.html) to pull the full device composition from this GitHub repo at build time.
-
-1. In the ESPHome dashboard, click **+ New device** → give it a name → skip the "install" step at the end.
-2. Open the generated YAML in the dashboard editor and **replace its contents** with the appropriate file from [`importable/`](importable/):
+1. Open **Settings → Add-ons → ESPHome Device Builder** in Home Assistant.
+2. Click **+ New device** → give it a name (e.g. `slzb-mr4u`) → pick **ESP32-S3** when prompted → click through to the end and **skip the "Install" step**.
+3. On the new device tile, click **Edit** to open the YAML editor.
+4. **Delete everything the dashboard generated** and paste the contents of the file that matches your board from [`importable/`](importable/):
 
    | Board | Copy from |
    |---|---|
@@ -147,42 +127,46 @@ The [`importable/`](importable/) directory contains 5 tiny files (~15 lines each
    | Ultima r1.04 | [`importable/slzb-ultima.yaml`](importable/slzb-ultima.yaml) |
    | SLWF-09U r1.01 | [`importable/slwf-09u.yaml`](importable/slwf-09u.yaml) |
 
-3. **Install → Manual download** (first flash, requires USB), or **Install → Wirelessly** if you're upgrading from an earlier build of this firmware.
+5. Optional tweaks: uncomment `device_name` / `friendly_name` in the `substitutions:` block to override the hostname / HA display name, or change `ref: main` to a release tag / commit SHA to pin a version. Save.
 
-Bump the `ref:` inside the file to a tagged release (or a specific commit SHA) to pin a stable version. Leave it on `main` to always track latest.
+#### 2. Fill in `secrets.yaml`
 
-#### Workflow B — clone the full repo (for developers / customizers)
+The pasted file references two secrets. Open `secrets.yaml` in the dashboard's **Secrets Editor** (top-right menu) and make sure it contains at least:
 
-Clone the whole tree into your ESPHome config directory:
+```yaml
+api_encryption_key: "<base64 32-byte key>"    # openssl rand -base64 32
+ota_password: "<any strong secret>"
+# wifi_ssid: "..."                            # only if you're not Ethernet-only
+# wifi_password: "..."
+```
 
-- **ESPHome dashboard (HA add-on):** clone into `/homeassistant/esphome/` on HA OS (or `/config/esphome/` on Supervised). The dashboard picks up the root `*.yaml` files automatically:
+A template is provided as [`secrets.example.yaml`](secrets.example.yaml). Keep the `api_encryption_key` handy — you'll paste the same value into Home Assistant in step 4.
 
-   | Board | Build target |
-   |---|---|
-   | SLZB-MR4U r1.73 | `mr4u-r1-73.yaml` |
-   | SLZB-MRxU r1.73 | `mrxu-r1-73.yaml` |
-   | SLZB-06 / 07 | `06xu-r1-73.yaml` |
-   | Ultima r1.04 | `ultima-r1-04.yaml` |
-   | SLWF-09U r1.01 | `slw09u-r1-01.yaml` |
+#### 3. Install the firmware
 
-- **ESPHome CLI:**
+- **First install — over USB.** Plug the device into the machine running the ESPHome dashboard, click **Install → Plug into the computer running ESPHome Dashboard**, and pick the serial port. One-time step; there is no OTA path from stock SLZB-OS to this firmware.
+- **Subsequent updates — over the network (OTA).** Once this firmware is running, use **Install → Wirelessly**. The dashboard authenticates with the `ota_password` from `secrets.yaml`.
 
-  ```bash
-  git clone https://github.com/dennisvo/slzb-esphome-ng.git
-  cd slzb-esphome-ng
-  esphome run mr4u-r1-73.yaml       # first-time flash over USB
-  esphome upload mr4u-r1-73.yaml    # subsequent OTA updates
-  ```
+#### 4. Adopt the device in Home Assistant
 
-Each root file is a one-line `!include devices/*.yaml`; the full tree (`devices/`, `packages/`, `hw_defs/`, `libraries/`, `components/`) must be present alongside it.
+Home Assistant normally discovers the ESPHome node automatically (**Settings → Devices & Services → Discovered**). If it doesn't, add it via **+ Add Integration → ESPHome** and enter the device's IP or hostname. When prompted for the encryption key, paste the same `api_encryption_key` value you put in `secrets.yaml`.
 
-#### After the first install (both workflows)
+The device now shows up as an ESPHome device with diagnostic sensors, LED / button entities, and one virtual serial port per radio.
 
-1. In Home Assistant, add the device via **ESPHome integration** using the same `api_encryption_key`.
-2. In ZHA / OTBR / Z-Wave JS, use the URL:
-   `esphome-hass://esphome/{entry_id}?port_name=zigbee` (or `thread` / `zwave`, depending on which radio the integration is talking to).
+#### 5. Point ZHA / OTBR / Z-Wave JS at the radios
 
-   `{entry_id}` is the ESPHome config-entry id — visible under **Settings → Devices & Services → ESPHome → (your device)**.
+Each radio is reached over the encrypted Native API using an `esphome-hass://` URL rather than the usual `socket://ip:port`. Grab the `{entry_id}` from **Settings → Devices & Services → ESPHome → (your device)** (it's in the URL of the config-entry page), then:
+
+- **ZHA (Zigbee)** — **+ Add Integration → Zigbee Home Automation → Manual radio type**, radio type `znp` (CC26xx) or `ezsp` (EFR32 Zigbee), serial port:
+  `esphome-hass://esphome/{entry_id}?port_name=zigbee`
+- **OpenThread Border Router (Thread)** — port name `thread`.
+- **Z-Wave JS** — port name `zwave`.
+
+Rebuild your Zigbee network as you would with any coordinator swap.
+
+#### Customizing or hacking on the firmware
+
+If you want to modify the firmware (add sensors, tweak logic, contribute back), clone the full repo into your ESPHome working directory and build from the root `*.yaml` targets (`mr4u-r1-73.yaml`, `mrxu-r1-73.yaml`, `06xu-r1-73.yaml`, `ultima-r1-04.yaml`, `slw09u-r1-01.yaml`). See [`docs/architecture.md`](docs/architecture.md) for the layer breakdown and the rules for adding a new device.
 
 ---
 
