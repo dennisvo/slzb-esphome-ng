@@ -109,9 +109,9 @@ bool RadioProbe::probe_znp_(std::string &result) {
                              (static_cast<uint32_t>(buf[11]) << 16) |
                              (static_cast<uint32_t>(buf[12]) << 24);
         ESP_LOGD(TAG, "ZNP SYS_VERSION: transport=%u product=%u %u.%u.%u rev=%u", buf[4], buf[5],
-                 buf[6], buf[7], buf[8], rev);
+                 buf[6], buf[7], buf[8], static_cast<unsigned>(rev));
         char out[16];
-        snprintf(out, sizeof(out), "%u", rev);
+        snprintf(out, sizeof(out), "%u", static_cast<unsigned>(rev));
         result = out;
         return true;
       }
