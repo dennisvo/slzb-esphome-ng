@@ -116,8 +116,7 @@ substitutions:
   pin_uart2_rst: "GPIO13"
   uart2_rst_inverted: true
 
-  # Radio 2 identity for the v1 firmware-version probe.
-  # v1 ships a stub — Spinel probe implementation is v1.x (see roadmap.md).
+  # Radio 2 identity for the v1 firmware-version probe (live Spinel probe).
   radio2_chip: efr32mg26
   radio2_smlight_id: "68"
   radio2_protocol: spinel

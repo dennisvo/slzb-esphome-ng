@@ -299,7 +299,7 @@ Concrete v1 shape:
   - Publishes five text_sensors + one number-sensor per radio: `chip`, `smlight_id`, `protocol`, `role`, `firmware_channel`, `uart_baud`.
   - Publishes `radioN_installed_firmware` text_sensor. Value is set by a boot-time lambda dispatched off `radioN_protocol`:
     - `znp` → call ZNP `SYS_VERSION` probe → publish `rev` from response
-    - `spinel` → probe stub → publish `"unknown (spinel probe not implemented in v1)"`
+    - `spinel` → call Spinel `PROP_VALUE_GET(NCP_VERSION)` probe over HDLC-lite → publish the raw UTF-8 version string verbatim
     - `ezsp` → probe stub → publish `"unknown (ezsp probe not implemented in v1)"`
     - `zwave` → probe stub → publish `"unknown (zwave probe not implemented in v1)"`
     - Any probe timeout (200 ms) or framing error → publish `"unknown (probe timeout)"` / `"unknown (framing error)"`
@@ -355,10 +355,12 @@ Not widely used in our target audience — MR4U ships as coordinator.
 
 Spinel protocol. Property `PROP_NCP_VERSION` (0x02) returns a version string.
 Framing: HDLC-lite. Larger and more finicky than ZNP; also 460800 baud
-(vs 115200 for ZNP), needs correct UART setup for the probe window. Deferred
-to v1.x — v1 ships a stub for Spinel that publishes
-`"unknown (spinel probe not implemented in v1)"`. See roadmap.md v1.x for the
-real-probe replacement.
+(vs 115200 for ZNP), needs correct UART setup for the probe window. Live in
+v1.x on `feature/spinel-probe`: [`components/radio_probe/spinel_probe.cpp`](../components/radio_probe/spinel_probe.cpp)
+uses shared HDLC/CRC helpers in [`protocol_helpers.h`](../components/radio_probe/protocol_helpers.h)
+and publishes the raw UTF-8 string returned by the RCP; catalog normalisation
+against the SMLIGHT `rev` field is left to HA-side templates (see "rev is not
+uniformly YYYYMMDD" in [roadmap.md](roadmap.md)).
 
 ### 6d. v1 shipping order
 
@@ -373,7 +375,7 @@ Dispatcher order at boot (per radio, in parallel where UARTs are independent):
 1. Read `radioN_protocol` and `radioN_role` substitutions at compile time (or their HA-select override values from NVS at runtime, see §10).
 2. In an `on_boot: priority: 250` lambda — after the UART bus (`setup_priority::BUS`, ~1000) has come up and well before `serial_proxy` (`setup_priority::AFTER_CONNECTION`, ~-30) attaches — invoke the appropriate probe:
    - `protocol == znp` → ZNP `SYS_VERSION` (implemented)
-   - `protocol == spinel` → stub (deferred to v1.x)
+   - `protocol == spinel` → Spinel `PROP_VALUE_GET(NCP_VERSION)` (implemented in v1.x)
    - `protocol == ezsp` → stub (deferred to v1.x)
    - `protocol == zwave` → stub (deferred to v1.x)
    - `protocol == none` → no sensor emitted
@@ -429,9 +431,9 @@ HA lookup will consult, and the probe protocol required.
 | `69` | CC1352P7 | Coord (`0`) | ZNP (`SYS_VERSION`) | (not declared, but SLZB-06P7 support may add it later) | live (same probe) |
 | `69` | CC1352P7 | Router (`1`) | ZNP (`SYS_VERSION`) | (not declared) | live (same probe) |
 | `68` | EFR32MG26 | Coord (`0`) | EZSP over ASH (`EZSP_VERSION`) | *possibly `06xu/r1_73.yaml` single-radio slot, per-variant* | **stub → v1.x** |
-| `68` | EFR32MG26 | Thread (`2`) | Spinel (`PROP_NCP_VERSION`) | `mrxu/mr4u_r1_73.yaml` UART2 (verified on sampled device), `ultima/r1_04.yaml` UART2 | **stub → v1.x** |
+| `68` | EFR32MG26 | Thread (`2`) | Spinel (`PROP_NCP_VERSION`) | `mrxu/mr4u_r1_73.yaml` UART2 (verified on sampled device), `ultima/r1_04.yaml` UART2 | **live** (v1.x) |
 | `67` / `91` | EFR32MG24 | Coord (`0`) | EZSP over ASH (`EZSP_VERSION`) | (not declared) | **stub → v1.x** |
-| `67` / `91` | EFR32MG24 | Thread (`2`) | Spinel (`PROP_NCP_VERSION`) | (not declared) | **stub → v1.x** (same probe as EFR32MG26 Thread) |
+| `67` / `91` | EFR32MG24 | Thread (`2`) | Spinel (`PROP_NCP_VERSION`) | (not declared) | **live** (v1.x, same probe as EFR32MG26 Thread) |
 | *n/a* (not in ZB catalog) | ZW-800 | Z-Wave 800 | Z-Wave Serial API (`FUNC_ID_ZW_GET_VERSION`) | `ultima/r1_04.yaml` UART3 | **stub → v1.x** |
 | *n/a* | *(no radio)* | *(n/a)* | *(n/a)* | `slw09u/r1_01.yaml` | no probe needed |
 
@@ -441,9 +443,9 @@ their `hw_defs` don't exist here.
 
 **Interpretation:**
 
-- The **one chip live-probed in v1** is CC2674P10 in Coord mode — the fork's primary target and the only extensively tested platform per README. That covers Radio 1 on MR4U and Ultima.
-- **All other protocols (Spinel, EZSP, Z-Wave) ship as stubs in v1** and are upgraded to real probes in v1.x point releases. Spinel is the most complex of the three (HDLC-lite framing + CCITT-16 CRC + unsolicited-property discard at boot) and is deferred alongside the others to keep v1 scope tight. Users of stubbed radios still see the diagnostic sensors (`chip`, `smlight_id`, `protocol`, `role`, `firmware_channel`, `uart_baud`) but `installed_firmware` reads `"unknown (<protocol> probe not implemented in v1)"`. The HA update-entity template treats these as "no update information available" and simply doesn't render an update card for that radio.
-- **Adding a real Spinel probe in v1.x** upgrades MR4U Radio 2 (and Ultima UART2) from stub-`unknown` to live-probed with no user-facing entity or template change.
+- The **live-probed protocols in v1** are ZNP on CC26xx (Zigbee Coord/Router) and Spinel on EFR32 Thread — the Spinel probe landed post-v1-ship as a v1.x point release. Together these cover Radio 1 on MR4U and Ultima, and Radio 2 on any device flashed with EFR32 Thread firmware.
+- **EZSP and Z-Wave still ship as stubs** and are upgraded to real probes in later v1.x point releases. Users of stubbed radios still see the diagnostic sensors (`chip`, `smlight_id`, `protocol`, `role`, `firmware_channel`, `uart_baud`) but `installed_firmware` reads `"unknown (<protocol> probe not implemented in v1)"`. The HA update-entity template treats these as "no update information available" and simply doesn't render an update card for that radio.
+- **The Spinel probe upgrade** turned MR4U Radio 2 (and Ultima UART2, when flashed with Thread firmware) from stub-`unknown` to live-probed with no user-facing entity or template change.
 - **Adding EZSP later** does the same for 06xu (EFR32-coord variants) and any EFR32MG26 Coord builds.
 - **Adding Z-Wave later** does the same for the Ultima's UART3.
 
@@ -469,13 +471,13 @@ marked ❌ are invalid combinations that ESPHome build validation will reject.
 | **CC1352P7** | `znp` | `router` | TI Z-Stack router | `69` | `1` | 115 200 | ✅ live |
 | **EFR32MG26** | `ezsp` | `coord` | Silabs EmberZNet coordinator (NCP mode) | `68` | `0` | 115 200 / 460 800 | 🟡 stub → v1.x |
 | **EFR32MG26** | `ezsp` | `router` | Silabs EmberZNet router | `68` | `1` | 115 200 | 🟡 stub → v1.x |
-| **EFR32MG26** | `spinel` | `rcp` | OpenThread Radio Co-Processor (Thread stack runs on host / OTBR) | `68` | `2` | 460 800 | 🟡 stub → v1.x |
-| EFR32MG26 | `spinel` | `ncp` | *Theoretically* OpenThread NCP mode | `68` | `2` | 460 800 | 🟡 stub → v1.x (same probe as RCP once implemented) |
+| **EFR32MG26** | `spinel` | `rcp` | OpenThread Radio Co-Processor (Thread stack runs on host / OTBR) | `68` | `2` | 460 800 | ✅ live (v1.x) |
+| EFR32MG26 | `spinel` | `ncp` | *Theoretically* OpenThread NCP mode | `68` | `2` | 460 800 | ✅ live (v1.x, same probe as RCP) |
 | **EFR32MG26** | *(multi-PAN)* | *(concurrent)* | Multi-PAN builds run Zigbee EZSP + Thread Spinel concurrently on one chip | `68` | *(not yet in catalog)* | 460 800 | 🟡 out-of-scope for v1; would need dual-protocol dispatch |
 | EFR32MG26 | `znp`, `zwave` | *any* | ❌ not shipped — EFR chip can't run TI stack or Z-Wave | — | — | — | rejected |
 | **EFR32MG24** | `ezsp` | `coord` | Silabs EmberZNet coordinator, cheaper chip | `67` / `91` | `0` | 115 200 | 🟡 stub → v1.x |
 | **EFR32MG24** | `ezsp` | `router` | Silabs EmberZNet router | `67` / `91` | `1` | 115 200 | 🟡 stub → v1.x |
-| **EFR32MG24** | `spinel` | `rcp` | OpenThread RCP (rare on MG24 — usually Zigbee-only chip) | `67` / `91` | `2` | 460 800 | 🟡 stub → v1.x (same probe as MG26 once implemented) |
+| **EFR32MG24** | `spinel` | `rcp` | OpenThread RCP (rare on MG24 — usually Zigbee-only chip) | `67` / `91` | `2` | 460 800 | ✅ live (v1.x, same probe as MG26) |
 | EFR32MG24 | `znp`, `zwave` | *any* | ❌ not shipped | — | — | — | rejected |
 | **ZW-800** | `zwave` | `primary_ctrl` | Z-Wave Series 800 primary controller | *not in ZB catalog* | *(separate catalog TBD)* | 115 200 | 🟡 stub → v1.x/v2 |
 | ZW-800 | `znp`, `spinel`, `ezsp` | *any* | ❌ not shipped — dedicated Z-Wave silicon | — | — | — | rejected |
@@ -727,7 +729,7 @@ template that takes those sensors as inputs.
 ### 10.3 What v1 users still get
 
 - Live-probed installed firmware version per radio (ZNP on CC26xx only).
-- Stubbed radios (Spinel + EZSP + Z-Wave) transparently publish `"unknown (<protocol> probe not implemented in v1)"`.
+- Stubbed radios (EZSP + Z-Wave) transparently publish `"unknown (<protocol> probe not implemented in v1)"`.
 - HA update entity comparing live `rev` against SMLIGHT catalog for the live-probed CC26xx ZNP protocol. Stubbed radios don't produce an update card (template filters `unknown` out).
 - All other fork features (encrypted `serial_proxy` transport, OTA-password, no plaintext ports) unchanged.
 

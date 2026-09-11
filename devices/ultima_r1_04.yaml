@@ -17,9 +17,10 @@ packages:
   # docs/development-considerations.md §11.3.
   # platform_ble:  !include ../packages/bluetooth/bluetooth.yaml
 
-  # --- Radio firmware version diagnostics (v1) ---
-  # ZNP live-probe for Radio 1 (CC2674P10 coord); Spinel + Z-Wave stubs
-  # for Radio 2 / Radio 3, upgraded to live probes in v1.x.
+  # --- Radio firmware version diagnostics ---
+  # ZNP live-probe for Radio 1 (CC2674P10 coord) and Spinel live-probe for
+  # Radio 2 (EFR32MG26 Thread); Z-Wave (Radio 3) still stubbed in v1,
+  # upgraded to a live probe in a later v1.x point release.
   # See docs/v1-radio-firmware.md.
   platform_radio_probe_ext: !include ../packages/diagnostics/radio_probe_ext.yaml
   platform_radio1_fw_info:  !include ../packages/diagnostics/radio1_firmware_info.yaml

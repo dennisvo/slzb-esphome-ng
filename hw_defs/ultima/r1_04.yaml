@@ -208,7 +208,7 @@ substitutions:
   tca_uart2_rst_num: 8
   uart2_rst_inverted: true
 
-  # Radio 2 identity (v1 stub — Spinel probe ships in v1.x).
+  # Radio 2 identity (live Spinel probe).
   radio2_chip: efr32mg26
   radio2_smlight_id: "68"
   radio2_protocol: spinel

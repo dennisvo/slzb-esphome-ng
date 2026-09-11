@@ -403,7 +403,7 @@ Still open:
 - **No-match state is silent** — update entity shows "up-to-date" when filter returns empty. Simplest and clearest.
 - **Baud is per-role**: Radio 1 (CC2674P10 coord) at 115200, Radio 2 (EFR32MG26 Thread) at 460800. Thread firmware is 460800-only industry-wide — no 115200 option exists. `uart*_hw_flow: false` for both current MR4U radios; matches SMLIGHT's published firmware.
 - **`firmware_channel` is a substitution, not HA state** — `prod` / `dev` is a compile-time property in `hw_defs`, published to HA as a diagnostic. Value names match the SMLIGHT catalog's `prod: bool` field so the Jinja filter is a plain `selectattr('prod', 'eq', channel == 'prod')` with no translation table.
-- **Live version probe is v1** — ZNP `SYS_VERSION` + Spinel `PROP_NCP_VERSION` on boot, in-memory only, publishes `unknown` on failure. No hard-cached rev. EZSP + Z-Wave ship as `"unknown (… not implemented in v1)"` stubs, replaced in v1.x per [ROADMAP.md](ROADMAP.md).
+- **Live version probe is v1** — ZNP `SYS_VERSION` + Spinel `PROP_NCP_VERSION` on boot, in-memory only, publishes `unknown` on failure. No hard-cached rev. EZSP + Z-Wave ship as `"unknown (… not implemented in v1)"` stubs, replaced in later v1.x point releases per [ROADMAP.md](ROADMAP.md).
 - **One-click flash from HA is v2** — HA add-on running `cc2538-bsl` against a temporary raw TCP UART bridge ESPHome opens on demand. Not runtime-open, LAN-only, short-lived. See [ROADMAP.md](ROADMAP.md) v2 · flash chain.
 - **v1 ships**: seven metadata sensors per radio, live probe (ZNP+Spinel) with stubs for EZSP/Z-Wave, HA REST sensor + template update entity, radio restart/bootloader buttons, LED control switches. See [ROADMAP.md](ROADMAP.md) for the phased Step 1–5 plan.
 

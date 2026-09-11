@@ -50,7 +50,8 @@ Ultima ZW-800.
 
 - 🟢 Stub dispatch lives inline in `components/radio_probe/radio_probe.cpp` (single-file dispatcher covers all three branches; no separate `stub_probe.cpp` needed — collapsed at implementation time)
 - 🟢 `hw_defs/mrxu/mr4u_r1_73.yaml` — add `radio2_*` substitutions (protocol=`spinel`, role=`rcp`)
-- ⚪ Track replacements in v1.x below
+- 🟢 Spinel stub replaced by a live probe post-v1 — see v1.x below
+- ⚪ EZSP + Z-Wave stubs still to replace — see v1.x below
 
 ### Step 3 — extend to other devices 🟢
 
@@ -88,13 +89,14 @@ Success: `esphome compile mr4u-r1-73.yaml` links against `IDFUARTComponent::get_
 
 Additive to v1, no breaking changes. Each item is independent; order flexible.
 
-### Replace Spinel stub with a real probe ⚪
+### Replace Spinel stub with a real probe 🟢
 
-Highest debugging cost of any protocol lives here (HDLC-lite framing + CCITT-16 CRC, unsolicited property notifications need discarding at boot). Deferred out of v1 to keep the shipping surface tight; the stub emits `"unknown (spinel probe not implemented in v1)"` in the meantime.
+Highest debugging cost of any protocol lives here (HDLC-lite framing + CCITT-16 CRC, unsolicited property notifications need discarding at boot). Landed as a post-v1 point release on `feature/spinel-probe`.
 
-- ⚪ `components/radio_probe/spinel_probe.cpp` — HDLC-lite decoder, `PROP_NCP_VERSION` (prop 0x02), parse trailing YYYYMMDD from version string
-- ⚪ Verify against live MR4U EFR32 `20260416` build
-- ⚪ Reference: OpenThread `spinel/hdlc.cpp` (Apache-2.0), adapt inline
+- 🟢 `components/radio_probe/protocol_helpers.h` — shared inline CCITT-16-FALSE CRC + HDLC escape/unescape, reusable by the pending EZSP probe
+- 🟢 `components/radio_probe/spinel_probe.cpp` — HDLC-lite decoder, `PROP_NCP_VERSION` (prop 0x02), publishes the raw UTF-8 version string verbatim; catalog-normalisation is HA-template-side (see "rev is not uniformly YYYYMMDD" below)
+- 🟢 `components/radio_probe/test/test_protocol_helpers.cpp` — host-compilable regression tests, ship as source
+- ⚪ Verify against live MR4U EFR32 build once flashed (rebuild + observe `Radio 2 Installed Firmware` sensor)
 
 ### Replace EZSP stub with a real probe ⚪
 
@@ -137,7 +139,7 @@ match.
 #### `rev` is not uniformly YYYYMMDD ⚪
 
 - ⚪ Chip 70 (CC2674P10) `rev` values *are* YYYYMMDD (e.g. `20260311`) — ZNP probe → catalog match works as designed
-- ⚪ Chip 68 (EFR32MG26) `rev` values are SDK version strings — `"SDK v8.0.3"` (coord/router), `"2.7.2 sdk 2025.6.2"` (thread) — but the Spinel probe (when implemented in v1.x) returns a YYYYMMDD-style build tag (e.g. `20260416`). Equality match → never fires → every MG26 user would see `custom` on the auto-detect sensor and no upgrade offered on the update entity. Must be resolved before the Spinel probe ships.
+- ⚪ Chip 68 (EFR32MG26) `rev` values are SDK version strings — `"SDK v8.0.3"` (coord/router), `"2.7.2 sdk 2025.6.2"` (thread) — but the live Spinel probe returns the raw OpenThread `NCP_VERSION` build tag (e.g. `OPENTHREAD/thread-reference-20260416-…`). Equality match → never fires → every MG26 user would see `custom` on the auto-detect sensor and no upgrade offered on the update entity. Must be resolved before the SMLIGHT update-entity template lights up for Thread firmware.
 - ⚪ Fix option (a): Jinja tolerant-match — regex-extract a comparable token from both sides, or substring match either direction
 - ⚪ Fix option (b): accept that EFR32 auto-detect stays `custom` until v2 (when the flash chain owns the version write and we can cache what we flashed)
 - ⚪ Cross-reference: same issue affects the "installed_firmware ↔ available_rev" comparison in the HA update template — the update entity will always show "up-to-date" for EFR32 because no candidate has an equal rev string

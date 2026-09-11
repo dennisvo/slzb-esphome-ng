@@ -4,6 +4,17 @@ Drop-in HA config snippets that pair with this fork's ESPHome build. Each
 file in this directory is designed to be copied into your `configuration.yaml`
 (or a HA `packages/*.yaml` file) with minimal editing.
 
+## Contents
+
+- **[`smlight-firmware-update.yaml`](smlight-firmware-update.yaml)** — per-radio
+  "update available" entity for the ESPHome host itself (compares live-probed
+  radio firmware vs. SMLIGHT's public catalog).
+- **[`zha-ota-provider.md`](zha-ota-provider.md)** — enabling firmware updates
+  for the Zigbee end-devices paired *through* the radio (Hue switches, Aqara
+  sensors, Tuya plugs, …). One-line YAML to add the community-mirror OTA
+  provider, plus the exact-match `type:` gotcha that eats an afternoon
+  otherwise.
+
 ## `smlight-firmware-update.yaml` — per-radio "update available" entity
 
 Shows, per radio, whether SMLIGHT has a newer firmware than what's installed.
@@ -55,9 +66,9 @@ v1.x.
 
 | Board | Radio 1 | Radio 2 | Radio 3 |
 |---|---|---|---|
-| MR4U (CC2674P10 + EFR32MG26) | ✅ live (ZNP) | 🟡 stub → v1.x (Spinel) | — |
-| Ultima (CC2674P10 + EFR32MG26 + ZW-800) | ✅ live (ZNP) | 🟡 stub → v1.x (Spinel) | 🟡 stub → v1.x (Z-Wave) |
-| 06xU (single radio, per variant) | ✅ live for CC2674P10 / CC1352P7 (default); 🟡 stub for EFR32MG26 / EFR32MG24 | — | — |
+| MR4U (CC2674P10 + EFR32MG26) | ✅ live (ZNP) | ✅ live if Thread (Spinel); 🟡 stub if Zigbee (EZSP, → v1.x) | — |
+| Ultima (CC2674P10 + EFR32MG26 + ZW-800) | ✅ live (ZNP) | ✅ live if Thread (Spinel); 🟡 stub if Zigbee (EZSP, → v1.x) | 🟡 stub → v1.x (Z-Wave) |
+| 06xU (single radio, per variant) | ✅ live for CC2674P10 / CC1352P7 (ZNP) and EFR32 Thread (Spinel); 🟡 stub for EFR32 Zigbee (EZSP) | — | — |
 | SLW09U (no radio) | *not included* | — | — |
 
 Stubbed radios still expose the static diagnostic sensors (`chip`,

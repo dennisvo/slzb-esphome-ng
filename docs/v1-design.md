@@ -328,7 +328,7 @@ Groups the items above by ESPHome package file. Nothing implemented yet; this is
 | Package | Purpose | Effort | Depends on |
 |---|---|---|---|
 | `packages/diagnostics/radio_firmware_info.yaml` | 7 diagnostic sensors per radio: chip, smlight_id, protocol, role, baud, hw_flow, channel + the `radio_probe:` instance publishing `installed_firmware` | Tiny YAML | hw_defs substitutions + `components/radio_probe/` (see [roadmap.md](roadmap.md) Step 1) |
-| `components/radio_probe/` | Custom component: per-radio boot-time probe dispatched on `radio*_protocol`. See [roadmap.md](roadmap.md) Steps 1–2 for phased build (ZNP live for CC26xx → Spinel/EZSP/Z-Wave stubs for everything else; real Spinel/EZSP/Z-Wave probes ship in v1.x) | Medium (custom C++/Python) | UART bus (`setup_priority::BUS`, ~1000); runs at `on_boot: priority: 250` before `serial_proxy` attaches |
+| `components/radio_probe/` | Custom component: per-radio boot-time probe dispatched on `radio*_protocol`. See [roadmap.md](roadmap.md) Steps 1–2 for phased build (ZNP live for CC26xx and Spinel live for EFR32 Thread; EZSP + Z-Wave still stubbed, real probes ship in later v1.x point releases) | Medium (custom C++/Python) | UART bus (`setup_priority::BUS`, ~1000); runs at `on_boot: priority: 250` before `serial_proxy` attaches |
 | `components/uart_hw_flow/` | Custom component that enables ESP-IDF UART HW flow control per UART | Small (~20 lines C++ + Python registration) | ESP-IDF HAL, must run after `App.setup()` |
 | `packages/radio_control/radio1_restart_btn.yaml` | Button that pulses RST pin | Tiny | Existing hw_defs pin names |
 | `packages/radio_control/radio2_restart_btn.yaml` | Same for radio 2 | Tiny | Existing hw_defs |
@@ -403,9 +403,9 @@ Still open:
 - **No-match state is silent** — update entity shows "up-to-date" when filter returns empty. Simplest and clearest.
 - **Baud is per-role**: Radio 1 (CC2674P10 coord) at 115200, Radio 2 (EFR32MG26 Thread) at 460800. Thread firmware is 460800-only industry-wide — no 115200 option exists. `uart*_hw_flow: false` for both current MR4U radios; matches SMLIGHT's published firmware.
 - **`firmware_channel` is a substitution, not HA state** — `prod` / `dev` is a compile-time property in `hw_defs`, published to HA as a diagnostic. Value names match the SMLIGHT catalog's `prod: bool` field so the Jinja filter is a plain `selectattr('prod', 'eq', channel == 'prod')` with no translation table.
-- **Live version probe is v1** — ZNP `SYS_VERSION` on boot for CC26xx (Radio 1), in-memory only, publishes `unknown` on failure. No hard-cached rev. Spinel + EZSP + Z-Wave ship as `"unknown (… not implemented in v1)"` stubs, replaced in v1.x per [roadmap.md](roadmap.md).
+- **Live version probe is v1** — ZNP `SYS_VERSION` on boot for CC26xx (Radio 1) and Spinel `PROP_NCP_VERSION` for EFR32 Thread (Radio 2 when flashed with OT firmware), in-memory only, publishes `unknown` on failure. No hard-cached rev. EZSP + Z-Wave ship as `"unknown (… not implemented in v1)"` stubs, replaced in later v1.x point releases per [roadmap.md](roadmap.md).
 - **One-click flash from HA is v2** — HA add-on running `cc2538-bsl` against a temporary raw TCP UART bridge ESPHome opens on demand. Not runtime-open, LAN-only, short-lived. See [roadmap.md](roadmap.md) v2 · flash chain.
-- **v1 ships**: seven metadata sensors per radio, live ZNP probe for CC26xx with stubs for Spinel/EZSP/Z-Wave, HA REST sensor + template update entity, radio restart/bootloader buttons, LED control switches. See [roadmap.md](roadmap.md) for the phased Step 1–4 plan.
+- **v1 ships**: seven metadata sensors per radio, live ZNP + Spinel probes with stubs for EZSP/Z-Wave, HA REST sensor + template update entity, radio restart/bootloader buttons, LED control switches. See [roadmap.md](roadmap.md) for the phased Step 1–4 plan.
 
 ## 11. Feature parity — SMLIGHT HA integration
 

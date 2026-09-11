@@ -10,7 +10,7 @@ A **security-hardened** ESPHome firmware for SMLIGHT-style network Zigbee/Thread
 
 Upstream (`smlight-tech/slzb-esphome`) exposes every radio UART as a plaintext TCP port. This fork replaces that with an **encrypted ESPHome Native API** carrying [`serial_proxy`](https://esphome.io/components/serial_proxy.html) streams to Home Assistant.
 
-Result: on a running device, only **one** TCP port is open — `6053/tcp` (encrypted Native API). No `6638`, `7638`, `8638`, `9638`, `80`.
+Result: on a running device, the only externally-reachable ports are the standard ESPHome trio — `6053/tcp` (encrypted Native API), `8266/tcp` (password-protected OTA) and `5353/udp` (mDNS, for HA discovery). Gone: `6638`, `7638`, `8638`, `9638`, `80`.
 
 ---
 

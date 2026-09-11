@@ -4,9 +4,8 @@
 #
 # v1 shape: static metadata sensors from `radio2_*` substitutions +
 # `installed_firmware` populated by the `radio_probe` custom component.
-# For MR4U this is a spinel/rcp stub in v1 (publishes
-# "unknown (spinel probe not implemented in v1)"); the real Spinel probe
-# ships in v1.x per roadmap.md.
+# EFR32 Thread (spinel) is live-probed; EFR32 Zigbee (ezsp) still ships
+# as a stub in v1 ("unknown (ezsp probe not implemented in v1)").
 #
 # Design authority: docs/v1-radio-firmware.md §§3, 5, 6c, 6d.
 #

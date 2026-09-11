@@ -792,7 +792,7 @@ Reference inventory of what changed relative to [`smlight-tech/slzb-esphome`](ht
 | Radio reset / bootloader entry | HA switches writing GPIO | Automatic — `serial_proxy` drives `dtr_pin` (nRESET) and `rts_pin` (bootloader) from the client's DTR/RTS modem-control signals (matches `zigpy-znp`, `universal-silabs-flasher`, `bellows`, `zwave-js`) |
 | OTA | Unauthenticated | Password-protected (`ota_password`) |
 | USB pass-through (`packages/usb/usb_uart.yaml`) | Plaintext TCP `:9638` | `serial_proxy` (port name `usb`) — package exists and swaps the transport, but is not `!include`d by any shipping device build in v1 (kept ready for a future USB-host variant per §25) |
-| Radio firmware version reporting | Not exposed to HA | One-shot boot-time probe per radio (ZNP `SYS_VERSION` for CC26xx in v1; Spinel, EZSP and Z-Wave stubs publish `"unknown (<protocol> probe not implemented in v1)"` until real probes ship in v1.x); published as diagnostic sensors; HA template snippet included for update-available comparison against SMLIGHT's public catalog (see [`docs/ha-integrations/`](ha-integrations/)) |
+| Radio firmware version reporting | Not exposed to HA | One-shot boot-time probe per radio (ZNP `SYS_VERSION` for CC26xx and Spinel `PROP_NCP_VERSION` for EFR32 Thread; EZSP and Z-Wave still publish `"unknown (<protocol> probe not implemented in v1)"` until real probes ship in a later v1.x release); published as diagnostic sensors; HA template snippet included for update-available comparison against SMLIGHT's public catalog (see [`docs/ha-integrations/`](ha-integrations/)) |
 
 ### 30.2 What is preserved from upstream
 
