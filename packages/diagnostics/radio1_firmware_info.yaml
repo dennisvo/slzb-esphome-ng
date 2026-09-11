@@ -27,53 +27,61 @@ radio_probe:
       id: radio1_installed_firmware_sensor
       entity_category: diagnostic
 
+# Static metadata sourced from hw_defs substitutions. Values change only
+# on reflash, so we publish once at boot and never poll — see on_boot
+# block at the bottom of this file.
 text_sensor:
   - platform: template
     name: "${friendly_name} Radio 1 chip"
     id: radio1_chip_sensor
     entity_category: diagnostic
-    lambda: |-
-      return {"${radio1_chip}"};
-    update_interval: never
 
   - platform: template
     name: "${friendly_name} Radio 1 SMLIGHT id"
     id: radio1_smlight_id_sensor
     entity_category: diagnostic
-    lambda: |-
-      return {"${radio1_smlight_id}"};
-    update_interval: never
 
   - platform: template
     name: "${friendly_name} Radio 1 protocol"
     id: radio1_protocol_sensor
     entity_category: diagnostic
-    lambda: |-
-      return {"${radio1_protocol}"};
-    update_interval: never
 
   - platform: template
     name: "${friendly_name} Radio 1 role"
     id: radio1_role_sensor
     entity_category: diagnostic
-    lambda: |-
-      return {"${radio1_role}"};
-    update_interval: never
 
   - platform: template
     name: "${friendly_name} Radio 1 firmware channel"
     id: radio1_firmware_channel_sensor
     entity_category: diagnostic
-    lambda: |-
-      return {"${radio1_firmware_channel}"};
-    update_interval: never
 
 sensor:
   - platform: template
     name: "${friendly_name} Radio 1 UART baud"
     id: radio1_uart_baud_sensor
     entity_category: diagnostic
-    lambda: |-
-      return ${radio1_uart_baud};
     accuracy_decimals: 0
-    update_interval: never
+
+esphome:
+  on_boot:
+    priority: -100  # after all components have finished setup
+    then:
+      - text_sensor.template.publish:
+          id: radio1_chip_sensor
+          state: "${radio1_chip}"
+      - text_sensor.template.publish:
+          id: radio1_smlight_id_sensor
+          state: "${radio1_smlight_id}"
+      - text_sensor.template.publish:
+          id: radio1_protocol_sensor
+          state: "${radio1_protocol}"
+      - text_sensor.template.publish:
+          id: radio1_role_sensor
+          state: "${radio1_role}"
+      - text_sensor.template.publish:
+          id: radio1_firmware_channel_sensor
+          state: "${radio1_firmware_channel}"
+      - sensor.template.publish:
+          id: radio1_uart_baud_sensor
+          state: ${radio1_uart_baud}
