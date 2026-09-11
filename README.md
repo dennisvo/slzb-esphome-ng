@@ -1,7 +1,6 @@
 # ESPHome Multi-Device Firmware Repository
 
 > **This is a security-hardened fork of [smlight-tech/slzb-esphome](https://github.com/smlight-tech/slzb-esphome).**
-> Repository: [`dennisvo/slzb-esphome-ng`](https://github.com/dennisvo/slzb-esphome-ng) (default branch: `main`).
 > The radio UARTs (Zigbee / Thread / Z-Wave) are no longer exposed as plaintext TCP ports on the LAN.
 > They are proxied over an **encrypted ESPHome Native API** to Home Assistant (`serial_proxy` + `esphome-hass://` URLs).
 > See [Fork Differences](#fork-differences) below and [`docs/design.md`](docs/design.md) for the full rationale.
