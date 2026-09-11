@@ -184,3 +184,27 @@ actually accept in v1, see [v1-radio-firmware.md](../v1-radio-firmware.md) §6g.
 The permutation matrix there is the **normative** subset; this README
 describes the **descriptive** superset SMLIGHT ships.
 
+## Before you re-flash the Zigbee / Thread radio
+
+This fork doesn't ship a radio-flashing flow yet — that's v2 (see
+[`roadmap.md`](roadmap.md)). If you re-flash the CC26xx (Zigbee) or EFR32
+(Thread) radio using SMLIGHT's web flasher, a temporary SLZB-OS boot, or any
+other external tool, **back up your Zigbee network state from Home Assistant
+first**.
+
+Some flashing paths wipe the radio's non-volatile memory (network key, PAN ID,
+address table, frame counters). Without a backup you'd have to re-pair every
+device.
+
+- **Take the backup**: Settings → Devices & Services → ZHA → coordinator
+  device → three-dot menu → Download diagnostics. Store the JSON off the
+  SLZB.
+- **If flashing wipes NV**: restore via ZHA → Configure → Restore automatic
+  backup (or upload the JSON). The coordinator comes back on the same
+  network key; paired devices reconnect without re-pairing. Battery-powered
+  sleepy devices may need a wake-up press.
+- **What's not at risk**: the IEEE (MAC) address lives in the radio's ROM.
+  Flashing can't touch it.
+
+For a tool-independent backup that also works with Zigbee2MQTT, `zigpy backup`
+produces a portable JSON — see the `zigpy-cli` docs.
