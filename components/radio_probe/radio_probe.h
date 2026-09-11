@@ -39,6 +39,10 @@ class RadioProbe : public Component, public uart::UARTDevice {
   void dispatch_();
   void publish_(const std::string &value);
   void drain_rx_();
+  // Diagnostic: main-task setup logs get evicted from ESPHome's early-boot
+  // ring before an API log client can attach. Appending to debug_trace_ and
+  // replaying it from dump_config() preserves the breadcrumbs.
+  void trace_(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
   // Per-protocol probes. Return true on success; on true, `result` holds the
   // human-readable version string to publish.
@@ -54,6 +58,7 @@ class RadioProbe : public Component, public uart::UARTDevice {
   text_sensor::TextSensor *installed_{nullptr};
   // Temporary diagnostic: flipped true from setup(); read from dump_config().
   bool setup_ran_{false};
+  std::string debug_trace_;
 };
 
 }  // namespace radio_probe

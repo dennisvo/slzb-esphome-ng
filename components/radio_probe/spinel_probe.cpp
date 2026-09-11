@@ -88,11 +88,13 @@ bool RadioProbe::probe_spinel_(std::string &result) {
   this->flush();
   ESP_LOGV(TAG, "spinel TX %u bytes: %s", static_cast<unsigned>(frame_len),
            format_hex_pretty(framed, frame_len).c_str());
+  this->trace_("spinel: TX %u B crc=0x%04X", static_cast<unsigned>(frame_len), crc);
 
   // ── Read one framed response ────────────────────────────────────────────
   uint8_t rx[SPINEL_RX_BUF];
   size_t pos = 0;
   bool in_frame = false;
+  size_t total_rx_bytes = 0;
   const uint32_t deadline = millis() + PROBE_TIMEOUT_MS;
 
   while (millis() < deadline) {
@@ -101,6 +103,7 @@ bool RadioProbe::probe_spinel_(std::string &result) {
       if (!this->read_byte(&b)) {
         break;
       }
+      total_rx_bytes++;
       if (b == HDLC_FLAG) {
         if (!in_frame) {
           in_frame = true;  // opening flag — start collecting
@@ -118,6 +121,7 @@ bool RadioProbe::probe_spinel_(std::string &result) {
       }
       if (pos >= sizeof(rx)) {
         ESP_LOGW(TAG, "spinel: RX buffer overflow");
+        this->trace_("spinel: RX overflow at %u B", static_cast<unsigned>(pos));
         return false;
       }
       rx[pos++] = b;
@@ -127,23 +131,37 @@ bool RadioProbe::probe_spinel_(std::string &result) {
   ESP_LOGW(TAG, "spinel: probe timeout after %u ms (%u bytes, in_frame=%d)",
            static_cast<unsigned>(PROBE_TIMEOUT_MS), static_cast<unsigned>(pos),
            static_cast<int>(in_frame));
+  this->trace_("spinel: TIMEOUT total_rx=%u in_frame=%d pos=%u",
+               static_cast<unsigned>(total_rx_bytes), static_cast<int>(in_frame),
+               static_cast<unsigned>(pos));
   if (pos > 0) {
     ESP_LOGV(TAG, "spinel RX (partial): %s", format_hex_pretty(rx, pos).c_str());
+    // Trace first 16 bytes as hex so we can see whatever the RCP sent.
+    const size_t n = pos > 16 ? 16 : pos;
+    char hex[3 * 16 + 1] = {0};
+    for (size_t i = 0; i < n; i++) {
+      snprintf(&hex[i * 3], 4, "%02X ", rx[i]);
+    }
+    this->trace_("spinel: partial[0..%u]=%s", static_cast<unsigned>(n), hex);
   }
   return false;
 
 have_frame:
   ESP_LOGV(TAG, "spinel RX %u bytes (raw): %s", static_cast<unsigned>(pos),
            format_hex_pretty(rx, pos).c_str());
+  this->trace_("spinel: RX frame %u B (total_rx=%u)", static_cast<unsigned>(pos),
+               static_cast<unsigned>(total_rx_bytes));
   // ── Unescape + verify CRC ─────────────────────────────────────────────────
   uint8_t unesc[SPINEL_RX_BUF];
   size_t unesc_len = hdlc_unescape(rx, pos, unesc, sizeof(unesc));
   ESP_LOGV(TAG, "spinel RX unescape %u bytes: %s", static_cast<unsigned>(unesc_len),
            format_hex_pretty(unesc, unesc_len).c_str());
+  this->trace_("spinel: unesc %u B", static_cast<unsigned>(unesc_len));
   if (unesc_len < 5) {
     // Need at least: header + cmd + prop + 2-byte CRC.
     ESP_LOGW(TAG, "spinel: frame too short (%u bytes after unescape)",
              static_cast<unsigned>(unesc_len));
+    this->trace_("spinel: SHORT %u B", static_cast<unsigned>(unesc_len));
     return false;
   }
   const size_t body_bytes = unesc_len - 2;
@@ -152,20 +170,24 @@ have_frame:
   const uint16_t want_crc = ccitt16_crc(unesc, body_bytes);
   if (got_crc != want_crc) {
     ESP_LOGW(TAG, "spinel: CRC mismatch got=0x%04X want=0x%04X", got_crc, want_crc);
+    this->trace_("spinel: CRC got=0x%04X want=0x%04X", got_crc, want_crc);
     return false;
   }
 
   // ── Validate header, cmd, prop_id ────────────────────────────────────────
   if (unesc[0] != SPINEL_HEADER_FLG_IID0_TID1) {
     ESP_LOGW(TAG, "spinel: unexpected header 0x%02X", unesc[0]);
+    this->trace_("spinel: HDR 0x%02X", unesc[0]);
     return false;
   }
   if (unesc[1] != SPINEL_CMD_PROP_VALUE_IS) {
     ESP_LOGW(TAG, "spinel: expected PROP_VALUE_IS(0x06), got 0x%02X", unesc[1]);
+    this->trace_("spinel: CMD 0x%02X", unesc[1]);
     return false;
   }
   if (unesc[2] != SPINEL_PROP_NCP_VERSION) {
     ESP_LOGW(TAG, "spinel: expected prop NCP_VERSION(0x02), got 0x%02X", unesc[2]);
+    this->trace_("spinel: PROP 0x%02X", unesc[2]);
     return false;
   }
 
@@ -178,10 +200,12 @@ have_frame:
   }
   if (str_len == 0) {
     ESP_LOGW(TAG, "spinel: NCP_VERSION string is empty");
+    this->trace_("spinel: EMPTY_STR max=%u", static_cast<unsigned>(str_max));
     return false;
   }
   result.assign(reinterpret_cast<const char *>(str_start), str_len);
   ESP_LOGD(TAG, "spinel NCP_VERSION: %s", result.c_str());
+  this->trace_("spinel: STR len=%u", static_cast<unsigned>(str_len));
   return true;
 }
 

@@ -11,17 +11,39 @@
 
 #include "radio_probe.h"
 
+#include <cstdarg>
+#include <cstdio>
+
 #include "esphome/core/log.h"
 
 namespace esphome {
 namespace radio_probe {
 
+void RadioProbe::trace_(const char *fmt, ...) {
+  char buf[160];
+  va_list ap;
+  va_start(ap, fmt);
+  int n = vsnprintf(buf, sizeof(buf), fmt, ap);
+  va_end(ap);
+  if (n <= 0) {
+    return;
+  }
+  if (static_cast<size_t>(n) >= sizeof(buf)) {
+    n = sizeof(buf) - 1;
+  }
+  // Cap total trace at ~1 KB so runaway traces can't eat all RAM.
+  if (this->debug_trace_.size() > 1024) {
+    return;
+  }
+  this->debug_trace_.append(buf, static_cast<size_t>(n));
+  this->debug_trace_.push_back('\n');
+}
+
 void RadioProbe::setup() {
   this->setup_ran_ = true;
-  ESP_LOGE(TAG, "*** setup() entered — protocol=%s chip=%s ***",
-           this->protocol_.c_str(), this->chip_.c_str());
+  this->trace_("setup: protocol=%s chip=%s", this->protocol_.c_str(), this->chip_.c_str());
   this->dispatch_();
-  ESP_LOGE(TAG, "*** setup() exit — protocol=%s ***", this->protocol_.c_str());
+  this->trace_("setup: exit");
 }
 
 void RadioProbe::dump_config() {
@@ -29,6 +51,19 @@ void RadioProbe::dump_config() {
            this->protocol_.c_str(),
            this->setup_ran_ ? 1 : 0,
            static_cast<unsigned>(this->get_component_state()));
+  // Replay the setup-time breadcrumb buffer line-by-line at ERROR level so it
+  // survives ESPHome's early-boot ring-buffer eviction (see repo memory:
+  // esphome-log-buffer.md).
+  size_t start = 0;
+  while (start < this->debug_trace_.size()) {
+    size_t nl = this->debug_trace_.find('\n', start);
+    if (nl == std::string::npos) {
+      nl = this->debug_trace_.size();
+    }
+    ESP_LOGE(TAG, "[TRACE] %.*s", static_cast<int>(nl - start),
+             this->debug_trace_.c_str() + start);
+    start = nl + 1;
+  }
   ESP_LOGCONFIG(TAG, "Radio Probe:");
   ESP_LOGCONFIG(TAG, "  Chip: %s", this->chip_.c_str());
   ESP_LOGCONFIG(TAG, "  SMLIGHT id: %s", this->smlight_id_.c_str());
@@ -57,6 +92,7 @@ void RadioProbe::drain_rx_() {
 }
 
 void RadioProbe::dispatch_() {
+  this->trace_("dispatch: protocol=%s", this->protocol_.c_str());
   if (this->protocol_ == "none") {
     return;  // radioless board — no sensor emitted
   }
@@ -64,8 +100,10 @@ void RadioProbe::dispatch_() {
   if (this->protocol_ == "znp") {
     std::string result;
     if (this->probe_znp_(result)) {
+      this->trace_("znp: OK '%s'", result.c_str());
       this->publish_(result);
     } else {
+      this->trace_("znp: FAIL");
       // Concrete reason is logged inside probe_znp_(); the sensor gets the
       // generic string so HA's update template can uniformly skip on
       // "unknown".
@@ -77,8 +115,10 @@ void RadioProbe::dispatch_() {
   if (this->protocol_ == "spinel") {
     std::string result;
     if (this->probe_spinel_(result)) {
+      this->trace_("spinel: OK '%s'", result.c_str());
       this->publish_(result);
     } else {
+      this->trace_("spinel: FAIL");
       this->publish_("unknown (spinel probe failed)");
     }
     return;
