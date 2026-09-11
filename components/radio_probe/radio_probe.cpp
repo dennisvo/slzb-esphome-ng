@@ -1,9 +1,9 @@
 // Radio firmware version probe — dispatcher.
 //
 // The v1 dispatcher is a switch on the `protocol` substitution:
-//   znp     -> live ZNP SYS_VERSION probe (implemented in znp_probe.cpp)
-//   spinel  -> stub (deferred to v1.x per roadmap.md)
-//   ezsp    -> stub (deferred to v1.x)
+//   znp     -> live ZNP SYS_VERSION probe (znp_probe.cpp)
+//   spinel  -> live Spinel PROP_VALUE_GET(NCP_VERSION) probe (spinel_probe.cpp)
+//   ezsp    -> stub (deferred to v1.x per roadmap.md)
 //   zwave   -> stub (deferred to v1.x)
 //   none    -> no sensor emitted (radioless board)
 //
@@ -64,8 +64,18 @@ void RadioProbe::dispatch_() {
     return;
   }
 
-  // v1 stubs — real probes ship in v1.x per roadmap.md.
-  if (this->protocol_ == "spinel" || this->protocol_ == "ezsp" || this->protocol_ == "zwave") {
+  if (this->protocol_ == "spinel") {
+    std::string result;
+    if (this->probe_spinel_(result)) {
+      this->publish_(result);
+    } else {
+      this->publish_("unknown (spinel probe failed)");
+    }
+    return;
+  }
+
+  // Remaining v1 stubs — real probes ship in later v1.x PRs per roadmap.md.
+  if (this->protocol_ == "ezsp" || this->protocol_ == "zwave") {
     this->publish_("unknown (" + this->protocol_ + " probe not implemented in v1)");
     return;
   }

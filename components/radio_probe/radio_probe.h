@@ -43,6 +43,7 @@ class RadioProbe : public Component, public uart::UARTDevice {
   // Per-protocol probes. Return true on success; on true, `result` holds the
   // human-readable version string to publish.
   bool probe_znp_(std::string &result);
+  bool probe_spinel_(std::string &result);
 
   std::string chip_;
   std::string smlight_id_;
