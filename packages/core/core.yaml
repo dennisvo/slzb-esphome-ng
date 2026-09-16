@@ -2,6 +2,10 @@ esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
   name_add_mac_suffix: true
+  # 2026.9.0 introduces bare `ota: encryption:` inheriting the API key so the
+  # OTA transport is confidential end-to-end. Building against an older
+  # dashboard would silently fall back to plaintext OTA — fail fast instead.
+  min_version: "2026.9.0"
   project:
     name: SMLIGHT.${device_name}
     version: "1.00"
@@ -29,11 +33,14 @@ logger:
 
 api:
   encryption:
-    key: !secret api_encryption_key
+    key: !secret device_encryption_key
 
+# Bare `encryption:` (no key) inherits the API key above so both transports
+# are protected by a single per-device PSK. Requires firmware built with
+# ESPHome 2026.9.0+ on both ends (enforced by min_version above).
 ota:
   - platform: esphome
-    password: !secret ota_password
+    encryption:
 
 #web_server:
 #  port: 80

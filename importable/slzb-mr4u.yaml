@@ -7,8 +7,10 @@
 #       your local `secrets.yaml` — see step 3).
 #   3. Replace the generated YAML with the contents of this file.
 #   4. Ensure `/config/esphome/secrets.yaml` contains:
-#        api_encryption_key: "<base64 32-byte key>"   # openssl rand -base64 32
-#        ota_password:       "<any strong secret>"
+#        device_encryption_key: "<base64 32-byte key>"   # openssl rand -base64 32
+#      This one key protects both the Native API and OTA transports
+#      (ESPHome 2026.9.0+ required — the firmware refuses to build on
+#      older dashboards to prevent plaintext OTA fallback).
 #   5. Install → USB (first flash) → subsequently OTA.
 #
 # The `packages:` block below pulls the entire device composition from

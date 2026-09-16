@@ -97,9 +97,9 @@ The radio UARTs are exposed to the network via [`oxan/esphome-stream-server`](ht
 |---|---|---|
 | Radio UART transport | Plaintext TCP (`stream_server`) | Encrypted [ESPHome Native API](https://esphome.io/components/api.html) via [`serial_proxy`](https://esphome.io/components/serial_proxy.html) |
 | HA-side URL | `socket://<ip>:<port>` | `esphome-hass://esphome/{entry_id}?port_name=<zigbee\|thread\|zwave>` |
-| Auth | None (open TCP) | Pre-shared `api_encryption_key` (Noise / ChaCha20-Poly1305) |
+| Auth | None (open TCP) | Pre-shared `device_encryption_key` (Noise / ChaCha20-Poly1305) |
 | Radio reset / bootloader entry | HA switches writing GPIO | Automatic — `serial_proxy` drives `dtr_pin` (nRESET) and `rts_pin` (bootloader) from the client's DTR/RTS modem-control signals |
-| OTA | Unauthenticated | Password-protected (`ota_password`) |
+| OTA | Unauthenticated | Encrypted with the same PSK (`ota: encryption:` inherits the API key) — requires ESPHome 2026.9+ |
 | USB pass-through (`packages/usb/usb_uart.yaml`) | Plaintext TCP `:9638` | `serial_proxy` (port name `usb`) — package exists but is not `!include`d by any shipping device build in v1 |
 | Radio firmware version reporting | Not exposed to HA | One-shot boot-time probe per radio (ZNP live for CC26xx and Spinel live for EFR32 Thread; EZSP and Z-Wave still stubbed until a later v1.x release); diagnostic sensors + HA template snippet vs. SMLIGHT's public catalog. See [`docs/ha-integrations/`](docs/ha-integrations/) |
 
@@ -107,7 +107,9 @@ For the full delta reference — everything preserved, removed, disabled-by-defa
 
 ### Setup
 
-Install the **ESPHome Device Builder** add-on in Home Assistant, create a new device, copy-paste the YAML file for your board, adjust to your liking, make sure `secrets.yaml` contains the `api_encryption_key` and `ota_password` entries the file references, and hit **Install**.
+**Requirement:** ESPHome 2026.9.0 or newer on both the device and the dashboard — the OTA transport inherits the Native API encryption key so the firmware image never travels the network in plaintext. The build refuses to compile on older versions.
+
+Install the **ESPHome Device Builder** add-on in Home Assistant, create a new device, copy-paste the YAML file for your board, adjust to your liking, make sure `secrets.yaml` contains a `device_encryption_key` entry, and hit **Install**.
 
 The walkthrough below spells that out; the ESPHome CLI works the same way with the equivalent commands.
 
@@ -130,25 +132,24 @@ The walkthrough below spells that out; the ESPHome CLI works the same way with t
 
 #### 2. Fill in `secrets.yaml`
 
-The pasted file references two secrets. Open `secrets.yaml` in the dashboard's **Secrets Editor** (top-right menu) and make sure it contains at least:
+The pasted file references one secret. Open `secrets.yaml` in the dashboard's **Secrets Editor** (top-right menu) and make sure it contains at least:
 
 ```yaml
-api_encryption_key: "<base64 32-byte key>"    # openssl rand -base64 32
-ota_password: "<any strong secret>"
-# wifi_ssid: "..."                            # only if you're not Ethernet-only
+device_encryption_key: "<base64 32-byte key>"    # openssl rand -base64 32
+# wifi_ssid: "..."                              # only if you're not Ethernet-only
 # wifi_password: "..."
 ```
 
-A template is provided as [`secrets.example.yaml`](secrets.example.yaml). Keep the `api_encryption_key` handy — you'll paste the same value into Home Assistant in step 4.
+A template is provided as [`secrets.example.yaml`](secrets.example.yaml). Keep the `device_encryption_key` handy — you'll paste the same value into Home Assistant in step 4.
 
 #### 3. Install the firmware
 
 - **First install — over USB.** Plug the device into the machine running the ESPHome dashboard, click **Install → Plug into the computer running ESPHome Dashboard**, and pick the serial port. One-time step; there is no OTA path from stock SLZB-OS to this firmware.
-- **Subsequent updates — over the network (OTA).** Once this firmware is running, use **Install → Wirelessly**. The dashboard authenticates with the `ota_password` from `secrets.yaml`.
+- **Subsequent updates — over the network (OTA).** Once this firmware is running, use **Install → Wirelessly**. The firmware image is Noise-encrypted end-to-end using the same `device_encryption_key` as the Native API — no separate password is transmitted or stored.
 
 #### 4. Adopt the device in Home Assistant
 
-Home Assistant normally discovers the ESPHome node automatically (**Settings → Devices & Services → Discovered**). If it doesn't, add it via **+ Add Integration → ESPHome** and enter the device's IP or hostname. When prompted for the encryption key, paste the same `api_encryption_key` value you put in `secrets.yaml`.
+Home Assistant normally discovers the ESPHome node automatically (**Settings → Devices & Services → Discovered**). If it doesn't, add it via **+ Add Integration → ESPHome** and enter the device's IP or hostname. When prompted for the encryption key, paste the same `device_encryption_key` value you put in `secrets.yaml`.
 
 The device now shows up as an ESPHome device with diagnostic sensors, LED / button entities, and one virtual serial port per radio.
 

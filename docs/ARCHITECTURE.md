@@ -108,8 +108,8 @@ Do **not** try to interpolate substitutions inside `!include` paths — ESPHome 
 | Concern | Mechanism |
 |---|---|
 | Radio UART transport | `serial_proxy` component (upstream ESPHome) tunneling over Native API |
-| Encryption | Noise `NNpsk0` + ChaCha20-Poly1305, PSK from `!secret api_encryption_key` |
-| OTA | Password-protected via `!secret ota_password` |
+| Encryption | Noise `NNpsk0` + ChaCha20-Poly1305, PSK from `!secret device_encryption_key` |
+| OTA | Encrypted with the same PSK (bare `ota: encryption:` inherits the API key) — requires ESPHome 2026.9+ |
 | Radio reset / bootloader entry | `serial_proxy.dtr_pin` (nRESET) + `serial_proxy.rts_pin` (bootloader) — asserted automatically by the client (`zigpy-znp`, `bellows`, `universal-silabs-flasher`, `zwave-js`) via modem-control signals over the API |
 | Management UI | `web_server` disabled (kept off upstream too) |
 | Bluetooth proxy | Disabled by default |

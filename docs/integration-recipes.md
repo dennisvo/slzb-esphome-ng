@@ -145,8 +145,8 @@ Rather than exposing raw internals, use one high-level radio abstraction:
 radio:
   type: esphome
   host: mr4u.local
-  port_name: efr32          # whichever chip is configured for Thread
-  psk: !secret mr4u_api_key # same PSK as the ESPHome integration in HA Core
+  port_name: efr32                  # whichever chip is configured for Thread
+  psk: !secret device_encryption_key # same PSK as the ESPHome integration in HA Core
   baudrate: 460800
   flow_control: false
 ```

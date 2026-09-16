@@ -36,15 +36,15 @@ jobs:
 
       - name: Provide stub secrets.yaml
         run: |
-          # ESPHome requires api_encryption_key to be a valid 32-byte base64
-          # string and ota_password to be non-empty. Substitute obviously-fake
-          # but well-formed values so `esphome config` accepts the file.
+          # ESPHome requires device_encryption_key to be a valid 32-byte
+          # base64 string. Substitute an obviously-fake but well-formed
+          # value so `esphome config` accepts the file. (OTA no longer
+          # takes a password — it inherits this key via ESPHome 2026.9+.)
           python <<'PY'
           import base64, textwrap
           fake_key = base64.b64encode(b'\x00' * 32).decode()
           open('secrets.yaml', 'w').write(textwrap.dedent(f'''
-              api_encryption_key: "{fake_key}"
-              ota_password: "ci-fake-ota-password-do-not-use"
+              device_encryption_key: "{fake_key}"
               wifi_ssid: "ci-fake-ssid"
               wifi_password: "ci-fake-password"
           ''').strip() + '\n')

@@ -261,8 +261,8 @@ Compare the plaintext-ports baseline in upstream `smlight-tech/slzb-esphome` wit
 ### 10.2 This fork's changes
 
 1. **`stream_server` removed from both radios.** Deleted `stream_server` external component; ports 7638 and 6638 are no longer opened.
-2. **Native API encryption on.** `api.encryption.key: !secret api_encryption_key` in `packages/core/core.yaml`. Connections without the correct PSK are rejected during Noise handshake.
-3. **OTA password-protected.** `password: !secret ota_password` on the `ota:` block.
+2. **Native API encryption on.** `api.encryption.key: !secret device_encryption_key` in `packages/core/core.yaml`. Connections without the correct PSK are rejected during Noise handshake.
+3. **OTA encrypted with the same PSK.** `ota.encryption:` (bare, no separate key) inherits the API key, so the firmware image and the uploader are both authenticated with one per-device PSK. Requires ESPHome 2026.9+ on both device and dashboard.
 4. **`serial_proxy` in place of `stream_server`.** One instance per radio UART, carried over the encrypted Native API. See `packages/serial_proxies/`.
 5. **HW UART flow control — planned, not yet shipped.** See §6.
 6. **Web server stays off.** Upstream already leaves it disabled; this fork keeps it that way.

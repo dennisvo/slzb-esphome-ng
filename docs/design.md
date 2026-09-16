@@ -143,15 +143,15 @@ ESPHome's Native API supports Noise `NNpsk0` with ChaCha20-Poly1305 AEAD. Messag
 ```yaml
 api:
   encryption:
-    key: !secret mr4u_api_key
+    key: !secret device_encryption_key
 ```
 
-The PSK is a device credential and MUST be treated as such. OTA uses a separate credential:
+The PSK is a device credential and MUST be treated as such. OTA reuses the same key — the bare `encryption:` block below inherits it (ESPHome 2026.9+), so a single per-device PSK protects both transports:
 
 ```yaml
 ota:
   - platform: esphome
-    password: !secret ota_password
+    encryption:
 ```
 
 No custom TLS, nonce handling or replay-protection code will be written.
@@ -209,11 +209,11 @@ Get the MR4U booting with two encrypted `serial_proxy` instances and passing `nm
 ```yaml
 api:
   encryption:
-    key: !secret api_encryption_key
+    key: !secret device_encryption_key
 
 ota:
   - platform: esphome
-    password: !secret ota_password
+    encryption:
 
 uart:
   - id: efr32_uart
@@ -788,9 +788,9 @@ Reference inventory of what changed relative to [`smlight-tech/slzb-esphome`](ht
 |---|---|---|
 | Radio UART transport | Plaintext TCP (`stream_server`) | Encrypted [ESPHome Native API](https://esphome.io/components/api.html) via [`serial_proxy`](https://esphome.io/components/serial_proxy.html) |
 | HA-side URL | `socket://<ip>:<port>` | `esphome-hass://esphome/{entry_id}?port_name=<zigbee\|thread\|zwave>` |
-| Auth | None (open TCP) | Pre-shared `api_encryption_key` (Noise `NNpsk0` + ChaCha20-Poly1305) |
+| Auth | None (open TCP) | Pre-shared `device_encryption_key` (Noise `NNpsk0` + ChaCha20-Poly1305) |
 | Radio reset / bootloader entry | HA switches writing GPIO | Automatic — `serial_proxy` drives `dtr_pin` (nRESET) and `rts_pin` (bootloader) from the client's DTR/RTS modem-control signals (matches `zigpy-znp`, `universal-silabs-flasher`, `bellows`, `zwave-js`) |
-| OTA | Unauthenticated | Password-protected (`ota_password`) |
+| OTA | Unauthenticated | Encrypted with the same PSK (`ota: encryption:` inherits the API key) — requires ESPHome 2026.9+ |
 | USB pass-through (`packages/usb/usb_uart.yaml`) | Plaintext TCP `:9638` | `serial_proxy` (port name `usb`) — package exists and swaps the transport, but is not `!include`d by any shipping device build in v1 (kept ready for a future USB-host variant per §25) |
 | Radio firmware version reporting | Not exposed to HA | One-shot boot-time probe per radio (ZNP `SYS_VERSION` for CC26xx and Spinel `PROP_NCP_VERSION` for EFR32 Thread; EZSP and Z-Wave still publish `"unknown (<protocol> probe not implemented in v1)"` until real probes ship in a later v1.x release); published as diagnostic sensors; HA template snippet included for update-available comparison against SMLIGHT's public catalog (see [`docs/ha-integrations/`](ha-integrations/)) |
 
