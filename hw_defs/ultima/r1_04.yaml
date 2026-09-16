@@ -29,6 +29,10 @@ substitutions:
   # ==========================================================
   # Status LEDs
   # ==========================================================
+  # GPIO46 is an ESP32-S3 strapping pin (ROM UART print enable); ESPHome
+  # warns. Safe: at reset it floats with internal pull-down = LOW = ROM
+  # prints (default); ESPHome only drives it from setup(), after the ROM
+  # bootloader has already latched the strap.
   pin_led1: "GPIO46"
   led1_inverted: false
   led1_restore_mode: RESTORE_DEFAULT_ON
@@ -154,6 +158,10 @@ substitutions:
   # 3.5 audio output
   pin_i2s_clkin: "GPIO10"
   pin_i2s_lrck: "GPIO11"
+  # GPIO45 is an ESP32-S3 strapping pin (VDD_SPI 3.3V/1.8V select); ESPHome
+  # warns. Safe: at reset it floats with internal pull-down = LOW = 3.3V
+  # (the required strap value); the I2S peripheral only starts clocking
+  # after post-boot init, so the strap is already latched.
   pin_i2s_sclk: "GPIO45"
   pin_i2s_sdata: "GPIO18"
 

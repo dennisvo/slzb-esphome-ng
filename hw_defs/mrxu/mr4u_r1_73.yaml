@@ -25,6 +25,11 @@ substitutions:
   # ==========================================================
   # Status LEDs
   # ==========================================================
+  # GPIO46 (LED1) and GPIO45 (LED2) are ESP32-S3 strapping pins; ESPHome emits
+  # a warning for each. Safe on SMLIGHT hardware: at reset both float with the
+  # internal pull-down = LOW, which is the required strap value (GPIO46 = ROM
+  # UART print enable, GPIO45 = VDD_SPI 3.3V). ESPHome only drives them from
+  # setup(), after the ROM bootloader has already latched the straps.
   pin_led1: "GPIO46"
   led1_inverted: true
   led1_restore_mode: RESTORE_DEFAULT_ON

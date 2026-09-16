@@ -27,6 +27,10 @@ substitutions:
   # ==========================================================
   # Status LEDs
   # ==========================================================
+  # GPIO45 is an ESP32-S3 strapping pin (VDD_SPI 3.3V/1.8V select); ESPHome
+  # warns. Safe: at reset it floats with internal pull-down = LOW = 3.3V,
+  # which is the required strap value; ESPHome only drives it from setup(),
+  # after the ROM bootloader has already latched the strap.
   pin_led1: "GPIO45"
   led1_inverted: false
   led1_restore_mode: ALWAYS_OFF
