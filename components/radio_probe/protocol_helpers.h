@@ -25,6 +25,7 @@ constexpr uint8_t HDLC_XOFF = 0x13;      //   flow control is enabled
 
 // CRC-CCITT-FALSE (poly 0x1021, init 0xFFFF, no reflection, no XOR-out).
 // Canonical cross-reference vector: "123456789" -> 0x29B1.
+// Used by Silicon Labs ASH (EZSP transport) per UG101.
 inline uint16_t ccitt16_crc(const uint8_t *buf, size_t len) {
   uint16_t crc = 0xFFFF;
   for (size_t i = 0; i < len; i++) {
@@ -34,6 +35,23 @@ inline uint16_t ccitt16_crc(const uint8_t *buf, size_t len) {
     }
   }
   return crc;
+}
+
+// CRC-16/X-25 (poly 0x1021 reflected = 0x8408, init 0xFFFF, reflected input
+// and output, XOR-out 0xFFFF). Canonical cross-reference vector:
+// "123456789" -> 0x906E. Used by OpenThread's HDLC-Lite (Spinel transport)
+// — RFC 1662 PPP FCS-16 lineage. NOT interchangeable with ccitt16_crc even
+// though both share poly 0x1021: reflection + XOR-out produce different
+// residues for the same input.
+inline uint16_t crc16_x25(const uint8_t *buf, size_t len) {
+  uint16_t crc = 0xFFFF;
+  for (size_t i = 0; i < len; i++) {
+    crc ^= buf[i];
+    for (int b = 0; b < 8; b++) {
+      crc = (crc & 1) ? static_cast<uint16_t>((crc >> 1) ^ 0x8408) : static_cast<uint16_t>(crc >> 1);
+    }
+  }
+  return static_cast<uint16_t>(~crc);
 }
 
 // Escape `in` into `out`. Reserved bytes (FLAG, ESCAPE, XON, XOFF) become

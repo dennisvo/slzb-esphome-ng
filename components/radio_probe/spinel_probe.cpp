@@ -65,7 +65,9 @@ bool RadioProbe::probe_spinel_(std::string &result) {
       SPINEL_CMD_PROP_VALUE_GET,
       SPINEL_PROP_NCP_VERSION,
   };
-  const uint16_t crc = ccitt16_crc(payload, sizeof(payload));
+  // OpenThread HDLC-Lite uses CRC-16/X-25 (RFC 1662 PPP FCS-16 lineage) —
+  // NOT the ASH/CCITT-FALSE variant. See protocol_helpers.h.
+  const uint16_t crc = crc16_x25(payload, sizeof(payload));
   uint8_t framed[SPINEL_TX_BUF];
   framed[0] = HDLC_FLAG;
   size_t body_len = hdlc_escape(payload, sizeof(payload), &framed[1], sizeof(framed) - 3);
@@ -167,7 +169,17 @@ have_frame:
   const size_t body_bytes = unesc_len - 2;
   const uint16_t got_crc = static_cast<uint16_t>(unesc[body_bytes]) |
                            (static_cast<uint16_t>(unesc[body_bytes + 1]) << 8);
-  const uint16_t want_crc = ccitt16_crc(unesc, body_bytes);
+  const uint16_t want_crc = crc16_x25(unesc, body_bytes);
+  // Trace first up-to-16 payload bytes so header/cmd/prop are visible even if
+  // the CRC step passes but later validation fails.
+  {
+    const size_t n = body_bytes > 16 ? 16 : body_bytes;
+    char hex[3 * 16 + 1] = {0};
+    for (size_t i = 0; i < n; i++) {
+      snprintf(&hex[i * 3], 4, "%02X ", unesc[i]);
+    }
+    this->trace_("spinel: body[0..%u]=%s", static_cast<unsigned>(n), hex);
+  }
   if (got_crc != want_crc) {
     ESP_LOGW(TAG, "spinel: CRC mismatch got=0x%04X want=0x%04X", got_crc, want_crc);
     this->trace_("spinel: CRC got=0x%04X want=0x%04X", got_crc, want_crc);

@@ -16,6 +16,7 @@
 #include "../protocol_helpers.h"
 
 using esphome::radio_probe::ccitt16_crc;
+using esphome::radio_probe::crc16_x25;
 using esphome::radio_probe::hdlc_escape;
 using esphome::radio_probe::hdlc_unescape;
 using esphome::radio_probe::HDLC_FLAG;
@@ -45,6 +46,17 @@ static void test_crc_known_vectors() {
   // Single byte, low-value.
   const uint8_t vA[] = {'A'};
   CHECK(ccitt16_crc(vA, sizeof(vA)) == 0xB915);
+
+  // Canonical CRC-16/X-25 cross-reference vector (RFC 1662 FCS-16 residue
+  // convention). Guards against silent regressions of the OpenThread
+  // HDLC-Lite CRC used by spinel_probe.cpp.
+  CHECK(crc16_x25(v123456789, sizeof(v123456789)) == 0x906E);
+
+  // Confirms the two CCITT variants are NOT interchangeable despite sharing
+  // the same polynomial — the trap that produced the spinel probe CRC-mismatch
+  // bug we shipped in v1.
+  CHECK(ccitt16_crc(v123456789, sizeof(v123456789)) !=
+        crc16_x25(v123456789, sizeof(v123456789)));
 }
 
 static void test_hdlc_roundtrip_plain_payload() {
