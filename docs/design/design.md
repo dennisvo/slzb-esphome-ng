@@ -422,7 +422,7 @@ The Phases below are the architectural milestones this document builds toward. [
 | Phase 0 — Upstream inspection | ✅ Done | commit `7c507be`; ground-truth references in [`docs/design/archive/`](archive/) |
 | Phase 1 — Secure firmware (repo-wide) | ✅ Done | commits `307fd30`, `3a0ebef` — pushed to `origin/secure-native-api`. Empirical hardware verification carried under Phase 2. |
 | Phase 2 — Native ZHA validation | ✅ Done | End-to-end chain verified on MR4U; see §10. No HA Core / `zigpy` / `serialx` patches required. |
-| Phase 3 — Zigbee reliability testing | ⏳ Pending | |
+| Phase 3 — Zigbee reliability testing | 🟡 In progress | ZHA/ZNP transport running stable on MR4U in day-to-day use (pairing, binding, group traffic, OTA — no dropped bytes observed). Current focus: soak validation against the live v1.x ZNP `SYS_VERSION` firmware-version probe and the EFR32 Spinel `PROP_NCP_VERSION` probe (§16, §30.1). Formal 7-day soak + high-traffic + Ethernet-interruption pass from the §20 matrix still to record. |
 | Phase 4 — OTBR internal PTY adapter prototype | ⏳ Pending | |
 | Phase 5 — Thread reliability testing | ⏳ Pending | |
 | Phase 6 — Reliability diagnosis | ⏳ Conditional | Only if Phase 3/5 shows problems |
