@@ -41,6 +41,7 @@ This is a living project. High-level snapshot of where things stand — see [`do
 - **Shipped in v1 (today):** encrypted `serial_proxy` transport for every radio UART (no plaintext TCP on the LAN); password-protected OTA; automatic DTR/RTS reset/bootloader entry driven by the flasher; live firmware-version probes for CC26xx ZNP (Zigbee) and EFR32 Spinel (Thread) published to HA as diagnostic sensors + optional HA template snippet that compares against SMLIGHT's public catalog for "update available" cards.
 - **In flight for v1.x (stubs today, real probes coming):** EZSP (EFR32 Zigbee) and Z-Wave firmware-version probes (currently publish `"unknown (<protocol> probe not implemented in v1)"`); catalog-schema follow-ups surfaced by the first snapshot; auto-detect `prod`/`dev` channel from the running revision.
 - **Planned for v2:** flash radio firmware end-to-end from Home Assistant (HA add-on drives our ESP32 to reflash the radio over the Native API); HA `select` entities for radio `protocol` / `role` / `channel` that trigger real reflashes when you change them.
+- **Not supported in v1 — Zigbee2MQTT.** Z2M does not natively consume `esphome://` / `esphome-hass://` URLs, so there is no working Z2M path in v1 (neither as an HA add-on nor standalone). **ZHA is the only validated Zigbee client.** Z2M support is architecturally possible as a future client (see [`docs/design/design.md §9`](docs/design/design.md)) but is not shipped or validated in v1.
 
 ## How this firmware compares
 
@@ -64,7 +65,8 @@ Compared against the two SMLIGHT-supported firmwares — proprietary SLZB-OS and
 
 What you give up compared to running the stock firmware (SLZB-OS):
 
-- **Home Assistant is effectively required.** The Native API transport is designed around the HA ESPHome integration and the `esphome-hass://` URL scheme. If you want to run the device standalone (no HA, or with a non-HA host such as Zigbee2MQTT on bare Linux talking to `socket://`), this firmware is not the right choice — stick with the stock SMLIGHT firmware.
+- **Home Assistant is effectively required.** The Native API transport is designed around the HA ESPHome integration and the `esphome-hass://` URL scheme. If you want to run the device standalone (no HA at all, or with any host that only speaks raw `socket://` to a TCP UART), this firmware is not the right choice — stick with the stock SMLIGHT firmware.
+- **ZHA-only for Zigbee in v1; no Zigbee2MQTT.** Z2M does not natively speak the `esphome://` URL scheme, so v1 has no working Z2M path (neither as an HA add-on nor standalone). If you need Z2M today, stay on the stock SMLIGHT firmware. Z2M is a candidate future client (see [`docs/design/design.md §9`](docs/design/design.md)) but not shipped or validated in v1.
 - **Recent HA versions are required.** You need a Home Assistant version whose ESPHome integration supports `serial_proxy`, and ZHA / OTBR / Z-Wave JS versions that accept the `esphome-hass://` URL scheme.
 - **No built-in web admin UI.** SLZB-OS's HTTP dashboard (device info, radio mode switching, VPN config, etc.) is gone by design. Configuration lives in YAML and is applied by re-flashing; runtime state is exposed as normal HA entities.
 - **You build and flash the firmware yourself.** No pre-built binaries are published here; you compile with the ESPHome CLI or dashboard against this repo. This is the normal ESPHome workflow but is a shift from downloading a consumer-ready vendor image.
