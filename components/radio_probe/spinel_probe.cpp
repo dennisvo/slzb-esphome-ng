@@ -23,14 +23,16 @@
 //     a single byte with high bit clear, which is all we need here.
 //   CRC is CCITT-FALSE over the unescaped payload, transmitted LSB first.
 //
-// The parsed UTF-8 string is published verbatim to the diagnostic sensor;
-// HA-side templates handle any normalisation against the SMLIGHT catalog's
-// `rev` field (see docs/v1-radio-firmware.md §§2, 6c).
+// The parsed UTF-8 string is published as the raw firmware descriptor, and
+// the caller-side helper attempts to distill it down to YYYYMMDD (matching
+// the SMLIGHT catalog `rev` field). When distillation fails, the normalized
+// sensor gets an "unknown (…)" sentinel while the raw sensor still shows
+// the full response for diagnosis. See docs/design/radio-probe-reference.md §§2, 6c.
 //
 // References:
 //   OpenThread spinel spec  — src/lib/spinel/spinel.h (Apache-2.0)
 //   RFC 1662                — HDLC byte-stuffing / CRC placement
-//   docs/v1-radio-firmware.md §6c
+//   docs/design/radio-probe-reference.md §6c
 
 #include "protocol_helpers.h"
 #include "radio_probe.h"
@@ -56,7 +58,8 @@ constexpr size_t SPINEL_TX_BUF = 32;
 
 }  // namespace
 
-bool RadioProbe::probe_spinel_(std::string &result) {
+bool RadioProbe::probe_spinel_(std::string &rev, std::string &raw, std::string &chip_probed,
+                               std::string &role_probed) {
   this->drain_rx_();
 
   // ── Build request payload + CRC ─────────────────────────────────────────
@@ -182,8 +185,31 @@ have_frame:
     ESP_LOGW(TAG, "spinel: NCP_VERSION string is empty");
     return false;
   }
-  result.assign(reinterpret_cast<const char *>(str_start), str_len);
-  ESP_LOGD(TAG, "spinel NCP_VERSION: %s", result.c_str());
+  raw.assign(reinterpret_cast<const char *>(str_start), str_len);
+  ESP_LOGD(TAG, "spinel NCP_VERSION: %s", raw.c_str());
+
+  // Chip from the "; PLATFORM; " token in NCP_VERSION. SL-OPENTHREAD
+  // catalog builds stamp EFR32MG26 / EFR32MG24 explicitly; older stock
+  // GSDK examples stamp bare "EFR32" (family only, variant unresolved).
+  const char *plat = parse_openthread_platform(raw.data(), raw.size());
+  chip_probed = plat;
+
+  // Role: SL-OPENTHREAD builds SMLIGHT ships for our fork are RCP across
+  // the entire catalog population for EFR32MG26/MG24 (see catalog-audit.md).
+  // A separate PROP_CAPS query could confirm, but is not necessary in v1.
+  role_probed = "rcp";
+
+  // Distill "; EFR32; Mmm DD YYYY …" tail to YYYYMMDD so HA can compare
+  // by string equality against the SMLIGHT catalog's `rev` field. On any
+  // parse failure the caller publishes the raw response verbatim to a
+  // second sensor and the normalized sensor shows the "unknown" sentinel.
+  char yyyymmdd[9];
+  if (parse_openthread_build_date(raw.data(), raw.size(), yyyymmdd)) {
+    rev = yyyymmdd;
+  } else {
+    ESP_LOGW(TAG, "spinel: could not extract build date from '%s'", raw.c_str());
+    rev = "unknown (spinel version format not recognised)";
+  }
   return true;
 }
 

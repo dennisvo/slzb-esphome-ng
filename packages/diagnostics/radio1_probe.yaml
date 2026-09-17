@@ -2,12 +2,12 @@
 #
 # Publishes v1 radio firmware version diagnostics for Radio 1 (UART1):
 #   - Static metadata sourced from `hw_defs/**` substitutions (chip,
-#     smlight_id, protocol, role, firmware_channel, uart_baud).
+#     protocol, role, firmware_channel, uart_baud).
 #   - Live-probed `installed_firmware` filled at boot by the `radio_probe`
 #     custom component. Value is a decimal YYYYMMDD string for ZNP, or
 #     "unknown (<reason>)" for stubs / failures.
 #
-# Design authority: docs/v1-radio-firmware.md §§3, 5, 6a, 6d.
+# Design authority: docs/design/radio-probe-reference.md §§3, 5, 6a, 6d.
 #
 # Prerequisites: `packages/diagnostics/radio_probe_ext.yaml` must be
 # included first (declares the external component) and `hal_uart1` must
@@ -17,7 +17,6 @@ radio_probe:
   - id: radio1_probe
     uart_id: ${radio1_uart_id}
     chip: ${radio1_chip}
-    smlight_id: ${radio1_smlight_id}
     protocol: ${radio1_protocol}
     role: ${radio1_role}
     firmware_channel: ${radio1_firmware_channel}
@@ -25,6 +24,18 @@ radio_probe:
     installed_firmware:
       name: "${friendly_name} Radio 1 installed firmware"
       id: radio1_installed_firmware_sensor
+      entity_category: diagnostic
+    installed_firmware_raw:
+      name: "${friendly_name} Radio 1 installed firmware (raw)"
+      id: radio1_installed_firmware_raw_sensor
+      entity_category: diagnostic
+    chip_probed:
+      name: "${friendly_name} Radio 1 chip (probed)"
+      id: radio1_chip_probed_sensor
+      entity_category: diagnostic
+    role_probed:
+      name: "${friendly_name} Radio 1 role (probed)"
+      id: radio1_role_probed_sensor
       entity_category: diagnostic
 
 # Static metadata sourced from hw_defs substitutions. Values change only
@@ -34,11 +45,6 @@ text_sensor:
   - platform: template
     name: "${friendly_name} Radio 1 chip"
     id: radio1_chip_sensor
-    entity_category: diagnostic
-
-  - platform: template
-    name: "${friendly_name} Radio 1 SMLIGHT id"
-    id: radio1_smlight_id_sensor
     entity_category: diagnostic
 
   - platform: template
@@ -73,9 +79,6 @@ esphome:
       - text_sensor.template.publish:
           id: radio1_chip_sensor
           state: "${radio1_chip}"
-      - text_sensor.template.publish:
-          id: radio1_smlight_id_sensor
-          state: "${radio1_smlight_id}"
       - text_sensor.template.publish:
           id: radio1_protocol_sensor
           state: "${radio1_protocol}"

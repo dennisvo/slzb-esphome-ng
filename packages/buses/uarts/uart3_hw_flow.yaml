@@ -6,7 +6,7 @@
 # `packages/buses/uarts/uart_hw_flow_ext.yaml` must be included once by
 # the device before this file.
 #
-# See docs/v1-design.md §5.
+# See docs/design/radio-firmware-mgmt.md §5.
 
 uart:
   - id: hw_uart3

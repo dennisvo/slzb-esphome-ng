@@ -5,7 +5,7 @@
 // AFTER_CONNECTION (~-30). Same slot as radio_probe; they touch different
 // state and don't interfere.
 //
-// Design authority: docs/v1-design.md §5.
+// Design authority: docs/design/radio-firmware-mgmt.md §5.
 
 #pragma once
 

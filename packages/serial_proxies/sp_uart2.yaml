@@ -12,8 +12,8 @@
 # config flow as:
 #   esphome-hass://esphome/{entry_id}?port_name=thread
 #
-# See docs/design.md Phase 1 item 5 and §11, docs/hardware-map.md §5,
-# docs/research/serial-proxy-inspection.md §2.
+# See docs/design/design.md §19 (Phase 1) and §11, docs/hardware-map.md §5,
+# docs/design/archive/serial-proxy-inspection.md §2.
 
 serial_proxy:
   - id: sp_uart2

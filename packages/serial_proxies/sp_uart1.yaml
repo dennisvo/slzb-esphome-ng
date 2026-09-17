@@ -11,8 +11,8 @@
 # port_name = "zigbee" — surfaced to HA's ZHA config flow port picker as
 #   esphome-hass://esphome/{entry_id}?port_name=zigbee
 #
-# See docs/design.md Phase 1 item 5, docs/hardware-map.md §5,
-# docs/research/serial-proxy-inspection.md §2.
+# See docs/design/design.md §19 (Phase 1), docs/hardware-map.md §5,
+# docs/design/archive/serial-proxy-inspection.md §2.
 
 serial_proxy:
   - id: sp_uart1

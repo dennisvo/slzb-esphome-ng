@@ -7,7 +7,7 @@
 # EFR32 Thread (spinel) is live-probed; EFR32 Zigbee (ezsp) still ships
 # as a stub in v1 ("unknown (ezsp probe not implemented in v1)").
 #
-# Design authority: docs/v1-radio-firmware.md §§3, 5, 6c, 6d.
+# Design authority: docs/design/radio-probe-reference.md §§3, 5, 6c, 6d.
 #
 # Prerequisites: `packages/diagnostics/radio_probe_ext.yaml` must be
 # included in the device config (declares the external component) and
@@ -17,7 +17,6 @@ radio_probe:
   - id: radio2_probe
     uart_id: ${radio2_uart_id}
     chip: ${radio2_chip}
-    smlight_id: ${radio2_smlight_id}
     protocol: ${radio2_protocol}
     role: ${radio2_role}
     firmware_channel: ${radio2_firmware_channel}
@@ -25,6 +24,18 @@ radio_probe:
     installed_firmware:
       name: "${friendly_name} Radio 2 installed firmware"
       id: radio2_installed_firmware_sensor
+      entity_category: diagnostic
+    installed_firmware_raw:
+      name: "${friendly_name} Radio 2 installed firmware (raw)"
+      id: radio2_installed_firmware_raw_sensor
+      entity_category: diagnostic
+    chip_probed:
+      name: "${friendly_name} Radio 2 chip (probed)"
+      id: radio2_chip_probed_sensor
+      entity_category: diagnostic
+    role_probed:
+      name: "${friendly_name} Radio 2 role (probed)"
+      id: radio2_role_probed_sensor
       entity_category: diagnostic
 
 # Static metadata sourced from hw_defs substitutions. Values change only
@@ -34,11 +45,6 @@ text_sensor:
   - platform: template
     name: "${friendly_name} Radio 2 chip"
     id: radio2_chip_sensor
-    entity_category: diagnostic
-
-  - platform: template
-    name: "${friendly_name} Radio 2 SMLIGHT id"
-    id: radio2_smlight_id_sensor
     entity_category: diagnostic
 
   - platform: template
@@ -73,9 +79,6 @@ esphome:
       - text_sensor.template.publish:
           id: radio2_chip_sensor
           state: "${radio2_chip}"
-      - text_sensor.template.publish:
-          id: radio2_smlight_id_sensor
-          state: "${radio2_smlight_id}"
       - text_sensor.template.publish:
           id: radio2_protocol_sensor
           state: "${radio2_protocol}"

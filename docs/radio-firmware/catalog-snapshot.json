@@ -752,7 +752,7 @@
     {
       "baud": 115200,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=slzb07Mg24_zigbee_ncp_8.0.2.0_115200.gbl",
+      "link": "https://updates.smlight.tech/firmware/slzb06x/zigbee/slzb-mr3u/20251122/slzb07Mg24_zigbee_ncp_8.0.2.0_115200.gbl",
       "notes": "SDK 8.0.2.0",
       "prod": false,
       "rev": "20251122",
@@ -1165,7 +1165,7 @@
     {
       "baud": 115200,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07/dl.php?file=ncp-uart-hw-v7.4.1.0-slzb-07-115200.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07&file=ncp-uart-hw-v7.4.1.0-slzb-07-115200.gbl",
       "notes": "Factory coordinator firmware",
       "prod": true,
       "rev": "7.4.1.0",
@@ -1174,7 +1174,7 @@
     {
       "baud": 115200,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07/dl.php?file=slzb07_zigbee_router_8.0.2.0_115200.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07&file=slzb07_zigbee_router_8.0.2.0_115200.gbl",
       "notes": "Factory Zigbee router firmware",
       "prod": true,
       "rev": "8.0.2.0",
@@ -1183,7 +1183,7 @@
     {
       "baud": 460800,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07/dl.php?file=ot-rcp-v2.4.5.0-slzb-07-460800.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07&file=ot-rcp-v2.4.5.0-slzb-07-460800.gbl",
       "notes": "Thread firmware",
       "prod": true,
       "rev": "2.4.5.0",
@@ -1192,7 +1192,7 @@
     {
       "baud": 460800,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07/dl.php?file=ot-rcp_hw_460800.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07&file=ot-rcp_hw_460800.gbl",
       "notes": "Factory Thread firmware",
       "prod": true,
       "rev": "2.2.2.0",
@@ -1245,7 +1245,7 @@
     {
       "baud": 115200,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=slzb07Mg24_zigbee_ncp_8.0.2.0_115200.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07mg24&file=slzb07Mg24_zigbee_ncp_8.0.2.0_115200.gbl",
       "notes": "Factory coordinator firmware",
       "prod": true,
       "rev": "8.0.2.0",
@@ -1254,7 +1254,7 @@
     {
       "baud": 115200,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=ncp-uart-hw-v7.4.4.0-slzb-07mg24-115200.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07mg24&file=ncp-uart-hw-v7.4.4.0-slzb-07mg24-115200.gbl",
       "notes": "Coordinator firmware, 7x (old) SDK",
       "prod": true,
       "rev": "7.4.4.0",
@@ -1263,7 +1263,7 @@
     {
       "baud": 115200,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=/20260416/slzb07Mg24_zigbee_router_9.0.1.0_115200.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07mg24&file=/20260416/slzb07Mg24_zigbee_router_9.0.1.0_115200.gbl",
       "notes": "SDK 9.0.1.0 Zigbee router firmware",
       "prod": false,
       "rev": "9.0.1.0",
@@ -1272,7 +1272,7 @@
     {
       "baud": 115200,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=slzb07Mg24_zigbee_router_8.0.2.0_115200.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07mg24&file=slzb07Mg24_zigbee_router_8.0.2.0_115200.gbl",
       "notes": "Factory Zigbee router firmware",
       "prod": true,
       "rev": "8.0.2.0",
@@ -1281,7 +1281,7 @@
     {
       "baud": 460800,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=/20260416/slzb07Mg24_openthread_rcp_3.0.1_gsdk_2025.12.2_460800.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07mg24&file=/20260416/slzb07Mg24_openthread_rcp_3.0.1_gsdk_2025.12.2_460800.gbl",
       "notes": "Thread firmware",
       "prod": false,
       "rev": "3.0.1.0",
@@ -1290,7 +1290,7 @@
     {
       "baud": 460800,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=ot-rcp-v2.4.5.0-slzb-07mg24-460800.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07mg24&file=ot-rcp-v2.4.5.0-slzb-07mg24-460800.gbl",
       "notes": "Thread firmware Factory",
       "prod": true,
       "rev": "2.4.5.0",
@@ -1299,7 +1299,7 @@
     {
       "baud": 460800,
       "hwFlow": true,
-      "link": "https://updates.smlight.tech/firmware/slzb-07mg24/dl.php?file=ot-rcp-v2.4.4.0-slzb-07mg24-460800.gbl",
+      "link": "https://updates.smlight.tech/services/api/fw-dl.php?device=slzb-07mg24&file=ot-rcp-v2.4.4.0-slzb-07mg24-460800.gbl",
       "notes": "Thread firmware",
       "prod": true,
       "rev": "2.4.4.0",

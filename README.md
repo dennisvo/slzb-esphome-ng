@@ -3,13 +3,13 @@
 > **This is a security-hardened fork of [smlight-tech/slzb-esphome](https://github.com/smlight-tech/slzb-esphome).**
 > The radio UARTs (Zigbee / Thread / Z-Wave) are no longer exposed as plaintext TCP ports on the LAN.
 > They are proxied over an **encrypted ESPHome Native API** to Home Assistant (`serial_proxy` + `esphome-hass://` URLs).
-> See [Fork Differences](#fork-differences) below and [`docs/design.md`](docs/design.md) for the full rationale.
+> See [Fork Differences](#fork-differences) below and [`docs/design/design.md`](docs/design/design.md) for the full rationale.
 
 ---
 
 ## What is this?
 
-This is an **alternative firmware** for SMLIGHT's family of network-attached ESP32 serial devices — the SLZB-… Zigbee / Thread / Z-Wave coordinators (SLZB-MR4U, SLZB-MRxU, SLZB-06/07, SLZB-Ultima) and the SLWF-09U USB-over-network gateway. It is a full replacement for the stock SMLIGHT firmware (**SLZB-OS** on the coordinators, the equivalent stock firmware on the SLWF).
+This is an **alternative firmware** for SMLIGHT's family of network-attached ESP32 serial devices — the SLZB-… Zigbee / Thread / Z-Wave coordinators (SLZB-MR4U, SLZB-MRxU, SLZB-06/07, SLZB-Ultima) and the SLWF-09U general-purpose Ethernet/PoE ESP32-S3 node (stock USB-over-network function available as opt-in). It is a full replacement for the stock SMLIGHT firmware (**SLZB-OS** on the coordinators, the equivalent stock firmware on the SLWF).
 
 All of these boards share the same underlying problem: they expose one or more serial streams (integrated radios on the SLZB family, whatever USB device is plugged into the SLWF) as plaintext TCP ports on the LAN. This firmware replaces that transport with an encrypted channel to Home Assistant.
 
@@ -24,7 +24,7 @@ The stock **SLZB-OS** firmware works, but its network security posture is weak f
 - The management web UI runs on **plain HTTP** (`:80`, no TLS). The admin password — which gates changing radio modes, flashing IEEE addresses, entering the radio bootloader, configuring VPN, etc. — crosses the LAN in cleartext on every login, and so do any session cookies.
 - There is no application-level authentication of the coordinator ↔ Home Assistant path at all. Firewalling can hide ports but does not make the underlying protocol trustworthy.
 
-This fork replaces the transport with the **encrypted [ESPHome Native API](https://esphome.io/components/api.html)** (Noise `NNpsk0` + ChaCha20-Poly1305, pre-shared key), removes every plaintext TCP radio port from the network entirely, and closes the plain-HTTP admin surface by not shipping one. See [`docs/design.md`](docs/design.md) for the full threat model and design rationale.
+This fork replaces the transport with the **encrypted [ESPHome Native API](https://esphome.io/components/api.html)** (pre-shared key, Noise handshake), removes every plaintext TCP radio port from the network entirely, and closes the plain-HTTP admin surface by not shipping one. See [`docs/design/design.md`](docs/design/design.md) for the full threat model and design rationale (including cipher choice).
 
 ## What you get
 
@@ -36,7 +36,7 @@ This fork replaces the transport with the **encrypted [ESPHome Native API](https
 
 ## Status at a glance
 
-This is a living project. High-level snapshot of where things stand — see [`docs/roadmap.md`](docs/roadmap.md) for the full plan with per-item status, deferred work, and explicit non-goals.
+This is a living project. High-level snapshot of where things stand — see [`docs/design/roadmap.md`](docs/design/roadmap.md) for the full plan with per-item status, deferred work, and explicit non-goals.
 
 - **Shipped in v1 (today):** encrypted `serial_proxy` transport for every radio UART (no plaintext TCP on the LAN); password-protected OTA; automatic DTR/RTS reset/bootloader entry driven by the flasher; live firmware-version probes for CC26xx ZNP (Zigbee) and EFR32 Spinel (Thread) published to HA as diagnostic sensors + optional HA template snippet that compares against SMLIGHT's public catalog for "update available" cards.
 - **In flight for v1.x (stubs today, real probes coming):** EZSP (EFR32 Zigbee) and Z-Wave firmware-version probes (currently publish `"unknown (<protocol> probe not implemented in v1)"`); catalog-schema follow-ups surfaced by the first snapshot; auto-detect `prod`/`dev` channel from the running revision.
@@ -49,15 +49,15 @@ Compared against the two SMLIGHT-supported firmwares — proprietary SLZB-OS and
 | | SLZB-OS | Upstream ESPHome (`smlight-tech`) | This firmware |
 |---|---|---|---|
 | Radio UART transport | Plaintext TCP `stream_server` | Plaintext TCP `stream_server` | Encrypted ESPHome Native API (`serial_proxy`) |
-| Access control on radio streams | Optional source-IP allow-list, off by default | None — open TCP | Pre-shared key required (Noise `NNpsk0` + ChaCha20-Poly1305) |
+| Access control on radio streams | Optional source-IP allow-list, off by default | None — open TCP | Pre-shared key required (encrypted) |
 | ESPHome Native API encryption | n/a | Off by default (plaintext) | Pre-shared key required |
 | Management surface | Plain HTTP on `:80`, cleartext admin password | No HTTP admin — managed via ESPHome / HA | No HTTP admin surface — device is managed through the ESPHome / HA integration |
 | OTA firmware update | Unauthenticated | Unauthenticated by default | Password-protected |
 | Radio reset / bootloader entry | Manual HA switches wired to GPIO | Manual HA switches wired to GPIO | Automatic — the flasher's DTR/RTS are proxied to `nRESET` / `BOOT` |
-| Network ports exposed on the LAN | `:80`, `:6638`, `:7638`, `:8638`, … (vendor stack) | Standard ESPHome trio: `:6053/tcp` (plaintext API), `:8266/tcp` (unauth OTA), `:5353/udp` (mDNS) — plus `:6638`, `:7638`, `:8638` (plaintext `stream_server`) | Standard ESPHome trio only: `:6053/tcp` (encrypted API), `:8266/tcp` (password-protected OTA), `:5353/udp` (mDNS) — no `stream_server` |
+| Network ports exposed on the LAN | `:80`, `:6638`, `:7638`, `:8638`, … (vendor stack) | Standard ESPHome trio: `:6053/tcp` (plaintext API), `:3232/tcp` (unauth OTA), `:5353/udp` (mDNS) — plus `:6638`, `:7638`, `:8638` (plaintext `stream_server`) | Standard ESPHome trio only: `:6053/tcp` (encrypted API), `:3232/tcp` (password-protected OTA), `:5353/udp` (mDNS) — no `stream_server` |
 | Home Assistant integration | Per-radio `socket://ip:port` config | ESPHome device in HA, but radios still consumed via `socket://ip:port` | Adopted as a normal ESPHome device; radios addressed via `esphome-hass://…` URLs |
 | Radio firmware version visibility in HA | Vendor web UI shows it; nothing in HA | Not exposed | Boot-time probe per radio, published as diagnostic sensor over the Native API. Live for CC26xx ZNP (Zigbee) and EFR32 Spinel (Thread); EZSP (EFR32 Zigbee) and Z-Wave are stub sensors reporting `"unknown (… not implemented in v1)"` until a later v1.x release. Optional HA template snippet compares the live sensor against SMLIGHT's public catalog to flag updates for the channel (`prod`/`dev`) declared in device YAML |
-| Sound-reactive WS2812 effects (mic-driven) | Vendor implementation (Ultima only) | Enabled by default via third-party [`music_leds`](https://github.com/andrewjswan/esphome-components) / `fastled_helper` (WLED-derived FFT + FastLED pipeline) | Not shipped — SoC CPU / interrupt / timing budget is reserved for the radio UARTs (see [`docs/design.md §18`](docs/design.md)) |
+| Sound-reactive WS2812 effects (mic-driven) | Vendor implementation (Ultima only) | Enabled by default via third-party [`music_leds`](https://github.com/andrewjswan/esphome-components) / `fastled_helper` (WLED-derived FFT + FastLED pipeline) | Not shipped — SoC CPU / interrupt / timing budget is reserved for the radio UARTs (see [`docs/design/design.md §18`](docs/design/design.md)) |
 | Configuration model | Vendor-managed image | Open ESPHome YAML — extensible with sensors, buttons, automations, effects, etc. | Open ESPHome YAML — extensible with sensors, buttons, automations, effects, etc. |
 
 ## Trade-offs and downsides
@@ -97,13 +97,13 @@ The radio UARTs are exposed to the network via [`oxan/esphome-stream-server`](ht
 |---|---|---|
 | Radio UART transport | Plaintext TCP (`stream_server`) | Encrypted [ESPHome Native API](https://esphome.io/components/api.html) via [`serial_proxy`](https://esphome.io/components/serial_proxy.html) |
 | HA-side URL | `socket://<ip>:<port>` | `esphome-hass://esphome/{entry_id}?port_name=<zigbee\|thread\|zwave>` |
-| Auth | None (open TCP) | Pre-shared `device_encryption_key` (Noise / ChaCha20-Poly1305) |
+| Auth | None (open TCP) | Pre-shared `device_encryption_key` (encrypted) |
 | Radio reset / bootloader entry | HA switches writing GPIO | Automatic — `serial_proxy` drives `dtr_pin` (nRESET) and `rts_pin` (bootloader) from the client's DTR/RTS modem-control signals |
 | OTA | Unauthenticated | Encrypted with the same PSK (`ota: encryption:` inherits the API key) — requires ESPHome 2026.9+ |
 | USB pass-through (`packages/usb/usb_uart.yaml`) | Plaintext TCP `:9638` | `serial_proxy` (port name `usb`) — package exists but is not `!include`d by any shipping device build in v1 |
 | Radio firmware version reporting | Not exposed to HA | One-shot boot-time probe per radio (ZNP live for CC26xx and Spinel live for EFR32 Thread; EZSP and Z-Wave still stubbed until a later v1.x release); diagnostic sensors + HA template snippet vs. SMLIGHT's public catalog. See [`docs/ha-integrations/`](docs/ha-integrations/) |
 
-For the full delta reference — everything preserved, removed, disabled-by-default, and no-longer-exposed as HA entities, with rationale — see [`docs/design.md §30 Delta from upstream`](docs/design.md).
+For the full delta reference — everything preserved, removed, disabled-by-default, and no-longer-exposed as HA entities, with rationale — see [`docs/design/design.md §30 Delta from upstream`](docs/design/design.md).
 
 ### Setup
 
@@ -145,7 +145,7 @@ A template is provided as [`secrets.example.yaml`](secrets.example.yaml). Keep t
 #### 3. Install the firmware
 
 - **First install — over USB.** Plug the device into the machine running the ESPHome dashboard, click **Install → Plug into the computer running ESPHome Dashboard**, and pick the serial port. One-time step; there is no OTA path from stock SLZB-OS to this firmware.
-- **Subsequent updates — over the network (OTA).** Once this firmware is running, use **Install → Wirelessly**. The firmware image is Noise-encrypted end-to-end using the same `device_encryption_key` as the Native API — no separate password is transmitted or stored.
+- **Subsequent updates — over the network (OTA).** Once this firmware is running, use **Install → Wirelessly**. The firmware image is encrypted end-to-end using the same `device_encryption_key` as the Native API — no separate password is transmitted or stored.
 
 #### 4. Adopt the device in Home Assistant
 
@@ -167,6 +167,29 @@ Rebuild your Zigbee network as you would with any coordinator swap.
 #### Customizing or hacking on the firmware
 
 If you want to modify the firmware (add sensors, tweak logic, contribute back), clone the full repo into your ESPHome working directory and build from the root `*.yaml` targets (`mr4u-r1-73.yaml`, `mrxu-r1-73.yaml`, `06xu-r1-73.yaml`, `ultima-r1-04.yaml`, `slw09u-r1-01.yaml`). See [`docs/architecture.md`](docs/architecture.md) for the layer breakdown and the rules for adding a new device.
+
+---
+
+## ⚠️ Radio firmware ↔ ESPHome config matching
+
+Four properties in your device YAML (`hw_defs/**/*.yaml`) describe what the radio's *flashed firmware* is doing on the wire. If the YAML and the firmware disagree, HA sees no error — the radio just goes silent or drops bytes.
+
+| Substitution | What it must equal | If it disagrees |
+|---|---|---|
+| `radioN_protocol` (`znp` / `spinel` / `ezsp` / `zwave`) | The wire protocol the flashed radio firmware speaks | ESP32 probe times out; `radioN_installed_firmware` sensor publishes `"unknown (probe timeout)"`; HA update card silently hides |
+| `radioN_role` (`coord` / `router` / `rcp` / `ncp` / `primary_ctrl`) | The firmware role for catalog matching | Update card offers wrong-role firmware — do not click "install" |
+| `uartN_baud` | The baud the flashed firmware expects | Garbled bytes both directions; ZHA / OTBR / Z-Wave JS fail to attach |
+| `uartN_hw_flow` (`true` / `false`) | Whether the firmware requires HW CTS/RTS | TX hangs (firmware=off, YAML=on) or dropped bytes under bursts (firmware=on, YAML=off) |
+
+**Change sequence when switching a radio's firmware:**
+
+1. **Edit the YAML** in `hw_defs/**/*.yaml` — set all four substitutions to match the new firmware.
+2. **Build + OTA** to install the updated ESPHome image.
+3. **Then flash the matching radio firmware** (SMLIGHT web flasher, `cc2538-bsl`, `commander`, etc.).
+
+Never do it the other way round — the boot-time probe will disagree with the config in the window before you reflash the ESP32, and you'll lose HA connectivity to the radio until both sides line up.
+
+The boot-time chip / role probe (`radioN_chip_probed`, `radioN_role_probed` sensors — live for ZNP + Spinel in v1) catches hard mismatches: the HA update card's `availability:` template hides the card when the wire-probed identity contradicts the declared YAML. Baud and hw_flow mismatches are not currently probed — you'll notice them as radio silence in ZHA / OTBR / Z-Wave JS. Full design rationale in [`docs/design/radio-firmware-mgmt.md §5, §6`](docs/design/radio-firmware-mgmt.md) and the filter chain in [`docs/design/radio-probe-reference.md §4, §6i`](docs/design/radio-probe-reference.md).
 
 ---
 

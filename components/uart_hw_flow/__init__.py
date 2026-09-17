@@ -9,7 +9,7 @@ The component always instantiates; ``enabled: false`` makes ``setup()``
 a no-op. This keeps the YAML surface stable regardless of the boolean
 value in ``hw_defs/**`` and lets ``dump_config`` report the state.
 
-Design authority: ``docs/v1-design.md`` §5.
+Design authority: ``docs/design/radio-firmware-mgmt.md`` §5.
 """
 
 import esphome.codegen as cg

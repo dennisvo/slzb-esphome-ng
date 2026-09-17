@@ -186,9 +186,8 @@ substitutions:
   uart1_rst_inverted: true
 
   # Radio 1 identity for the v1 firmware-version probe.
-  # See docs/v1-radio-firmware.md §§3, 6g.
+  # See docs/design/radio-probe-reference.md §§3, 6g.
   radio1_chip: cc2674p10
-  radio1_smlight_id: "70"
   radio1_protocol: znp
   radio1_role: coord
   radio1_firmware_channel: dev
@@ -204,8 +203,8 @@ substitutions:
   pin_uart2_rx: "GPIO8"
   pin_uart2_cts: "GPIO12"
   pin_uart2_rts: "GPIO13"
-  uart2_baud: 115200
-  uart2_hw_flow: false                # Default; flip when installed radio firmware advertises hwFlow.
+  uart2_baud: 460800
+  uart2_hw_flow: true                 # EFR32MG26 Thread; matches SLZB-06Mg26 20260416 (3.0.1) build (hwFlow: true).
   uart2_default_port: 6638
 
   uart2_radio_name: EFR32
@@ -218,14 +217,12 @@ substitutions:
 
   # Radio 2 identity (live Spinel probe).
   radio2_chip: efr32mg26
-  radio2_smlight_id: "68"
   radio2_protocol: spinel
   radio2_role: rcp
   radio2_firmware_channel: dev
   radio2_uart_id: hw_uart2
-  radio2_uart_baud: "115200"
-  radio2_uart_hw_flow: "false"        # Mirrors uart2_hw_flow; diagnostic-only string.
-
+  radio2_uart_baud: "460800"
+  radio2_uart_hw_flow: "true"         # Mirrors uart2_hw_flow; diagnostic-only string.
 
   # ==========================================================
   # UART3 (pins + TCA control lines)
@@ -247,10 +244,9 @@ substitutions:
   uart3_rst_inverted: true
 
   # Radio 3 identity (v1 stub — Z-Wave probe ships in v1.x/v2).
-  # smlight_id is intentionally empty: ZW-800 firmware is not in the
-  # SMLIGHT ZB catalog (see docs/v1-radio-firmware.md §6f).
+  # ZW-800 firmware is not in the SMLIGHT ZB catalog (see
+  # docs/design/radio-probe-reference.md §6f) — no `chip → catalog id` mapping to pin.
   radio3_chip: zw800
-  radio3_smlight_id: ""
   radio3_protocol: zwave
   radio3_role: primary_ctrl
   radio3_firmware_channel: dev

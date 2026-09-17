@@ -1,8 +1,8 @@
 # Integration recipes
 
-How the pieces wire together: `serialx` transport URL schemes, the ZHA path, and the OTBR add-on's internal PTY adapter. Extracted from `design.md` §§6, 9, 11 so the concrete integration how-tos live in a public, git-tracked doc rather than the private full design document.
+How the pieces wire together: `serialx` transport URL schemes, the ZHA path, and the OTBR add-on's internal PTY adapter. Extracted from `design.md` §§7, 9, 11 so the concrete integration how-tos live in a public, git-tracked doc rather than the private full design document.
 
-For the architectural rationale (why encrypted API only, threat model, security invariants), see [design.md](design.md).
+For the architectural rationale (why encrypted API only, threat model, security invariants), see [design.md](design/design.md).
 
 ---
 
@@ -13,14 +13,14 @@ Home Assistant's async serial abstraction `serialx` already supports ESPHome ser
 | Scheme                                                     | Where it works                                     | Uses                                     |
 |------------------------------------------------------------|----------------------------------------------------|------------------------------------------|
 | `esphome-hass://<config_entry_id>?port_name=…`             | Inside HA Core (via the connected ESPHome integration) | ZHA and any in-Core integration          |
-| `esphome://<host>:6053/?port_name=…` + Noise PSK           | Standalone process (separate container)            | OTBR add-on, external tools              |
+| `esphome://<host>:6053/?port_name=…` + PSK                 | Standalone process (separate container)            | OTBR add-on, external tools              |
 
-Both variants speak the ESPHome Native API with Noise + PSK; both provide full serial semantics (baudrate, RTS/DTR modem-pin control, buffer flush). The current OTBR add-on already contains `serialx` and `zigpy.serial` in its Python runtime.
+Both variants speak the ESPHome Native API encrypted with the pre-shared key; both provide full serial semantics (baudrate, RTS/DTR modem-pin control, buffer flush). The current OTBR add-on already contains `serialx` and `zigpy.serial` in its Python runtime.
 
 **Consequences for this design:**
 
 1. **The general-purpose `esphome-radio-proxy` daemon is eliminated.** It is no longer needed as a separate service on the host.
-2. **ZHA works directly** via the `esphome-hass://` transport with no PTY and no external daemon — subject to end-to-end validation (see design.md §10).
+2. **ZHA works directly** via the `esphome-hass://` transport with no PTY and no external daemon — end-to-end validated on MR4U (see design.md §10).
 3. **OTBR still needs a small adapter**, because `otbr-agent` requires a POSIX serial descriptor (radio URL `spinel+hdlc+uart://${device}`). But that adapter lives **inside the OTBR add-on container**, not on the network. See §3 below.
 
 ---
@@ -51,7 +51,7 @@ This is the direct consequence of the storage split documented in the tiered sta
 
 #### End-user pairing flow
 
-From an operator's point of view, once the MR4U firmware is flashed and ZHA is pointed at `esphome-hass://<config_entry_id>?port_name=cc2674` (design.md §29.1), pairing is exactly stock ZHA:
+From an operator's point of view, once the MR4U firmware is flashed and ZHA is pointed at `esphome-hass://<config_entry_id>?port_name=zigbee` (design.md §29.1), pairing is exactly stock ZHA:
 
 1. Home Assistant → **Settings → Devices & services → Zigbee Home Automation → Add device**.
 2. ZHA calls `permit_joining(duration)` on zigpy.
@@ -59,7 +59,7 @@ From an operator's point of view, once the MR4U firmware is flashed and ZHA is p
 4. New device joins, CC2674 completes the association + TCLK exchange, sends the join indication back up the same pipe.
 5. ZHA runs its interview, writes the new device into `zigbee.db`, exposes entities in HA.
 
-Every one of those bytes traverses the encrypted Noise session (design.md §7). There is no unencrypted pairing path.
+Every one of those bytes traverses the encrypted session (design.md §7). There is no unencrypted pairing path.
 
 #### What our firmware exposes and does not expose
 
@@ -89,14 +89,14 @@ Z2M's `zigbee-herdsman` layer already accepts remote serial adapters via `tcp://
 # Zigbee2MQTT configuration.yaml
 serial:
   adapter: zstack           # or ezsp, per radio
-  port: "esphome://mr4u:6053/?port_name=cc2674&psk=..."
+  port: "esphome://mr4u:6053/?port_name=zigbee&psk=..."
 ```
 
 Z2M then connects over the same encrypted pipe ZHA/OTBR use. No new firmware port. No LAN exposure. Full parity with ZHA's security posture.
 
 **Path B — dual-radio, dual-stack on one MR4U.**
 
-The MR4U has two independent radios. With the port-name-by-chip convention, operators can point ZHA at one chip and Z2M at the other, running two independent Zigbee networks off the same box, both encrypted. This falls out of the design for free; no additional work required beyond Path A's Node transport.
+The MR4U has two independent radios. Operators can point ZHA at one (`port_name=zigbee`) and Z2M at the other after reflashing it with a second Zigbee stack and renaming its `serial_proxy` accordingly — running two independent Zigbee networks off the same box, both encrypted. This falls out of the design for free; no additional work required beyond Path A's Node transport.
 
 **What Z2M support must NOT become.**
 
@@ -104,7 +104,7 @@ The MR4U has two independent radios. With the port-name-by-chip convention, oper
 - No Z2M-equivalent baked into ESPHome firmware. Z2M is a host-side application; it runs in a container next to HA and consumes our encrypted API like any other client.
 - The ownership rule still applies: **one client per physical radio at a time.** ZHA and Z2M cannot share the same CC2674. Migration between them is "stop one, start the other," not "run both concurrently."
 
-**Effort estimate.** Zero firmware work; one small `zigbee-herdsman` transport module PR. Comparable to the OTBR adapter effort. Would slot naturally into a post-v1 Phase 10 if there's user demand.
+**Effort estimate.** Zero firmware work; one small `zigbee-herdsman` transport module PR. Comparable to the OTBR adapter effort. A post-v1 stretch item if there's user demand.
 
 ---
 
@@ -122,8 +122,8 @@ The MR4U has two independent radios. With the port-name-by-chip convention, oper
               │  serialx ESPHome transport   │
               │       │                      │
               │   esphome://mr4u:6053/       │
-              │        ?port_name=efr32      │
-              │       │  (Noise + PSK)       │
+              │        ?port_name=thread     │
+              │       │  (encrypted)         │
               │       ▼                      │
               │   PTY  /tmp/ttyOTBR          │
               │       │                      │
@@ -135,7 +135,7 @@ The MR4U has two independent radios. With the port-name-by-chip convention, oper
 Characteristics:
 - Runs entirely inside the OTBR container. No new network listener. No `127.0.0.1:6638`.
 - Uses `serialx[esphome]` + `aioesphomeapi` — both are already essentially present in the add-on's Python stack.
-- Speaks only Noise-encrypted ESPHome Native API on the wire.
+- Speaks only the encrypted ESPHome Native API on the wire.
 
 ### 3.2 Add-on configuration (proposed)
 
@@ -145,7 +145,7 @@ Rather than exposing raw internals, use one high-level radio abstraction:
 radio:
   type: esphome
   host: mr4u.local
-  port_name: efr32                  # whichever chip is configured for Thread
+  port_name: thread                 # default MR4U role for the EFR32
   psk: !secret device_encryption_key # same PSK as the ESPHome integration in HA Core
   baudrate: 460800
   flow_control: false
@@ -173,7 +173,7 @@ Adding `spinel+hdlc+esphome://…` to OpenThread would eliminate the PTY, but it
 
 Same principle as §2.1: **our firmware does not commission Thread devices and does not host a commissioning UI.** The EFR32MG26 runs an RCP (radio co-processor) — the OpenThread stack lives in `otbr-agent` inside the OTBR add-on, and the commissioning UX lives in Home Assistant's **Thread** integration (plus, for Matter devices, the **Matter** integration).
 
-End-user flow, once the OTBR add-on is pointed at our `esphome://<host>:6053/?port_name=efr32`:
+End-user flow, once the OTBR add-on is pointed at our `esphome://<host>:6053/?port_name=thread`:
 
 1. HA → **Settings → Devices & services → Thread** (dataset management, credential sharing with Apple/Google borders) — or the **Matter** integration for adding a Matter-over-Thread device via QR code / setup code.
 2. HA drives commissioning via `otbr-agent`, which drives the EFR32 RCP over Spinel, over our encrypted UART pipe.

@@ -98,9 +98,8 @@ substitutions:
   # UART2. Default is CC2674P10 (ZNP coord), matching SLZB-06P10. Users
   # of other variants (SLZB-06M / SLZB-06MG24 → EFR32 EZSP coord, stub
   # in v1) should override these substitutions in a per-device copy.
-  # See docs/v1-radio-firmware.md §§3, 6f, 6g.
+  # See docs/design/radio-probe-reference.md §§3, 6f, 6g.
   radio1_chip: cc2674p10
-  radio1_smlight_id: "70"
   radio1_protocol: znp
   radio1_role: coord
   radio1_firmware_channel: dev

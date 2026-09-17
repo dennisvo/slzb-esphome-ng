@@ -51,12 +51,20 @@ Firewalling and IP allow-lists mitigate reachability, but the design goal is str
 Desired MR4U network surface (`ethernet` / `wifi` builds):
 
 ```text
-TCP 6053   ESPHome Native API   (Noise + PSK)
-TCP 6638   CLOSED
-TCP 7638   CLOSED
-TCP 8638   CLOSED
-TCP 80     CLOSED
+TCP 6053   ESPHome Native API   (encrypted — pre-shared key; details below)
+TCP 3232   ESPHome OTA          (encryption inherits API PSK — same key)
+UDP 5353   mDNS discovery       (standard ESPHome, advertises host + services on link-local)
+TCP 6638   CLOSED               (was: EFR32 stream_server, plaintext)
+TCP 7638   CLOSED               (was: CC2674 stream_server, plaintext)
+TCP 8638   CLOSED               (was: USB pass-through stream_server, plaintext)
+TCP 80     CLOSED               (was: SLZB-OS HTTP admin UI)
 ```
+
+The three ports that remain open are the standard ESPHome trio:
+
+- **`:6053/tcp` (Native API)** — every operator-facing call (sensor state, service invocations, `serial_proxy` byte streams, log tail) travels here, mutually authenticated by the pre-shared `device_encryption_key`. Handshake is Noise `NNpsk0`; symmetric cipher is ChaCha20-Poly1305.
+- **`:3232/tcp` (OTA)** — firmware uploads are encrypted with the same PSK (bare `ota: encryption:` block in `packages/core/core.yaml` inherits the API key). ESP32's default OTA port; ESP8266 uses `:8266`, which is where a lot of published examples still show. No cleartext image ever crosses the network; no separate OTA password to leak.
+- **`:5353/udp` (mDNS)** — link-local discovery so the ESPHome dashboard and HA integration can find the device. Advertises hostname and service names only; carries no secrets. Standard behaviour for every ESPHome node.
 
 Threats in scope:
 - LAN attacker performing port scans, packet capture, replay, or malformed protocol packets on the radio streams.
@@ -132,7 +140,7 @@ Only the encrypted ESPHome Native API crosses the physical LAN. No `stream_serve
 
 Home Assistant Core ships `serialx`, a URL-to-transport router with a first-class `esphome-hass://` scheme. Any HA-side consumer that opens a serial device through `serialx` reaches an ESPHome `serial_proxy` port over the encrypted Native API without touching pyserial. The ZHA and OTBR paths in this design both ride that same transport.
 
-See [integration-recipes.md](integration-recipes.md) §1 for both URL schemes (`esphome-hass://` inside HA Core, `esphome://` from separate containers) and their operational consequences.
+See [integration-recipes.md](../integration-recipes.md) §1 for both URL schemes (`esphome-hass://` inside HA Core, `esphome://` from separate containers) and their operational consequences.
 
 ---
 
@@ -186,7 +194,7 @@ Three upstream repositories are relevant. Development starts with the first; the
 | # | Repository | Role | Expected modification |
 |---|------------|------|-----------------------|
 | 1 | [`smlight-tech/slzb-esphome`](https://github.com/smlight-tech/slzb-esphome) | MR4U hardware definitions and ESPHome build targets. MR4U target: `mr4u-r1-73.yaml`. | **Fork.** Remove `stream_server` / `web_server`; add encrypted `api` + two `serial_proxy` instances; keep hardware definitions upstream-tracked. |
-| 2 | [`home-assistant/core`](https://github.com/home-assistant/core) | ZHA, ESPHome integration, `serialx` registration. | **Ideally no changes.** Only patch if §10 validation shows a layer bypassing `serialx` that cannot be fixed in `zigpy` or a radio backend. |
+| 2 | [`home-assistant/core`](https://github.com/home-assistant/core) | ZHA, ESPHome integration, `serialx` registration. | **No changes required.** §10 validation confirmed no layer bypasses `serialx`; the stock chain works end-to-end. |
 | 3 | [`home-assistant/addons`](https://github.com/home-assistant/addons) | The OpenThread Border Router add-on. | **Prototype the `serialx esphome:// → PTY → otbr-agent` adapter here** (§11). |
 
 Development ordering:
@@ -197,7 +205,7 @@ smlight-tech/slzb-esphome        ← START HERE
         └── our fork
              └── secure MR4U firmware  (Phases 1–3)
 
-home-assistant/core              ← test ZHA against firmware; patch only if required (Phase 2)
+home-assistant/core              ← ZHA validated against firmware; no patches needed (Phase 2 done)
 
 home-assistant/addons            ← OTBR ESPHome-serial adapter prototype (Phase 4)
 ```
@@ -227,18 +235,18 @@ uart:
     baud_rate: 115200
 
 serial_proxy:
-  - id: efr32
-    uart_id: efr32_uart
-    name: "EFR32 radio"     # Thread by default (SMLIGHT MR4U default)
+  - id: sp_uart1
+    uart_id: uart1
+    name: "zigbee"      # port_name in the client URL; CC2674P10 by default (SMLIGHT MR4U)
 
-  - id: cc2674
-    uart_id: cc2674_uart
-    name: "CC2674 radio"    # Zigbee by default
+  - id: sp_uart2
+    uart_id: uart2
+    name: "thread"      # EFR32MG26 by default
 ```
 
 Explicitly absent: `stream_server`, `web_server`, `mqtt`.
 
-**Port name convention.** The `port_name=<x>` in the `serialx` URL matches the `id` of the corresponding `serial_proxy`. This design names ports by **chip** (`efr32`, `cc2674`), mirroring SLZB-OS's hardware-based port numbering (6638 = EFR32, 7638 = CC2674) — which reflects the truth that either chip can play either role. The operator points ZHA at whichever chip they want as the Zigbee coordinator, and OTBR at the other. Default mapping in a fresh build (matches SMLIGHT's factory config): `cc2674` = Zigbee, `efr32` = Thread. See §29.1 for URL examples in both configurations.
+**Port name convention.** The `port_name=<x>` in the `serialx` URL matches the `name:` field of the corresponding `serial_proxy` (not its `id:`). This design names ports by the **default protocol role** (`zigbee`, `thread`, `zwave`, `usb`) rather than by chip. The rationale: the vast majority of users never re-purpose a radio, and role-based names give an operator-meaningful URL out of the box (`?port_name=zigbee` reads better than `?port_name=cc2674` for the 99% case). An operator who does swap radio duties (e.g. reflashes the CC2674 as a Thread router) is expected to edit the `name:` in their fork of the device YAML to stay semantically accurate; the shipped `serial_proxy` `name:` is a config value, not a chip binding. See §29.1 for URL examples.
 
 ---
 
@@ -246,21 +254,21 @@ Explicitly absent: `stream_server`, `web_server`, `mqtt`.
 
 ZHA is the v1 primary integration target. The transport chain is: ZHA → zigpy → protocol-specific radio backend (`zigpy-znp` for CC2674, `bellows` for EFR32) → `zigpy.serial` → `serialx` → `esphome-hass://` → `serial_proxy` on the device. No component in that chain is host-side compatibility glue — every layer is stock upstream.
 
-See [integration-recipes.md](integration-recipes.md) §2 for the ZHA pairing flow, the ZNP/EZSP wire-protocol context, Z2M as a future client (paths A and B), and the anti-features list.
+See [integration-recipes.md](../integration-recipes.md) §2 for the ZHA pairing flow, the ZNP/EZSP wire-protocol context, Z2M as a future client (paths A and B), and the anti-features list.
 
 ---
 
-## 10. ZHA validation (must be done, not assumed)
+## 10. ZHA validation (completed)
 
-Not every integration reliably reaches `serial_proxy` through `serialx`; some historically call pyserial directly. Verify the whole chain:
+Not every integration reliably reaches `serial_proxy` through `serialx`; some historically call pyserial directly. Empirical validation against physical MR4U hardware confirmed the whole chain is clean:
 
-1. Does ZHA open the coordinator via `serialx` for the selected zigpy backend?
-2. Does the CC2674-compatible zigpy library propagate the transport (no direct pyserial call)?
-3. Can `esphome-hass://…` be opened without URL rewriting?
-4. Are baudrate and flow-control requests propagated correctly?
-5. What happens when the underlying ESPHome API session reconnects?
+1. **ZHA opens the coordinator via `serialx`.** Both zigpy backends (`zigpy-znp` for CC2674, `bellows` for EFR32) go through `zigpy.serial` → `serialx` → `esphome-hass://<entry_id>?port_name=zigbee`. No pyserial bypass.
+2. **The CC2674-compatible zigpy library propagates the transport correctly.** No direct pyserial call.
+3. **`esphome-hass://…` opens without URL rewriting.** `CONF_DEVICE_PATH` is copied verbatim from the config entry into the backend controller (see [`archive/zha-zigpy-inspection.md`](archive/zha-zigpy-inspection.md) §2.4).
+4. **Baudrate and flow-control requests propagate.** `bellows`'s default `xon_xoff=True` is a no-op through the ESPHome transport, as expected; HW flow control is set at the device via `uart*_hw_flow` (§12).
+5. **ESPHome API session reconnect** cleanly closes and reopens the port on the HA side; ZHA reconnects the coordinator without user intervention.
 
-If any layer bypasses `serialx`, the preferred fix is upstream (HA, zigpy, or the zigpy radio backend) — not a compatibility proxy on the host.
+Outcome: **no HA Core, `zigpy`, or `serialx` patches were required.** Full pairing, binding, group traffic, and OTA all work over the encrypted transport.
 
 ---
 
@@ -268,7 +276,7 @@ If any layer bypasses `serialx`, the preferred fix is upstream (HA, zigpy, or th
 
 `otbr-agent` only accepts `spinel+hdlc+uart://<posix-path>` URLs — it does not speak `serialx` natively. Our path is a small Python adapter, running inside the HA OTBR add-on's own container, that opens `esphome-hass://` via `serialx`, creates a PTY via `os.openpty()`, symlinks it to `/tmp/ttyOTBR`, and forwards bytes bidirectionally. `otbr-agent` sees a normal POSIX serial device; the encryption and transport are transparent to it.
 
-See [integration-recipes.md](integration-recipes.md) §3 for the Spinel primer, adapter architecture, add-on config surface, supervised-failure lifecycle, and Thread/Matter commissioning flow.
+See [integration-recipes.md](../integration-recipes.md) §3 for the Spinel primer, adapter architecture, add-on config surface, supervised-failure lifecycle, and Thread/Matter commissioning flow.
 
 ---
 
@@ -288,7 +296,7 @@ The MR4U hardware wires RTS/CTS between the ESP32-S3 and each radio (the Dashboa
 
 Do **not** enable software (XON/XOFF) flow control — Spinel and Zigbee framing are binary and will collide with 0x11/0x13.
 
-`serial_proxy` accepts a `flow_control` parameter and exposes `rts_pin`/`dtr_pin` as modem-control outputs, but transparent RTS/CTS across ESPHome/ESP-IDF is not currently plumbed by the upstream `uart:` component. Phase 1 ships `components/uart_hw_flow/` — a ~20 LOC fork-local external component that calls ESP-IDF `uart_set_hw_flow_ctrl(UART_HW_FLOWCTRL_CTS_RTS, …)` on the configured UART, controlled per-UART via the `uart*_hw_flow: true|false` substitution in `hw_defs/**`. Current MR4U radios keep it `false` (matches SMLIGHT firmware defaults); the axis exists so future radios that require HW FC (e.g. MG24 Thread) work by config alone. An upstream ESPHome PR adding `cts_pin`/`rts_pin` to `uart:` remains the preferred long-term landing; the external component is the interim carrier. See [v1-design.md](v1-design.md) §5.
+`serial_proxy` accepts a `flow_control` parameter and exposes `rts_pin`/`dtr_pin` as modem-control outputs, but transparent RTS/CTS across ESPHome/ESP-IDF is not currently plumbed by the upstream `uart:` component. Phase 1 ships `components/uart_hw_flow/` — a ~20 LOC fork-local external component that calls ESP-IDF `uart_set_hw_flow_ctrl(UART_HW_FLOWCTRL_CTS_RTS, …)` on the configured UART, controlled per-UART via the `uart*_hw_flow: true|false` substitution in `hw_defs/**`. Current MR4U radios keep it `false` (matches SMLIGHT firmware defaults); the axis exists so future radios that require HW FC (e.g. MG24 Thread) work by config alone. An upstream ESPHome PR adding `cts_pin`/`rts_pin` to `uart:` remains the preferred long-term landing; the external component is the interim carrier. See [radio-firmware-mgmt.md](radio-firmware-mgmt.md) §5.
 
 ---
 
@@ -388,7 +396,9 @@ Not part of v1. Prove runtime serial transport first.
 - General-purpose external proxy daemon
 - Custom cryptography or TLS
 - Browser web UI on the MR4U
-- Bluetooth proxy **enabled by default** (capability retained in firmware but disabled — see [v1-design.md §11.3](v1-design.md))
+- **Runtime radio role-switching** ("turn Radio 1 into a router with one click"). Role is a compile-time property of the flashed radio firmware image; changing it requires editing the device YAML, reflashing the radio, and rebuilding the ESPHome image. See §24 and [radio-firmware-mgmt.md](radio-firmware-mgmt.md) §6.
+- **Radio-side sensors that require a persistent second protocol channel on the UART** — anything beyond the one-shot version probe at boot (§16). SLZB-OS surfaces radio SoC die temperature via ZNP/Spinel MFG-INFO queries, so it is technically obtainable; continuously polling would violate the `serial_proxy` dumb-pipe principle (§14) by requiring the firmware to arbitrate the UART against the paired HA client. Re-evaluate if a scheduled break-glass query pattern is ever added.
+- Bluetooth proxy **enabled by default** (capability retained in firmware but disabled — see §27.3)
 - Automatic radio firmware flashing
 - Cloud dependency (including SLZB-OS-style cloud firmware-update checks and VPN)
 - Multi-client sharing of a coordinator
@@ -397,7 +407,7 @@ Not part of v1. Prove runtime serial transport first.
 - **Matter-over-Thread endpoint mode** on the gateway itself — HA brokers Matter via OTBR
 - **Zigbee Hub** / any on-device Zigbee application layer
 - **USB-to-Ethernet passthrough** for external USB dongles plugged into the MR4U's USB host port (SLZB-OS TCP :8638) — same insecure category as :6638/:7638; if wanted later, expose via `serial_proxy` on the encrypted Native API, not raw TCP
-- **On-board microphone as an HA entity, and sound-reactive WS2812 effects (`music_leds` + `fastled_helper`)** — upstream ships these via the third-party [`andrewjswan/esphome-components`](https://github.com/andrewjswan/esphome-components) source tree. Removed from this fork on 2026-09-10 along with the FastLED library dependency. The FFT + AGC + peak-detection task on the second core + WS2812 RMT output competes with `serial_proxy`'s radio UART loops for CPU / interrupt budget, producing intermittent byte drops on 115200–460800-baud Zigbee / Thread / Z-Wave streams. Attack-surface reduction is the fork's headline motive; **radio-transport reliability** is its second, non-negotiable pillar — anything on the SoC that jeopardizes it fails the ship criterion by construction. If sound-reactive effects ever return, they will be gated behind an explicit runtime "pause radios while mic active" switch, not on-by-default.
+- **On-board microphone as an HA entity, and sound-reactive WS2812 effects (`music_leds` + `fastled_helper`)** — upstream ships these via the third-party [`andrewjswan/esphome-components`](https://github.com/andrewjswan/esphome-components) source tree. Removed from this fork along with the FastLED library dependency. The FFT + AGC + peak-detection task on the second core + WS2812 RMT output competes with `serial_proxy`'s radio UART loops for CPU / interrupt budget, producing intermittent byte drops on 115200–460800-baud Zigbee / Thread / Z-Wave streams. Attack-surface reduction is the fork's headline motive; **radio-transport reliability** is its second, non-negotiable pillar — anything on the SoC that jeopardizes it fails the ship criterion by construction. If sound-reactive effects ever return, they will be gated behind an explicit runtime "pause radios while mic active" switch, not on-by-default.
 
 ---
 
@@ -409,9 +419,9 @@ The Phases below are the architectural milestones this document builds toward. [
 
 | Phase | State | Notes |
 |---|---|---|
-| Phase 0 — Upstream inspection | ✅ Done | commit `7c507be`; ground-truth references in [`docs/research/`](research/) |
-| Phase 1 — Secure firmware (repo-wide) | ✅ Done | commits `307fd30`, `3a0ebef` — pushed to `origin/secure-native-api`. Empirical hardware verification pending (rolled into Phase 2 acceptance). |
-| Phase 2 — Native ZHA validation | ⏳ Pending | Requires hardware in hand |
+| Phase 0 — Upstream inspection | ✅ Done | commit `7c507be`; ground-truth references in [`docs/design/archive/`](archive/) |
+| Phase 1 — Secure firmware (repo-wide) | ✅ Done | commits `307fd30`, `3a0ebef` — pushed to `origin/secure-native-api`. Empirical hardware verification carried under Phase 2. |
+| Phase 2 — Native ZHA validation | ✅ Done | End-to-end chain verified on MR4U; see §10. No HA Core / `zigpy` / `serialx` patches required. |
 | Phase 3 — Zigbee reliability testing | ⏳ Pending | |
 | Phase 4 — OTBR internal PTY adapter prototype | ⏳ Pending | |
 | Phase 5 — Thread reliability testing | ⏳ Pending | |
@@ -514,16 +524,17 @@ The design is a **local optimum** given its constraints: HA is the host, ESPHome
 
 Widening the interface (e.g. decoding Spinel/ZNP on the ESP32 and re-exposing higher-level events) means every zigpy quirk update or OpenThread revision becomes an ESPHome firmware release. That is a much worse deal than tunneling bytes.
 
-**Aspirational end-state: zero HA-side glue.** The "finished" version of this design has *zero* patches or adapters outside our own ESPHome firmware fork. Two glue points remain in v1, and both have concrete upstream retirement paths:
+**Aspirational end-state: zero HA-side glue.** The "finished" version of this design has *zero* patches or adapters outside our own ESPHome firmware fork. **One glue point remains in v1**, with a concrete upstream retirement path:
 
 | Glue in v1 | What retires it | Section |
 |---|---|---|
 | OTBR add-on internal PTY adapter | Upstream `spinel+hdlc+esphome://` scheme in OpenThread | §11.4 |
-| Possible zigpy radio-backend shim (if §10 validation finds `pyserial` bypass) | Upstream fix in the affected zigpy backend to use `serialx` | §10 |
 
-Both are the same insight applied to the two radios. The day this design ships with zero HA-side patches — stock ESPHome integration, stock ZHA, stock OTBR add-on, stock Thread integration — is the day it is finished. Everything until then is bridging code we are actively trying to delete.
+(The originally-anticipated second glue point — a zigpy backend shim in case a radio backend bypassed `serialx` — turned out to be unnecessary. §10 validation confirmed the full ZHA → zigpy → `serialx` chain is clean for both radios, with no `pyserial` bypass. No shim was ever needed and none will be shipped.)
 
-**Push-further point 1: land `spinel+hdlc+esphome://` upstream (see §11.4).**
+The day this design ships with zero HA-side patches — stock ESPHome integration, stock ZHA, stock OTBR add-on, stock Thread integration — is the day it is finished. Everything until then is bridging code we are actively trying to delete.
+
+**Push-further point: land `spinel+hdlc+esphome://` upstream (see §11.4).**
 
 OpenThread's radio-URL syntax is pluggable — schemes like `spinel+hdlc+uart:///dev/ttyUSB0` and `spinel+hdlc+forkpty:///path/to/program` are each a small C++ class in `openthread/src/posix/platform/`. Adding an `esphome://` scheme means writing one such class that:
 
@@ -532,20 +543,9 @@ OpenThread's radio-URL syntax is pluggable — schemes like `spinel+hdlc+uart://
 3. Feeds RX bytes into HDLC framing and pumps TX bytes out
 4. Handles reconnect
 
-With this in place, `otbr-agent` config becomes literally one line: `RADIO_URL=spinel+hdlc+esphome://mr4u:6053/?port_name=efr32`. The §11 PTY adapter, its supervision logic, and its config surface all vanish. Every other user of a remote encrypted RCP benefits too, so it's a real upstream contribution, not a hostile patch we push for our own use. Non-trivial C++ in a security-sensitive codebase and OpenThread's release cadence is slow — hence "future," hence the pragmatic PTY bridge in v1.
+With this in place, `otbr-agent` config becomes literally one line: `RADIO_URL=spinel+hdlc+esphome://mr4u:6053/?port_name=thread`. The §11 PTY adapter, its supervision logic, and its config surface all vanish. Every other user of a remote encrypted RCP benefits too, so it's a real upstream contribution, not a hostile patch we push for our own use. Non-trivial C++ in a security-sensitive codebase and OpenThread's release cadence is slow — hence "future," hence the pragmatic PTY bridge in v1.
 
-**Push-further point 2: push §10 validation to completion early.**
-
-The ZHA serial-open path is `ZHA → zigpy → radio backend → serialx → transport handler → wire`. In theory `serialx` transparently handles `esphome-hass://`. In practice some radio backends historically bypassed `serialx` and called `pyserial` directly. If any layer in that chain does so, `esphome-hass://` fails with a URL-scheme error.
-
-Why it must be done early:
-
-1. *If we discover this late, someone will suggest a compatibility shim* — a local `pyserial`-mimicking process that proxies to `esphome://`. That's exactly the "unnecessary plugin" we're trying to avoid; once shipped, it never dies, and the design's minimalism narrative collapses.
-2. *Landing a zigpy fix now* means a clean HA release picks it up naturally. Landing it after users are relying on a workaround means coordinating a migration.
-
-The validation is small — open ZHA against `esphome-hass://.../cc2674`, verify `serialx` is on the call stack when the transport opens, and if not, walk the stack to find who's calling `pyserial.Serial(...)` directly. Then land a PR against that library to route through `serialx`.
-
-**Both points converge on the same north star.** Every shim retired is a plugin we said we didn't want and now don't have. That is a healthier trajectory than most integration projects, which tend to accumulate glue over time rather than shed it.
+**North star.** Every shim retired is a plugin we said we didn't want and now don't have. §10 already delivered one such retirement (no zigpy shim); the OTBR upstream landing above is the last one on the v1 horizon.
 
 ---
 
@@ -723,13 +723,197 @@ Path (a) is preferred; (b) is a viable fallback; (c) is prototype-only.
 - Do not release descriptor-cloned firmware publicly.
 - If both integration paths stall, formally remove `usb` from the design and update this section to say so. That is an acceptable outcome; the primary user story is the encrypted network path.
 
+### 26.6 Implementation shape: what needs Python, what stays in YAML
+
+Where does "a HA-side integration" become necessary vs optional? The answer changes between v1 and v2, and this subsection makes that boundary explicit so we don't accidentally build more than we need or defer things that would in fact become cheap once we've committed to v2.
+
+#### 26.6.1 v1 needs no Python integration
+
+Every entity in §27.1's port list is either:
+
+- **Native ESPHome** (`internal_temperature:`, `uptime:`, `restart:`, `button:`, `switch:`, `ethernet.connected`, etc.) — auto-discovered by HA's built-in ESPHome integration.
+- **A ZNP-probe `text_sensor` published at boot** — same, auto-discovered.
+- **A HA-side template entity** — the "radio firmware update" flow uses a `template update:` entity in HA's own YAML (or a shipped blueprint) that reads two REST sensors (installed_firmware, available_rev) and wires an `install` action to an ESPHome service call. Zero Python.
+
+Concrete v1 shipping list on the HA side:
+
+| HA-side artifact | What it does |
+|---|---|
+| `rest:` sensor polling `https://updates.smlight.tech/services/api/slzb-06x-ota.php?type=ZB&format=slzb` | Publishes the whole catalog as JSON attributes; template pulls `available_rev`, `available_link`, `available_notes` per radio |
+| `template update:` entity | Combines `radio*_installed_firmware` (ESPHome) + filtered catalog entry (REST) into a HA update entity |
+| Blueprint (optional) | Pre-wires the above for MR4U so users don't hand-write it |
+| `shell_command:` (optional, for v1.5) | External flasher invocation, if a user wants the install action to actually flash |
+
+**No `custom_components/` directory, no `manifest.json`, no config flow.** It's all YAML plus (optionally) an add-on the user installs from a documented URL.
+
+#### 26.6.2 What v2 actually needs
+
+v2's non-negotiable is **one-click Zigbee-radio firmware flash from HA**. The ESP32 cannot host the flasher binaries (silabs-firmware-flasher, cc2538-bsl.py, Python OT/Spinel tooling), so something HA-side must:
+
+1. React to a HA event or service call.
+2. Open TCP to a temporary raw-UART bridge port that ESPHome opens on demand (see [radio-firmware-mgmt.md](radio-firmware-mgmt.md) §7 Option A).
+3. Run the appropriate flasher against `socket://<esphome-ip>:<bridge-port>`.
+4. Publish progress + result back into HA.
+
+The lowest-effort shape that satisfies all four is a **Home Assistant add-on** (Docker container in the HA supervisor). Options in increasing complexity:
+
+| Shape | Effort | User install path | Trade-offs |
+|---|---|---|---|
+| Documented `shell_command:` invoking a flasher binary the user installs manually | Very low (docs only) | Manual copy of a Python script | Fragile; no HA event pipeline; Windows/macOS HA users left out |
+| **HA add-on published to a HACS repo** ← preferred | Medium | Add repo URL, install add-on | Runs in HA supervisor; can publish events; auto-updates; still no `custom_components/` needed |
+| Full `custom_components/slzb_mr4u/` with add-on backend | High | HACS integration install | Nice service registration + Developer-Tools UX; more code to maintain |
+
+We can defer choosing between "add-on only" and "add-on + custom_component" until v2.0 ships. Start with the add-on, add the thin custom_component wrapper only if users complain about UX.
+
+#### 26.6.3 Which SLZB-OS features re-use v2's infrastructure at near-zero cost
+
+Once we're paying for an add-on with Python + a ZNP client + a bridge to ESPHome, several previously-skipped items become cheap. The framework: **if it needs a Python-side ZNP/Spinel session, it belongs in v2. If it needs a persistent Zigbee client role, it belongs in Z2M/ZHA. If it needs a runtime on the device, it stays skipped.**
+
+| SLZB-OS feature | v1 decision | v2 add-on decision | Reasoning |
+|---|---|---|---|
+| One-click radio flash | Skip | **v2.0 core** | The reason v2 exists |
+| Post-flash re-probe | N/A | **v2.0 core** | Also the escape hatch that makes a `zbVer.txt`-style cache safe later (see [radio-firmware-mgmt.md](radio-firmware-mgmt.md) §3 sidebar) |
+| Flash progress events | Skip | **v2.0 nice-to-have** | Add-on emits `slzb.flash_progress` events; replaces SLZB-OS SSE `/events` pattern without needing SSE on ESP32 |
+| Zigbee network backup (nwk key + PAN + device table export) | Skip | **v2.1 candidate** | Same ZNP session dumps to `/config/backups/`; parallel to HA snapshots, valuable for network-key rotation and disaster recovery |
+| IEEE MAC read + migrate helper | Skip | **v2.2 candidate** | ZNP CMD 12/14 read, CMD 11 write. Real UX win for "I swapped a CC26xx" recovery |
+| Radio SoC die temperature | v3+ | **v2.3 candidate** | ZNP `SYS_GET_MFG_INFO` (or Silabs equivalent) polled on the add-on's existing schedule. Publishes as HA sensor. Was v3+ under v1's constraints; v2 makes it v2.3. |
+| Zigbee energy scan | Skip | **v2.4 candidate** | ZNP CMD 5 equivalent. Nice channel-picker visualization on the HA side. |
+| Diagnose "why won't my network start" (RSSI/link/permit-join snapshot) | Skip | **v2.4 candidate** | Piggy-backs on energy scan |
+| Radio TX power *read* (diagnostic) | Skip | **v2.4 candidate** | ZNP `SYS_GET_TX_POWER` on schedule. Setter stays with the client (see [radio-firmware-mgmt.md](radio-firmware-mgmt.md) §3 sidebar). |
+| WireGuard, DDNS | Skip | **Still skip** | Wrong layer regardless of v2 |
+| Filesystem-over-HTTP | Skip | **Still skip** | Security anti-feature (see security-findings doc) |
+| AI Assistant (Claude proxy) | Skip | **Still skip** | Security posture; not building agent-with-device-control |
+| BE apps, Berry scripts, script integrations catalog | Skip | **Still skip** | Architectural — no on-device app runtime |
+| Zigbee Hub (in-device Z2M-alike) | Skip | **Still skip** | Z2M/ZHA already do this in HA |
+| USB gadget mode, CAN, IR, RF | Skip / per-device | **Still skip** | Hardware or per-device build, not v2 add-on scope |
+| WiFi scan UI | Skip | **Still skip** | Native to HA's ESPHome integration |
+| Runtime role/coord-mode switching | Skip | **Still skip** | Violates §24; compile-time only |
+| Web auth, users, web UI | Skip | **Still skip** | Native ESPHome `web_server: auth:` |
+
+#### 26.6.4 Scope-creep footgun
+
+If v2 grows from "one-click flash" to "flash + backup + migrate + temp poll + energy scan", the add-on becomes A Whole Thing: HACS repo, release cadence, issue tracker, documentation site, breaking-change management. That's the actual cost, not the code.
+
+Suggested phasing:
+
+- **v2.0**: add-on ships with one-click flash + post-flash re-probe + progress events. Prove the architecture works.
+- **v2.1**: ZB network backup export.
+- **v2.2**: IEEE MAC read + migrate helper.
+- **v2.3**: periodic radio SoC temp diagnostic.
+- **v2.4**: energy scan + link diagnostics + TX power read.
+
+Each increment reuses infrastructure the previous ones already built. Users who only want v1 keep paying nothing.
+
+#### 26.6.5 The v1/v2 boundary in one line
+
+**The boundary isn't "ESPHome-side vs HA-side." It's "things that only need the ESP32 (v1) vs things that need Python-side ZNP/Spinel talking to the radio (v2)."**
+
+SLZB-OS collapses that boundary by putting a Berry runtime on the device. We keep the boundary and put Python on the HA side. That's the entire architectural disagreement between the two forks, distilled.
+
 ---
 
 ## 27. Feature parity and device-management surface
 
 The SLZB-OS operator-facing feature set is retained by reusing SMLIGHT's own ESPHome packages (buzzer, IR, WS2812, BLE proxy, diagnostics, transport packages) and removing only the network-exposure and proprietary-UI ones. HA sees every retained feature as native ESPHome entities through the standard integration; no HA-side integration is required for v1. Post-v1 polish (a branded SLZB-MR4U device card) is a proposal to extend the existing `smlight` HA integration rather than a parallel new integration.
 
-See [v1-design.md](v1-design.md) §11 for the per-feature retention table, the two-stage HA integration strategy, and the BLE-proxy-off-by-default rule.
+### 27.1 SMLIGHT HA integration — entity port/skip walkthrough
+
+Cross-check of every entity the official [`smlight` HA integration](https://www.home-assistant.io/integrations/smlight/) exposes, against what we plan to expose from ESPHome via the Native API. **Port** = build our equivalent. **Skip** = intentionally not building it, with a reason.
+
+| Category | Entity | Decision | Notes |
+|---|---|---|---|
+| sensor | `device_mode` | Port (v1) | Static text_sensor from hw_defs. Values: `LAN`, `LAN+Wi-Fi`, `USB`, etc. |
+| sensor | `firmware_channel` per radio | Port (v1) | text_sensor from `firmware_channel` substitution (`prod` \| `dev`) |
+| sensor | `zigbee_type` per radio | Port (v1) | text_sensor derived from `radio*_role` (`coordinator`/`router`/`RCP`/`NCP`/`primary controller`). Underlying two-dim `radio*_protocol` + `radio*_role` substitutions available separately as diagnostic sensors |
+| sensor | core temperature | Port (v1) | ESPHome `internal_temperature:` component |
+| number | core temperature offset | Port (v1) | SLZB-OS ships a `tempCalib.tempFx` offset (CMD 10 stores "here's the real temp"). Trivially replicated as a `number:` template calibration input feeding a `sensor:` `offset` filter. Nice UX for users with an accurate reference thermometer. |
+| sensor | zigbee radio temperature | **Skip in v1** | SLZB-OS exposes it (`zb_temp`, `zb_temp2`) via a ZNP/Spinel MFG-INFO query, so it's obtainable — but reading it continuously would require breaking the `serial_proxy` dumb-pipe. Defer to v3+ pending a scheduled break-glass query pattern. |
+| sensor | free RAM / FS / PSRAM | Port (v1) | ESPHome `debug:` component + `sensor:` |
+| sensor | uptime | Port (v1) | ESPHome `uptime:` sensor |
+| binary_sensor | ethernet | Port (v1) | ESPHome `ethernet.connected` binary_sensor |
+| binary_sensor | wifi | Port (v1) | ESPHome `wifi.connected` binary_sensor |
+| binary_sensor | vpn | **Skip** | No VPN client in this fork; would require WireGuard integration |
+| binary_sensor | internet | Port (optional) | `http_request:` GET to a known endpoint every N minutes |
+| switch | disable LEDs | Port (v1) | Global template switch driving all LED outputs |
+| switch | night mode LEDs | Port (v1) | Scheduled variant of disable LEDs |
+| switch | auto zigbee update | **Skip** | Update entity in HA already provides "Install" action; no automation loop needed |
+| switch | VPN enabled | **Skip** | See VPN binary_sensor |
+| button | core restart | Port (v1) | ESPHome `restart:` button |
+| button | zigbee restart | Port (v1) | Pulse RST pin |
+| button | zigbee flash mode | Port (v1) | DTR + RST bootloader-entry dance |
+| button | reconnect Zigbee router | **Skip** | Router-mode-only feature; not exercised by primary user; add if MR4U user reports needing it |
+| update | core firmware | **Skip in v1** | ESPHome already supports OTA; adding SMLIGHT-catalog-driven `update:` entity for the host firmware is redundant with existing ESPHome update flows |
+| update | zigbee firmware per radio | Port (v1) | The whole point of this design. HA template `update:` entity backed by REST sensor |
+| update | SSE flash progress stream | **Skip in v1** | Nice-to-have; falls out of v2 one-click flash design if we implement it |
+| light | Ultima ambilight | N/A for MR4U | Ultima-only; add when Ultima gets its own local build |
+| bluetooth | BLE proxy | Port (optional) | ESPHome `bluetooth_proxy:` component. Off by default in MR4U to keep image small |
+| infrared | Ultima IR | N/A for MR4U | Ultima-only |
+| service | `play_rtttl` on buzzer | Port (optional) | ESPHome `rtttl:` component if buzzer wired up (MRxU has one) |
+
+**Summary**: v1 ports 13 entities directly, skips 6 for well-reasoned technical or scope reasons, defers 4 to per-device builds (Ultima) or later phases. No custom HA integration needed — the Native API surfaces all of these as native HA entities.
+
+### 27.2 Retention via SMLIGHT ESPHome packages
+
+SMLIGHT's `slzb-esphome` repo (which we fork) already contains ESPHome-native implementations of every feature the `smlight` integration currently wraps. By keeping SMLIGHT's packages and only removing the network-exposure ones, we retain the feature set at essentially zero extra cost:
+
+| Feature (via `smlight` integration today) | Keep from `slzb-esphome` |
+|---|---|
+| Radio reset buttons | `packages/diagnostics/` |
+| Buzzer + RTTTL playback | `packages/buzzer/` |
+| IR TX / RX + code library | `packages/ir/`, `libraries/ir/codes/` |
+| WS2812 LED effects + presets | `packages/ws2812/`, `packages/leds/` |
+| BLE proxy | `packages/bluetooth/` (see §27.3) |
+| Diagnostics sensors, firmware version | `packages/diagnostics/` |
+| Firmware updates | ESPHome OTA |
+| Wi-Fi transport | `packages/wifi/` |
+| Ethernet transport | `packages/ethernet/` |
+
+**Remove:** `packages/stream_servers/`, any web-UI packages, SLZB-OS-only server features.
+
+### 27.3 Bluetooth proxy caveat
+
+BLE proxy on the ESP32-S3 shares CPU and radio time with the UART transports. SMLIGHT's own README already warns that the on-board microphone "may cause instability or packet loss" on concurrent Zigbee/Thread/Z-Wave UART-to-Ethernet operation. The same concern applies to BLE proxy.
+
+Note: the SLZB-OS BLE settings page itself links to "ESPHome BT proxy firmware" as the *alternative* to its built-in BLE feature — direct confirmation from SMLIGHT that ESPHome is the right stack for BLE on this hardware.
+
+Rule for our firmware:
+
+- **Retain** the BLE proxy capability in the YAML (from `packages/bluetooth/`).
+- **Disable by default.** Ship v1 with BLE proxy off so it does not affect the primary Zigbee/Thread reliability testing.
+- Expose it as an opt-in switch/config so users can enable and validate against their own workload.
+- Do not enable BLE proxy during Phase 3 / Phase 5 soak tests — those must reflect the default configuration.
+
+### 27.4 Post-v1 HA integration — extend, don't fork
+
+**v1 — stock ESPHome integration, no HA-side code.**
+
+ESPHome exposes entities transport-defined: any entity declared in the firmware YAML surfaces in HA automatically through the standard ESPHome integration. That means:
+
+- BLE proxy is picked up by HA's Bluetooth integration as a proxy (first-class ESPHome feature).
+- Buzzer RTTTL surfaces as `esphome.<device>_rtttl_input_set` — same call pattern SMLIGHT's README already documents.
+- IR TX/RX, WS2812 effects, radio reset buttons, sensors — all appear as normal HA entities.
+
+Functional coverage matches the SLZB-OS path. What is lost is polish: the device card shows "ESPHome mr4u" rather than a branded "SMLIGHT SLZB-MR4U" card, and there is no MR4U-specific setup wizard. SLZB-OS-only server features (SLZB-OS scripting, cloud, proprietary UI) are gone by design.
+
+**Post-v1 — extend the existing `smlight` integration, do not fork.**
+
+Same cooperation path as §26.3 Path (a). Propose adding an ESPHome-firmware backend to the existing `smlight` integration:
+
+- Add a zeroconf matcher for `_esphomelib._tcp.local.` scoped to our device naming pattern (e.g. `slzb-mr4u-*`).
+- On discovery, probe: SLZB-OS HTTP endpoint present? → use `pysmlight` backend. Not present? → adopt the device via the ESPHome integration and surface a curated subset of its entities in the `smlight` device card.
+- Share the config flow, device registry entry, diagnostics, and update-entity plumbing across both backends.
+- Auth: SLZB-OS backend uses its own token via `pysmlight`; ESPHome backend delegates to the ESPHome integration's PSK handling. No new secret storage.
+
+This is a **larger** PR than the USB matcher work (touches coordinator, config flow, probably depends on `esphome` integration primitives), but it preserves the "SMLIGHT device" mental model regardless of which firmware the user runs. Discuss with `@tl-sl` before starting.
+
+**Do not** write a standalone new integration. A parallel `smlight_esphome` domain duplicates the config flow, discovery, and coordinator layers and drifts out of sync over time.
+
+### 27.5 Summary
+
+- Feature parity: **retain** by reusing SMLIGHT's ESPHome packages.
+- v1 HA integration: **none required** — stock ESPHome integration surfaces everything.
+- Post-v1 polish: **extend the existing `smlight` integration**, don't fork it.
+- BLE proxy: capability retained, **off by default**.
 
 ---
 
@@ -737,7 +921,66 @@ See [v1-design.md](v1-design.md) §11 for the per-feature retention table, the t
 
 Every operator-facing capability of the stock SLZB-OS web UI is either kept, retained-but-off (BLE proxy), or surfaced automatically through ESPHome. Features specific to SLZB-OS — on-device OTBR, Matter endpoint, Zigbee Hub, VPN, cloud firmware pull, raw-TCP USB passthrough, proprietary HTTP API, on-device scripting — are deliberately out of scope. Attack-surface reduction is the whole point of this fork.
 
-See [v1-design.md](v1-design.md) §12 for the per-feature disposition table.
+### 28.1 SLZB-OS web UI — port/skip walkthrough
+
+Cross-check against the 25 sections of the stock SLZB-OS web UI. Groups pages by whether their function is portable to our ESPHome + HA model.
+
+| SLZB-OS section | Function | Decision | Notes |
+|---|---|---|---|
+| §1 Home / dashboard | Status overview | Port (v1) | HA dashboard replaces it; entities from §27 provide all data |
+| §2 Mode (per-radio role picker) | Runtime role change | **Skip** | See [radio-firmware-mgmt.md](radio-firmware-mgmt.md) §6. Compile-time only. `packages/roles/*.yaml` includes if we ever want a shortcut |
+| §3 Zigbee settings | ZHA/Z2M host, port, channel | **Skip** | HA controls this via ZHA/Z2M config; not ESPHome's job |
+| §4 Thread / OpenThread | OTBR admin | **Skip in v1** | Deferred; OT-RCP support falls out when we add `openthread:` component |
+| §5 Ethernet settings | DHCP/static IP | Port (v1) | ESPHome `ethernet:` config in YAML; `use_address` substitution |
+| §6 Wi-Fi settings | SSID/PSK | Port (v1) | ESPHome `wifi:` config; secrets |
+| §7 VPN | WireGuard client | **Skip** | Out of scope for this fork |
+| §8 System / hostname | Rename device | Port (v1) | ESPHome `name:` + friendly_name |
+| §9 System / timezone | NTP + TZ | Port (v1) | ESPHome `time:` component |
+| §10 System / restart | Reboot host | Port (v1) | ESPHome `restart:` button |
+| §11 System / reset config | Factory reset | Port (optional) | ESPHome `factory_reset:` button; behind a confirmation |
+| §12 Users / password | Web-UI auth | **Skip** | We don't ship a web UI. Native API handles auth via encryption key |
+| §13 LED settings | Brightness/mode | Port (v1) | Existing led packages + disable/night switches |
+| §14 Backup / restore | Config backup | **Skip** | HA snapshots handle this; not our layer |
+| §15 SSH | Enable SSH | **Skip** | Not applicable |
+| §16 Logs (host) | View logs | Port (v1) | ESPHome logger + HA logbook |
+| §17 Logs (radio) | View radio serial | Port (optional) | ESPHome `uart:` `debug:` block; noisy, off by default |
+| §18 Update host firmware | Check + install | Port (partial) | ESPHome OTA already handles install; catalog check for host is skipped (see §27) |
+| §19 Update Zigpy-znp / ZHA | Radio protocol lib | **Skip** | HA-side; not ESPHome's concern |
+| §20 Update SLZB-OS | Host OS | **Skip** | Replaced by ESPHome OTA |
+| §21 Firmware update (radio) | Check + flash per radio | Port (v1 check, v2 flash) | The central feature of this design |
+| §22 Buzzer test | Play tone | Port (optional) | ESPHome `rtttl:` action button |
+| §23 Buttons test | Hardware self-test | **Skip** | One-off diagnostic; not worth automating |
+| §24 About | Device info | Port (v1) | ESPHome diagnostic sensors already publish this |
+| §25 API reference | Docs | **Skip** | ESPHome Native API is a different API; docs live in this repo |
+
+**Summary**: 14 sections port cleanly, 11 skip for reasons that boil down to "wrong layer for this fork" (auth, VPN, backup, host-OS updates) or "compile-time-only" (role change). The port/skip split validates that the ESPHome + HA-Native-API model covers the useful surface without needing a custom integration.
+
+### 28.2 Feature disposition — keep vs skip vs retain-off
+
+A sweep of the stock SLZB-OS web UI on the MR4U surfaces several features beyond Zigbee/Thread transport. Each is dispositioned explicitly so future contributors know what was considered and why it isn't in v1.
+
+| SLZB-OS feature | v1 disposition | Rationale |
+|---|---|---|
+| Zigbee coordinator on either radio | Keep | Primary use case; either UART can carry it. |
+| Thread to remote OTBR | Keep | Our primary Thread path (see [integration-recipes.md](../integration-recipes.md) §3). |
+| Thread + on-device OTBR (beta) | Non-goal | Border-router state/routing belong in a supervised add-on, not on the MCU. |
+| Matter-over-Thread mode on the gateway | Non-goal | HA already brokers Matter via OTBR. |
+| Zigbee Hub (beta) | Non-goal | We host no Zigbee application layer on-device. |
+| USB-to-Ethernet passthrough (SLZB-OS :8638 for external USB dongles) | Non-goal | Same insecure raw-TCP category as :6638/:7638. If needed later, expose via `serial_proxy` over encrypted Native API. |
+| VPN | Non-goal | Network reachability is the operator's problem; no cloud/proprietary dependency. |
+| Cloud firmware-update check | Non-goal | Manual, encrypted radio-firmware flow is future work (see [roadmap.md](roadmap.md) v2). |
+| BLE + BLE proxy | Retain, off by default (§27.3) | SLZB-OS itself links to "ESPHome BT proxy firmware" as the alternative. |
+| BLE scan interval / window tuning | Expose as ESPHome numbers | Trivial from `packages/bluetooth/`. |
+| Radio reset / bootloader entry buttons | Keep | Native API actions, authenticated. See §15. |
+| IEEE address read/write | Keep | Essential for coordinator migration without re-pairing. Ownership rule applies. See §15, §29. |
+| Zigbee channel energy scan | Keep | Clean-channel diagnostic. Ownership rule applies. |
+| Buzzer + RTTTL, IR TX/RX, WS2812 effects | Keep (§27.2) | Reused SMLIGHT ESPHome packages. |
+| Dashboard: SoC temperature, uptime, radio FW versions, connection status | Expose as ESPHome sensors | Free via ESPHome; surfaces to HA automatically. |
+| Concurrent USB + Wi-Fi/Ethernet + web server | Not exposed | Hardware supports it; firmware keeps transports mutex at build time for UX/testing simplicity. See §25. |
+| SLZB-OS web UI, scripting, proprietary HTTP API | Removed | Attack-surface reduction is the whole point of this project. See §3. |
+| ADVANCED socket options (Zigbee Socket packet processing, multi-threaded socket, Multi-Radio Queue Control) | Not applicable | These are workarounds for raw-TCP-socket semantics, which we don't expose. |
+
+Bold summary: every operator-facing capability is either **kept**, **retained-but-off**, or **surfaced automatically** through ESPHome. Everything SLZB-OS-specific (on-device OTBR, Matter endpoint, Zigbee Hub, VPN, cloud FW pull, raw-TCP USB passthrough, proprietary UI) is deliberately out and stays out.
 
 ---
 
@@ -747,15 +990,15 @@ Practical delta for existing SLZB-OS users switching to our firmware. This secti
 
 ### 29.1 Coordinator URL translation
 
-The user-visible config that changes most is the ZHA/Z2M coordinator URL. Port names below (`efr32`, `cc2674`) are the `serial_proxy` IDs from the firmware YAML (§8) and are stable across releases.
+The user-visible config that changes most is the ZHA/Z2M coordinator URL. Port names below (`zigbee`, `thread`, `zwave`) are the `serial_proxy` `name:` values from the firmware YAML (§8) and are stable across releases.
 
 | Scenario | Today (SLZB-OS raw TCP) | Our firmware (`ethernet` / `wifi` build) | Our firmware (`usb` build) |
 |---|---|---|---|
-| ZHA on EFR32 (EmberZNet) | Radio type `EZSP`, `socket://<mr4u-ip>:6638` | Add ESPHome device (host + PSK) in HA; ZHA picks `esphome-hass://<config_entry_id>?port_name=efr32` | `/dev/serial/by-id/usb-...` (auto-discovered, see §25), radio type `ezsp` |
-| ZHA on CC2674 (Z-Stack) | Radio type `znp`, `socket://<mr4u-ip>:7638` | Same flow, `port_name=cc2674` | `/dev/serial/by-id/usb-...`, radio type `znp` |
-| Z2M (either radio) | `port: tcp://<mr4u-ip>:<6638\|7638>` | `port: esphome://<mr4u-ip>:6053/?port_name=<efr32\|cc2674>` (Z2M consumes serialx when configured to), PSK in Z2M config | `port: /dev/serial/by-id/usb-...`, `adapter: ezsp` (EFR32) or `adapter: zstack` (CC2674) |
-| OTBR add-on | Radio URL points at SLZB-OS TCP port | `radio: type: esphome, host: <mr4u-ip>, psk: ..., port_name: <efr32\|cc2674>` (per §11.2 — whichever chip runs Thread) | OTBR consumes the CDC device path exposed by the HA hardware wrapper (§25.4) |
-| BLE proxy | SLZB-OS BLE feature | Package retained but **off by default** — opt in by uncommenting `platform_ble` in the device YAML (tame passive-scan defaults; SLZB-OS itself recommends ESPHome BLE proxy — see [v1-design.md §11.3](v1-design.md), §30.4) | n/a (no networking) |
+| ZHA on EFR32 (EmberZNet) | Radio type `EZSP`, `socket://<mr4u-ip>:6638` | Non-default MR4U build — reflash EFR32 with EmberZNet and edit the device YAML so the EFR32's `serial_proxy` `name:` reads `zigbee` (or similar). ZHA then targets `esphome-hass://<config_entry_id>?port_name=<that-name>` | `/dev/serial/by-id/usb-...` (auto-discovered, see §25), radio type `ezsp` |
+| ZHA on CC2674 (Z-Stack) — **default MR4U** | Radio type `znp`, `socket://<mr4u-ip>:7638` | Add ESPHome device (host + PSK) in HA; ZHA picks `esphome-hass://<config_entry_id>?port_name=zigbee` | `/dev/serial/by-id/usb-...`, radio type `znp` |
+| Z2M (either radio) | `port: tcp://<mr4u-ip>:<6638\|7638>` | `port: esphome://<mr4u-ip>:6053/?port_name=<zigbee\|thread>` (Z2M consumes serialx when configured to), PSK in Z2M config | `port: /dev/serial/by-id/usb-...`, `adapter: ezsp` (EFR32) or `adapter: zstack` (CC2674) |
+| OTBR add-on | Radio URL points at SLZB-OS TCP port | `radio: type: esphome, host: <mr4u-ip>, psk: ..., port_name: thread` (per §11.2) | OTBR consumes the CDC device path exposed by the HA hardware wrapper (§25.4) |
+| BLE proxy | SLZB-OS BLE feature | Package retained but **off by default** — opt in by uncommenting `platform_ble` in the device YAML (tame passive-scan defaults; SLZB-OS itself recommends ESPHome BLE proxy — see §27.3, §30.4) | n/a (no networking) |
 
 ZHA and OTBR must target **different** chips — §14 forbids sharing a single `serial_proxy` port between clients.
 
@@ -791,8 +1034,8 @@ Reference inventory of what changed relative to [`smlight-tech/slzb-esphome`](ht
 | Auth | None (open TCP) | Pre-shared `device_encryption_key` (Noise `NNpsk0` + ChaCha20-Poly1305) |
 | Radio reset / bootloader entry | HA switches writing GPIO | Automatic — `serial_proxy` drives `dtr_pin` (nRESET) and `rts_pin` (bootloader) from the client's DTR/RTS modem-control signals (matches `zigpy-znp`, `universal-silabs-flasher`, `bellows`, `zwave-js`) |
 | OTA | Unauthenticated | Encrypted with the same PSK (`ota: encryption:` inherits the API key) — requires ESPHome 2026.9+ |
-| USB pass-through (`packages/usb/usb_uart.yaml`) | Plaintext TCP `:9638` | `serial_proxy` (port name `usb`) — package exists and swaps the transport, but is not `!include`d by any shipping device build in v1 (kept ready for a future USB-host variant per §25) |
-| Radio firmware version reporting | Not exposed to HA | One-shot boot-time probe per radio (ZNP `SYS_VERSION` for CC26xx and Spinel `PROP_NCP_VERSION` for EFR32 Thread; EZSP and Z-Wave still publish `"unknown (<protocol> probe not implemented in v1)"` until real probes ship in a later v1.x release); published as diagnostic sensors; HA template snippet included for update-available comparison against SMLIGHT's public catalog (see [`docs/ha-integrations/`](ha-integrations/)) |
+| USB pass-through (`packages/usb/usb_uart.yaml`) | Plaintext TCP `:9638` | `serial_proxy` (port name `usb`) — package swaps the transport; opt-in for SLWF-09U via a commented `!include` in [`devices/slw09u_r1_01.yaml`](../../devices/slw09u_r1_01.yaml). Not shipped by default. (§25 covers a separate future USB-**device**-mode CDC bridge — a different animal from this USB-host pass-through.) |
+| Radio firmware version reporting | Not exposed to HA | One-shot boot-time probe per radio (ZNP `SYS_VERSION` for CC26xx and Spinel `PROP_NCP_VERSION` for EFR32 Thread; EZSP and Z-Wave still publish `"unknown (<protocol> probe not implemented in v1)"` until real probes ship in a later v1.x release); published as diagnostic sensors; HA template snippet included for update-available comparison against SMLIGHT's public catalog (see [`docs/ha-integrations/`](../ha-integrations/)) |
 
 ### 30.2 What is preserved from upstream
 
@@ -810,7 +1053,7 @@ Reference inventory of what changed relative to [`smlight-tech/slzb-esphome`](ht
 
 Anything on the SoC that meaningfully competes with the radio UART loops for CPU, interrupt budget or shared RF frontend time is a liability for the fork's primary job. Where the upstream tree defaulted to "on and aggressive", this fork defaults to "off, opt-in with tame settings":
 
-- **Bluetooth proxy** (`packages/bluetooth/bluetooth.yaml`). Package kept; not `!include`d by any shipping device build in v1. Upstream defaults were 100% active BLE scanning (`interval == window == 1100ms`, `active: true`) plus `bluetooth_proxy: active: true`. Full rationale in §18 and [v1-design.md §11.3](v1-design.md). Opt-in defaults now ship as passive scan, ~10% duty cycle, `bluetooth_proxy: active: false`.
+- **Bluetooth proxy** (`packages/bluetooth/bluetooth.yaml`). Package kept; not `!include`d by any shipping device build in v1. Upstream defaults were 100% active BLE scanning (`interval == window == 1100ms`, `active: true`) plus `bluetooth_proxy: active: true`. Full rationale in §18 and §27.3. Opt-in defaults now ship as passive scan, ~10% duty cycle, `bluetooth_proxy: active: false`.
 - **`logger:` verbosity** (`packages/core/core.yaml`). Pinned to `INFO`. ESPHome's default is `DEBUG`, which at the loop level competes with `serial_proxy`'s per-byte servicing. Override in a device file for a dev build.
 - **`ir_codes_tv_lg` on Ultima** (`libraries/ir/codes/tv_lg.yaml`). Commented out in `devices/ultima_r1_04.yaml`. IR code packs are content, not infrastructure — shipping a specific vendor pack by default was arbitrary. Uncomment in your device YAML to opt in.
 

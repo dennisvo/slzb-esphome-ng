@@ -3,11 +3,35 @@
 # One-file drop-in for `configuration.yaml` (or as a HA `packages/` entry).
 # Ships one update entity per (device, radio) pair by joining:
 #
-#   1. The ESPHome device's per-radio diagnostic sensors (chip, smlight_id,
-#      protocol, role, firmware_channel, uart_baud, installed_firmware).
+#   1. The ESPHome device's per-radio diagnostic sensors (chip, protocol,
+#      role, firmware_channel, uart_baud, installed_firmware, plus the
+#      wire-derived chip_probed / role_probed pair when a live probe is
+#      available).
 #   2. SMLIGHT's public firmware catalog fetched via `rest:`.
 #
-# See docs/v1-radio-firmware.md §§4, 5, 7 for the design.
+# See docs/design/radio-probe-reference.md §§4, 5, 6i, 7 for the design.
+#
+# The template maps `chip` → the duplicate-SHA equivalence group of catalog
+# ids for that silicon (see docs/radio-firmware/catalog-audit.md). The
+# groups are:
+#
+#   cc2674p10 → {4, 18}       cc1352p7  → {5, 17}
+#   cc1352p2  → {0, 16}       efr32mg26 → {13, 21, 68}
+#   efr32mg24 → {23, 67}
+#
+# Entries within a group are byte-identical or serve the same track under
+# different SMLIGHT SKU labels, so a device running any id in the group
+# should compare against every id in the group. Ids outside these groups
+# (SMHUB `.hex` variants like 70, older refreshes like 2/3, signed SMHUB
+# tracks like 65/66) are deliberately not iterated — users on those tracks
+# see no-op comparisons for now (accepted limitation).
+#
+# The `availability:` filter suppresses the card when the wire probe
+# hard-contradicts the declared chip / role (rescue behavior; ESP_LOGE
+# fires device-side and the standalone chip_probed / role_probed sensors
+# expose the discrepancy). Family-only probe results (cc26xx_family,
+# efr32) count as agreement — they only confirm the family, not the
+# variant.
 #
 # Usage:
 #   1. Copy the `rest:` block below into your HA config once. It's device-
@@ -15,7 +39,7 @@
 #      SMLIGHT devices on your network.
 #   2. For each (device, radio) you want an update card for, copy one
 #      `- update:` block from the `template:` section and replace the
-#      three `!DEVICE_SLUG!` markers with your ESPHome device slug (the
+#      `!DEVICE_SLUG!` markers with your ESPHome device slug (the
 #      lowercase name of the device in HA, e.g. `mr4u_r1_73`, `ultima_r1_04`),
 #      and `!RADIO!` with `radio_1`, `radio_2`, or `radio_3` as needed.
 #   3. See `README.md` in this directory for recorder-exclusion tuning
@@ -30,7 +54,7 @@ rest:
         unique_id: smlight_fw_catalog_raw
         value_template: "ok"
         json_attributes_path: "$"
-        # SMLIGHT chip catalog ids we care about — see v1-radio-firmware.md §2.
+        # SMLIGHT chip catalog ids we care about — see radio-probe-reference.md §2.
         json_attributes:
           ["0", "1", "2", "3", "4", "5",
            "12", "13", "16", "17", "18", "21", "23",
@@ -38,10 +62,10 @@ rest:
 
 template:
   # -------------------------------------------------------------------
-  # Copy this block per (device, radio) and edit the two placeholder
-  # tokens. The template body itself is generic — it looks up SMLIGHT's
-  # catalog by the chip id, firmware type (derived from `role`), baud,
-  # and channel that the ESPHome device already publishes.
+  # Copy this block per (device, radio) and edit the placeholder tokens.
+  # The body is generic — it iterates the declared chip's duplicate-SHA
+  # equivalence group, filters catalog entries by type/baud/channel, and
+  # picks the max rev as the "latest available".
   # -------------------------------------------------------------------
   - update:
       - name: "!DEVICE_SLUG! !RADIO! firmware"
@@ -49,68 +73,150 @@ template:
 
         # Installed version — the ESPHome device's live-probed value.
         # ZNP publishes YYYYMMDD; unimplemented probes publish
-        # "unknown (…)" which HA renders as no-op (see availability).
+        # "unknown (…)" which the availability filter suppresses.
         installed_version: >
           {{ states('sensor.!DEVICE_SLUG!_!RADIO!_installed_firmware') }}
 
-        # Suppress the update card entirely when installed_firmware is
-        # "unknown …" (v1 stub) or "unavailable" (device offline).
+        # Suppress the card when the probe couldn't determine the
+        # installed rev, OR when the wire-derived chip / role hard-
+        # contradicts what the YAML declares (rescue behavior — a bare
+        # family match on CC26xx / EFR32 is OK, only variant-level
+        # contradictions hide the card).
         availability: >
           {% set inst = states('sensor.!DEVICE_SLUG!_!RADIO!_installed_firmware') %}
+          {% set chip = states('sensor.!DEVICE_SLUG!_!RADIO!_chip') %}
+          {% set chip_probed = states('sensor.!DEVICE_SLUG!_!RADIO!_chip_probed') %}
+          {% set role = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
+          {% set role_probed = states('sensor.!DEVICE_SLUG!_!RADIO!_role_probed') %}
+          {% set cc26xx = ['cc2674p10', 'cc1352p7', 'cc1352p2'] %}
+          {% set efr32  = ['efr32mg26', 'efr32mg24'] %}
+          {% set chip_ok =
+             chip_probed in ['unknown', 'unavailable', 'none', '']
+             or chip_probed == chip
+             or (chip_probed == 'cc26xx_family' and chip in cc26xx)
+             or (chip_probed == 'efr32' and chip in efr32) %}
+          {% set role_ok =
+             role_probed in ['unknown', 'unavailable', 'none', '']
+             or role_probed == role %}
           {{ inst not in ('unknown', 'unavailable', 'none')
-             and not inst.startswith('unknown (') }}
+             and not inst.startswith('unknown (')
+             and chip_ok and role_ok }}
 
-        # Latest available — filter SMLIGHT catalog by chip → SMLIGHT
-        # type (derived from role) → baud → channel (dev vs prod).
+        # Latest available — iterate the chip's duplicate-SHA group,
+        # filter by (type, baud, prod), pick the max rev.
         latest_version: >
-          {% set chip    = states('sensor.!DEVICE_SLUG!_!RADIO!_smlight_id') %}
-          {% set role    = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
+          {% set chip_name = states('sensor.!DEVICE_SLUG!_!RADIO!_chip') %}
+          {% set chip_to_ids = {
+               'cc2674p10': ['4', '18'],
+               'cc1352p7':  ['5', '17'],
+               'cc1352p2':  ['0', '16'],
+               'efr32mg26': ['13', '21', '68'],
+               'efr32mg24': ['23', '67'],
+             } %}
+          {% set ids = chip_to_ids.get(chip_name, []) %}
+          {% set role = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
           {% set channel = states('sensor.!DEVICE_SLUG!_!RADIO!_firmware_channel') %}
-          {% set baud    = states('sensor.!DEVICE_SLUG!_!RADIO!_uart_baud') | int(0) %}
-          {# role → SMLIGHT catalog "type" (see v1-radio-firmware.md §6f) #}
+          {% set baud = states('sensor.!DEVICE_SLUG!_!RADIO!_uart_baud') | int(0) %}
           {% set ftype = {'coord': '0', 'router': '1', 'rcp': '2', 'ncp': '2'}[role]
                         if role in ['coord', 'router', 'rcp', 'ncp'] else '' %}
-          {% set entries = state_attr('sensor.smlight_firmware_catalog_raw', chip) or [] %}
           {% set want_prod = channel == 'prod' %}
-          {% set match = entries
-                | selectattr('type', 'eq', ftype)
-                | selectattr('prod', 'eq', want_prod)
-                | selectattr('baud', 'eq', baud)
-                | list %}
-          {{ match[0].rev if match
-             else states('sensor.!DEVICE_SLUG!_!RADIO!_installed_firmware') }}
+          {# Router firmware doesn't speak a host UART protocol — catalog
+             entries carry baud: 0 (~57%) or baud: 115200 (~43%). Accept
+             both for role=router; exact-match for every other role. #}
+          {% set allowed_bauds = [0, baud] if role == 'router' else [baud] %}
+          {% set ns = namespace(all=[]) %}
+          {% for id in ids %}
+            {% set entries = state_attr('sensor.smlight_firmware_catalog_raw', id) or [] %}
+            {% set matched = entries
+                  | selectattr('type', 'eq', ftype)
+                  | selectattr('prod', 'eq', want_prod)
+                  | selectattr('baud', 'in', allowed_bauds)
+                  | list %}
+            {% set ns.all = ns.all + matched %}
+          {% endfor %}
+          {% if channel == 'custom' or ns.all | length == 0 %}
+            {{ states('sensor.!DEVICE_SLUG!_!RADIO!_installed_firmware') }}
+          {% else %}
+            {{ (ns.all | sort(attribute='rev') | last).rev }}
+          {% endif %}
 
+        # release_summary: catalog-fit prefix + selected entry's notes.
+        # The prefix surfaces a) "custom channel" (comparison disabled)
+        # b) "installed rev not in catalog" (running an unlisted build).
+        # Hard chip/role mismatch never reaches here — availability
+        # already hid the card.
         release_summary: >
-          {% set chip    = states('sensor.!DEVICE_SLUG!_!RADIO!_smlight_id') %}
-          {% set role    = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
+          {% set chip_name = states('sensor.!DEVICE_SLUG!_!RADIO!_chip') %}
+          {% set chip_to_ids = {
+               'cc2674p10': ['4', '18'],
+               'cc1352p7':  ['5', '17'],
+               'cc1352p2':  ['0', '16'],
+               'efr32mg26': ['13', '21', '68'],
+               'efr32mg24': ['23', '67'],
+             } %}
+          {% set ids = chip_to_ids.get(chip_name, []) %}
+          {% set role = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
           {% set channel = states('sensor.!DEVICE_SLUG!_!RADIO!_firmware_channel') %}
-          {% set baud    = states('sensor.!DEVICE_SLUG!_!RADIO!_uart_baud') | int(0) %}
+          {% set baud = states('sensor.!DEVICE_SLUG!_!RADIO!_uart_baud') | int(0) %}
+          {% set inst = states('sensor.!DEVICE_SLUG!_!RADIO!_installed_firmware') %}
           {% set ftype = {'coord': '0', 'router': '1', 'rcp': '2', 'ncp': '2'}[role]
                         if role in ['coord', 'router', 'rcp', 'ncp'] else '' %}
-          {% set entries = state_attr('sensor.smlight_firmware_catalog_raw', chip) or [] %}
           {% set want_prod = channel == 'prod' %}
-          {% set match = entries
-                | selectattr('type', 'eq', ftype)
-                | selectattr('prod', 'eq', want_prod)
-                | selectattr('baud', 'eq', baud)
-                | list %}
-          {{ match[0].notes if match else '' }}
+          {% set allowed_bauds = [0, baud] if role == 'router' else [baud] %}
+          {% set ns = namespace(all=[]) %}
+          {% for id in ids %}
+            {% set entries = state_attr('sensor.smlight_firmware_catalog_raw', id) or [] %}
+            {% set matched = entries
+                  | selectattr('type', 'eq', ftype)
+                  | selectattr('prod', 'eq', want_prod)
+                  | selectattr('baud', 'in', allowed_bauds)
+                  | list %}
+            {% set ns.all = ns.all + matched %}
+          {% endfor %}
+          {% set installed_in_catalog =
+             ns.all | selectattr('rev', 'eq', inst) | list | length > 0 %}
+          {% set latest_notes = (ns.all | sort(attribute='rev') | last).notes
+                                if ns.all | length > 0 else '' %}
+          {% if channel == 'custom' %}
+            ℹ️ Custom firmware channel — catalog comparison disabled.
+            {{- latest_notes and '\n\n' + latest_notes or '' }}
+          {% elif ns.all | length == 0 %}
+            ⚠️ No matching catalog entries for chip={{ chip_name }} role={{ role }} baud={{ baud }} channel={{ channel }}.
+          {% elif not installed_in_catalog %}
+            ⚠️ Installed rev {{ inst }} not found in SMLIGHT catalog for chip={{ chip_name }} — you may be on a custom or withdrawn build.
+            {{- '\n\n' + latest_notes if latest_notes else '' }}
+          {% else %}
+            {{ latest_notes }}
+          {% endif %}
 
         release_url: >
-          {% set chip    = states('sensor.!DEVICE_SLUG!_!RADIO!_smlight_id') %}
-          {% set role    = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
+          {% set chip_name = states('sensor.!DEVICE_SLUG!_!RADIO!_chip') %}
+          {% set chip_to_ids = {
+               'cc2674p10': ['4', '18'],
+               'cc1352p7':  ['5', '17'],
+               'cc1352p2':  ['0', '16'],
+               'efr32mg26': ['13', '21', '68'],
+               'efr32mg24': ['23', '67'],
+             } %}
+          {% set ids = chip_to_ids.get(chip_name, []) %}
+          {% set role = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
           {% set channel = states('sensor.!DEVICE_SLUG!_!RADIO!_firmware_channel') %}
-          {% set baud    = states('sensor.!DEVICE_SLUG!_!RADIO!_uart_baud') | int(0) %}
+          {% set baud = states('sensor.!DEVICE_SLUG!_!RADIO!_uart_baud') | int(0) %}
           {% set ftype = {'coord': '0', 'router': '1', 'rcp': '2', 'ncp': '2'}[role]
                         if role in ['coord', 'router', 'rcp', 'ncp'] else '' %}
-          {% set entries = state_attr('sensor.smlight_firmware_catalog_raw', chip) or [] %}
           {% set want_prod = channel == 'prod' %}
-          {% set match = entries
-                | selectattr('type', 'eq', ftype)
-                | selectattr('prod', 'eq', want_prod)
-                | selectattr('baud', 'eq', baud)
-                | list %}
-          {{ match[0].link if match else '' }}
+          {% set allowed_bauds = [0, baud] if role == 'router' else [baud] %}
+          {% set ns = namespace(all=[]) %}
+          {% for id in ids %}
+            {% set entries = state_attr('sensor.smlight_firmware_catalog_raw', id) or [] %}
+            {% set matched = entries
+                  | selectattr('type', 'eq', ftype)
+                  | selectattr('prod', 'eq', want_prod)
+                  | selectattr('baud', 'in', allowed_bauds)
+                  | list %}
+            {% set ns.all = ns.all + matched %}
+          {% endfor %}
+          {{ (ns.all | sort(attribute='rev') | last).link if ns.all | length > 0 else '' }}
 
         entity_picture: https://smlight.tech/wp-content/uploads/2024/06/logo.png
 

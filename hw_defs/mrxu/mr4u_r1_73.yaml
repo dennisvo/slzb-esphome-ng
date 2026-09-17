@@ -92,9 +92,8 @@ substitutions:
   uart1_rst_inverted: true
 
   # Radio 1 identity for the v1 firmware-version probe + HA update comparison.
-  # See docs/v1-radio-firmware.md §§3, 6g, 7.
+  # See docs/design/radio-probe-reference.md §§3, 6g, 7.
   radio1_chip: cc2674p10
-  radio1_smlight_id: "70"
   radio1_protocol: znp
   radio1_role: coord
   radio1_firmware_channel: dev
@@ -110,7 +109,7 @@ substitutions:
   pin_uart2_cts: "GPIO11"
   pin_uart2_rts: "GPIO12"
   uart2_baud: 460800
-  uart2_hw_flow: false                # EFR32MG26 Thread @ 460800; SMLIGHT catalog omits hwFlow (MG26 only).
+  uart2_hw_flow: true                 # EFR32MG26 Thread; matches SLZB-06Mg26 20260416 (3.0.1) build (hwFlow: true).
   uart2_default_port: 6638
 
   uart2_radio_name: EFR32
@@ -123,10 +122,9 @@ substitutions:
 
   # Radio 2 identity for the v1 firmware-version probe (live Spinel probe).
   radio2_chip: efr32mg26
-  radio2_smlight_id: "68"
   radio2_protocol: spinel
   radio2_role: rcp
   radio2_firmware_channel: dev
   radio2_uart_id: hw_uart2
   radio2_uart_baud: "460800"
-  radio2_uart_hw_flow: "false"        # Mirrors uart2_hw_flow; diagnostic-only string.
+  radio2_uart_hw_flow: "true"         # Mirrors uart2_hw_flow; diagnostic-only string.

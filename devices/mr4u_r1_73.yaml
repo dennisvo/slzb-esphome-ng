@@ -14,18 +14,18 @@ packages:
   platform_diag: !include ../packages/diagnostics/diagnostics.yaml
   # BLE proxy is off by default — it shares CPU / interrupts / RF frontend
   # with the radio UART loops. Uncomment to opt in; see
-  # docs/development-considerations.md §11.3.
+  # docs/design/design.md §27.3.
   # platform_ble:  !include ../packages/bluetooth/bluetooth.yaml
 
   # --- Radio firmware version diagnostics (v1) ---
   # `radio_probe_ext` declares the custom component; the per-radio packages
-  # attach probe instances + template sensors. See docs/v1-radio-firmware.md.
+  # attach probe instances + template sensors. See docs/design/radio-probe-reference.md.
   platform_radio_probe_ext: !include ../packages/diagnostics/radio_probe_ext.yaml
   platform_radio1_probe:    !include ../packages/diagnostics/radio1_probe.yaml
   platform_radio2_probe:    !include ../packages/diagnostics/radio2_probe.yaml
   # NOTE (slzb-esphome-ng fork): `stream_server` and its per-UART bridges are
   # replaced by `serial_proxy` instances tunnelled through the encrypted Native
-  # API. See docs/design.md §7 and Phase 1.
+  # API. See docs/design/design.md §7 and Phase 1.
   # platform_wifi: !include ../packages/wifi/wifi.yaml   # enable if needed
 
 
@@ -39,7 +39,7 @@ packages:
 
   # --- UART HW flow control ext (fork-local custom component) ---
   # Declares components/uart_hw_flow/ so the uartN_hw_flow.yaml packages can
-  # register per-UART flow-control instances. See docs/v1-design.md §5.
+  # register per-UART flow-control instances. See docs/design/radio-firmware-mgmt.md §5.
   platform_uart_hw_flow_ext: !include ../packages/buses/uarts/uart_hw_flow_ext.yaml
 
   # --- UART buses (with HW flow control) ---
@@ -52,7 +52,7 @@ packages:
   # nRESET / BSL_ENTRY and EFR32 nRESET / bootloader-entry pins is transferred
   # to `serial_proxy` `dtr_pin` / `rts_pin` so ZHA / zigpy-znp / bellows can
   # drive the coordinator bootloader sequence over the encrypted API.
-  # See docs/design.md Phase 1 item 5 and docs/hardware-map.md §5.
+  # See docs/design/design.md §19 (Phase 1) and docs/hardware-map.md §5.
 
   # --- UART serial proxies (secure Native API tunnel) ---
   hal_uart1_serial_proxy: !include ../packages/serial_proxies/sp_uart1.yaml

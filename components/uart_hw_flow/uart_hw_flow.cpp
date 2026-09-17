@@ -4,7 +4,7 @@
 // then `uart_set_hw_flow_ctrl()` to enable CTS/RTS handshake on the ESP32
 // UART peripheral. About 20 lines of real work — the rest is guard-rails.
 //
-// Design authority: docs/v1-design.md §5.
+// Design authority: docs/design/radio-firmware-mgmt.md §5.
 
 #include "uart_hw_flow.h"
 

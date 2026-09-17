@@ -8,7 +8,7 @@
 # "unknown (zwave probe not implemented in v1)"); the real Z-Wave Serial
 # API probe ships in v1.x/v2 per roadmap.md.
 #
-# Design authority: docs/v1-radio-firmware.md §§3, 5, 6d, 6f.
+# Design authority: docs/design/radio-probe-reference.md §§3, 5, 6d, 6f.
 #
 # Prerequisites: `packages/diagnostics/radio_probe_ext.yaml` must be
 # included in the device config and `hal_uart3` must expose the UART bus
@@ -18,7 +18,6 @@ radio_probe:
   - id: radio3_probe
     uart_id: ${radio3_uart_id}
     chip: ${radio3_chip}
-    smlight_id: ${radio3_smlight_id}
     protocol: ${radio3_protocol}
     role: ${radio3_role}
     firmware_channel: ${radio3_firmware_channel}
@@ -26,6 +25,18 @@ radio_probe:
     installed_firmware:
       name: "${friendly_name} Radio 3 installed firmware"
       id: radio3_installed_firmware_sensor
+      entity_category: diagnostic
+    installed_firmware_raw:
+      name: "${friendly_name} Radio 3 installed firmware (raw)"
+      id: radio3_installed_firmware_raw_sensor
+      entity_category: diagnostic
+    chip_probed:
+      name: "${friendly_name} Radio 3 chip (probed)"
+      id: radio3_chip_probed_sensor
+      entity_category: diagnostic
+    role_probed:
+      name: "${friendly_name} Radio 3 role (probed)"
+      id: radio3_role_probed_sensor
       entity_category: diagnostic
 
 # Static metadata sourced from hw_defs substitutions. Values change only
@@ -35,11 +46,6 @@ text_sensor:
   - platform: template
     name: "${friendly_name} Radio 3 chip"
     id: radio3_chip_sensor
-    entity_category: diagnostic
-
-  - platform: template
-    name: "${friendly_name} Radio 3 SMLIGHT id"
-    id: radio3_smlight_id_sensor
     entity_category: diagnostic
 
   - platform: template
@@ -74,9 +80,6 @@ esphome:
       - text_sensor.template.publish:
           id: radio3_chip_sensor
           state: "${radio3_chip}"
-      - text_sensor.template.publish:
-          id: radio3_smlight_id_sensor
-          state: "${radio3_smlight_id}"
       - text_sensor.template.publish:
           id: radio3_protocol_sensor
           state: "${radio3_protocol}"

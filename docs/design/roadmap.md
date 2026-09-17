@@ -8,8 +8,8 @@ Legend: 🟢 shipped · 🟡 in flight · ⚪ planned · 🔵 stretch · ❌ won
 
 Cross-references:
 - [design.md](design.md) — architecture and phase model
-- [v1-radio-firmware.md](v1-radio-firmware.md) — radio version visibility (v1 authoritative design)
-- [architecture.md](architecture.md) — repo layout and package model
+- [radio-probe-reference.md](radio-probe-reference.md) — radio version visibility (v1 authoritative design)
+- [architecture.md](../architecture.md) — repo layout and package model
 
 ---
 
@@ -19,11 +19,10 @@ Goal: users can see per-radio installed firmware in HA and get a native "update
 available" card comparing against the SMLIGHT catalog. Zero flashing from us.
 All radio-identity metadata is compile-time substitution — no runtime knobs.
 
-**Design authority**: [v1-radio-firmware.md](v1-radio-firmware.md) §§3–7, §10.
-
-**Status (2026-09-10)**: code + configuration merged (see commit graph); pending
-hardware validation on MR4U. Flip 🟡 → 🟢 once the log line + HA sensor value
-have been confirmed against SLZB-OS's own reading.
+Design in [radio-probe-reference.md](radio-probe-reference.md) §§3–7, §10. Status:
+code + configuration merged; pending hardware validation on MR4U. Flip
+🟡 → 🟢 once the log line + HA sensor value have been confirmed against
+SLZB-OS's own reading.
 
 ### Step 1 — ZNP probe (MR4U Radio 1) 🟢
 
@@ -32,8 +31,8 @@ Prove the whole pattern on one radio, one protocol, one device.
 - 🟢 `components/radio_probe/__init__.py` — codegen + cross-field validator enforcing §6g permutation matrix
 - 🟢 `components/radio_probe/radio_probe.{h,cpp}` — component skeleton, `setup_priority = 250`, dispatcher on `protocol` enum
 - 🟢 `components/radio_probe/znp_probe.cpp` — `SYS_VERSION` (0x2102), parse `TransportRev/Product/Major/Minor/Maint/Rev(LE u32)`, format `Rev` as YYYYMMDD
-- 🟢 `packages/diagnostics/radio_probe_ext.yaml` + `radioN_firmware_info.yaml` — template sensors from substitutions + `radio_probe:` instance publishing `installed_firmware` (split per-radio to match existing per-UART package pattern; UART id parametrized via `radioN_uart_id` substitution so single-radio boards like 06xU on UART2 still surface as "Radio 1")
-- 🟢 `hw_defs/mrxu/mr4u_r1_73.yaml` — add `radio1_*` substitutions (chip, smlight_id, protocol=`znp`, role=`coord`, firmware_channel=`dev`)
+- 🟢 `packages/diagnostics/radio_probe_ext.yaml` + `radio{1,2,3}_probe.yaml` — template sensors from substitutions + `radio_probe:` instance publishing `installed_firmware` (split per-radio to match existing per-UART package pattern; UART id parametrized via `radioN_uart_id` substitution so single-radio boards like 06xU on UART2 still surface as "Radio 1")
+- 🟢 `hw_defs/mrxu/mr4u_r1_73.yaml` — add `radio1_*` substitutions (chip, protocol=`znp`, role=`coord`, firmware_channel=`dev`)
 - 🟢 `devices/mr4u_r1_73.yaml` — include diagnostics package
 - 🟢 `docs/radio-firmware/catalog-snapshot.json` — committed snapshot of the catalog at a known date, for matrix-drift review
 - 🟢 `docs/radio-firmware/refresh.py` — ~30 LOC fetcher; run manually, review git diff before commit
@@ -65,23 +64,23 @@ Ultima ZW-800.
 
 - 🟢 `docs/ha-integrations/smlight-firmware-update.yaml` — HA `rest:` catalog fetcher + per-radio `template: update:` entity with `availability:` guard on `"unknown …"`; filters catalog by chip → SMLIGHT type (from role) → baud → channel
 - 🟢 `docs/ha-integrations/README.md` — install steps, per-radio v1 coverage table, recorder-exclusion guidance, re-flash-out-of-band note (live probe re-reads on boot; no YAML edit needed)
-- 🟢 Top-level [README.md](../README.md) "Radio firmware version visibility in HA" row now points at `docs/ha-integrations/` instead of the design draft; radio-firmware feature bullet and comparison table both scoped to "ZNP live in v1, other protocols stubbed" so nothing overpromises
+- 🟢 Top-level [README.md](../../README.md) "Radio firmware version visibility in HA" row now points at `docs/ha-integrations/` instead of the design draft; radio-firmware feature bullet and comparison table both scoped to "ZNP live in v1, other protocols stubbed" so nothing overpromises
 
 ### Step 5 — UART hardware flow control component 🟢
 
 Upstream ESPHome's `uart:` platform has no YAML surface for classic RTS/CTS handshake (`flow_control_pin` is for RS485 driver-enable only). Without this component the `hwFlow` filter axis in the HA update catalog Jinja is a lie — we'd offer firmware images the ESP32 side can't actually honor. Ships as v1 for correctness-by-construction, even though every stock SMLIGHT catalog entry currently visible to MR4U has `hwFlow` absent/false.
 
-**Design authority**: [v1-design.md](v1-design.md) §5.
-
 - 🟢 `components/uart_hw_flow/{__init__.py, uart_hw_flow.h, uart_hw_flow.cpp}` — `Component` at `setup_priority 250`; static_casts parent to `uart::IDFUARTComponent`, calls `uart_set_pin()` + `uart_set_hw_flow_ctrl(port, UART_HW_FLOWCTRL_CTS_RTS, 122)` on `setup()`; `enabled: false` short-circuits to a no-op
 - 🟢 `packages/buses/uarts/uart_hw_flow_ext.yaml` — declares the external component (mirrors `radio_probe_ext.yaml`)
-- 🟢 `packages/buses/uarts/uart{1,2,3}_hwfc.yaml` — add `uart_hw_flow:` block wired to `${pin_uartN_cts}`/`${pin_uartN_rts}` + `enabled: ${uartN_hw_flow}`
+- 🟢 `packages/buses/uarts/uart{1,2,3}_hw_flow.yaml` — add `uart_hw_flow:` block wired to `${pin_uartN_cts}`/`${pin_uartN_rts}` + `enabled: ${uartN_hw_flow}`
 - 🟢 `hw_defs/**/*.yaml` — add `uartN_hw_flow: false` next to each `uartN_baud` (MR4U, MRxU, 06xU, Ultima; slw09u has no radios)
 - 🟢 `devices/{mr4u,mrxu,06xu,ultima}*.yaml` — include `uart_hw_flow_ext.yaml` before the `uartN_hw_flow.yaml` block
 
 Success: `esphome compile mr4u-r1-73.yaml` links against `IDFUARTComponent::get_hw_serial_number()`; log line `[uart_hw_flow] Enabled: no` appears once per UART at boot with defaults. Flip a `uartN_hw_flow: true` locally and confirm `Enabled: yes` + `uart_set_hw_flow_ctrl` succeeds against a stock CTS-honoring radio image.
 
-**Housekeeping deferred**: `packages/buses/uarts/uartN_no_hwfc.yaml` siblings are now truly dead (no device uses them). Collapse next time we're in this area (see [v1-design.md §9](v1-design.md) item 4).
+**Housekeeping done**: dead `packages/buses/uarts/uartN_no_hwfc.yaml` siblings deleted (no device included them).
+
+Design in [radio-firmware-mgmt.md](radio-firmware-mgmt.md) §5.
 
 ---
 
@@ -98,16 +97,17 @@ Highest debugging cost of any protocol lives here (HDLC-lite framing + CCITT-16 
 - 🟢 `components/radio_probe/test/test_protocol_helpers.cpp` — host-compilable regression tests, ship as source
 - ⚪ Verify against live MR4U EFR32 build once flashed (rebuild + observe `Radio 2 Installed Firmware` sensor)
 
-### Replace EZSP stub with a real probe ⚪
+### Replace EZSP stub with a real probe — deferred ⚪
 
 - ⚪ `components/radio_probe/ezsp_probe.cpp` — EZSP over ASH framing (RFC 1662-style), send `version(0x00)` command, parse `stackVersion`
 - ⚪ Wire test against MR4U Radio 2 flashed with EmberZNet coord (temporary reflash for validation, not shipped as default)
+- **Deferred beyond v1.x point releases** until an EZSP-based target device is in maintainer hands. None of the currently-supported devices ship an EFR32 coord by default (MR4U/Ultima ship MG26 dev-Thread on Radio 2, id 13). Building the probe now would ship untested code. Track as "unblocked when we add a stock SLZB-06 hub target that runs EZSP by default", or when a maintainer flashes MR4U Radio 2 to id-21/68 EZSP for a validation cycle.
 
 ### Replace Z-Wave stub with a real probe ⚪
 
 - ⚪ `components/radio_probe/zwave_probe.cpp` — Z-Wave Serial API `FUNC_ID_ZW_GET_VERSION` (0x15), parse `Library Version` string
 - ⚪ Wire test against SLZB-Ultima ZW-800 (Radio 3)
-- ⚪ **Regional-type enum in the SMLIGHT catalog.** The first snapshot ([../radio-firmware/](radio-firmware/)) revealed that Z-Wave `type` values are `5` (EU), `6` (US), `7` (ANZ) — encoding region, not role. This means Z-Wave needs an extra hw_defs axis (`radio*_zwave_region: eu | us | anz`) alongside the existing `radio*_role: primary_ctrl`. Update the compile-time validator and §6g permutation matrix accordingly. Currently only chip 12 (MRW10) carries these types; SLZB-Ultima's ZW-800 (chip ID TBD) is expected to follow the same pattern
+- ⚪ **Regional-type enum in the SMLIGHT catalog.** The first snapshot ([../radio-firmware/](../radio-firmware/)) revealed that Z-Wave `type` values are `5` (EU), `6` (US), `7` (ANZ) — encoding region, not role. This means Z-Wave needs an extra hw_defs axis (`radio*_zwave_region: eu | us | anz`) alongside the existing `radio*_role: primary_ctrl`. Update the compile-time validator and §6g permutation matrix accordingly. Currently only chip 12 (MRW10) carries these types; SLZB-Ultima's ZW-800 (chip ID TBD) is expected to follow the same pattern
 
 ### Nightly SMLIGHT catalog-diff CI 🔵
 
@@ -116,55 +116,51 @@ Highest debugging cost of any protocol lives here (HDLC-lite framing + CCITT-16 
 
 ### Auto-detect installed channel sensor ⚪
 
-- ⚪ HA-side derived sensor per [v1-radio-firmware.md §7.5](v1-radio-firmware.md) — `prod` / `dev` / `custom`, derived from probed `rev` cross-referenced against catalog
+- ⚪ HA-side derived sensor per [radio-probe-reference.md §7.5](radio-probe-reference.md) — `prod` / `dev` / `custom`, derived from probed `rev` cross-referenced against catalog
 - ⚪ Ship as an optional block in the HA snippet, not required
 
 ### Promote `firmware_channel` to HA `select` (conditional) 🔵
 
 Only if v1 users prove they flip channels often enough that rebuild-per-change
 is painful. `firmware_channel` is the one substitution that doesn't describe
-flashed reality (see [v1-radio-firmware.md §10.6](v1-radio-firmware.md)), so
+flashed reality (see [radio-probe-reference.md §10.6](radio-probe-reference.md)), so
 promoting it doesn't violate "selection == action" — protocol/role stay YAML.
 
 - 🔵 Non-breaking: substitution stays as default, `select:` overrides at runtime
 
-### Catalog-schema follow-ups (surfaced by the first snapshot, 2026-09-10) ⚪
+### Catalog-schema follow-ups ⚪
 
-Three real discrepancies the [committed snapshot](radio-firmware/) revealed
+Three real discrepancies the [committed snapshot](../radio-firmware/) revealed
 between the SMLIGHT ZB catalog and the assumptions baked into
-[v1-radio-firmware.md](v1-radio-firmware.md) §§6g, 7. None block v1 shipping;
+[radio-probe-reference.md](radio-probe-reference.md) §§6g, 7. None block v1 shipping;
 each turns an "always shows `custom`" or "silent filter drop" into a real
-match.
+match. Full audit inventory (per-id chip families, duplicate SHA groups,
+broken links, baud/hwFlow matrix): see
+[docs/radio-firmware/catalog-audit.md](../radio-firmware/catalog-audit.md).
 
 #### `rev` is not uniformly YYYYMMDD ⚪
 
-- ⚪ Chip 70 (CC2674P10) `rev` values *are* YYYYMMDD (e.g. `20260311`) — ZNP probe → catalog match works as designed
-- ⚪ Chip 68 (EFR32MG26) `rev` values are SDK version strings — `"SDK v8.0.3"` (coord/router), `"2.7.2 sdk 2025.6.2"` (thread) — but the live Spinel probe returns the raw OpenThread `NCP_VERSION` build tag (e.g. `OPENTHREAD/thread-reference-20260416-…`). Equality match → never fires → every MG26 user would see `custom` on the auto-detect sensor and no upgrade offered on the update entity. Must be resolved before the SMLIGHT update-entity template lights up for Thread firmware.
+- 🟢 **Resolved for MR4U by dropping the `smlight_id` axis entirely.** The initial mapping (chip 68, SMHUB signed EFR32MG26 track with SDK-string `rev`) was incorrect; MR4U's flashed image comes from chip 13 (`slzb06Mg26/*/slzb06Mg26_openthread_rcp_*.gbl`) whose `rev` field IS YYYYMMDD (e.g. `20260416`) and matches the live Spinel probe by direct string equality. Chip 4 (CC2674P10 dev track, `slzb06p10/*/znp-*.bin`) similarly aligns for Radio 1. See radio-probe-reference.md §6h for the empirical audit. The HA template now maps `chip` → the chip family's duplicate-SHA equivalence group (see [radio-firmware/catalog-audit.md](../radio-firmware/catalog-audit.md)). The signed-track SDK-string concern still exists for any future device pinned to id 68 (or the signed CC2674P10 id 70) — but nothing this fork ships today is on those tracks.
+- ⚪ (Residual, non-blocking) Chip 91 (EFR32MG24 ZREL Zigbee) `rev` values may be SDK-style; verify next time we add MG24 hardware
 - ⚪ Fix option (a): Jinja tolerant-match — regex-extract a comparable token from both sides, or substring match either direction
-- ⚪ Fix option (b): accept that EFR32 auto-detect stays `custom` until v2 (when the flash chain owns the version write and we can cache what we flashed)
-- ⚪ Cross-reference: same issue affects the "installed_firmware ↔ available_rev" comparison in the HA update template — the update entity will always show "up-to-date" for EFR32 because no candidate has an equal rev string
+- ⚪ Fix option (b): accept that any signed-track auto-detect stays `custom` until v2 (when the flash chain owns the version write and we can cache what we flashed)
+- ⚪ Cross-reference: same issue would affect "installed_firmware ↔ available_rev" comparison in the HA update template for devices explicitly pinned to signed tracks
 
-#### Missing `prod` field on many entries ⚪
+#### Missing `prod` field on many entries 🟢
 
-- ⚪ Many older chip 70 entries lack the `prod` key entirely (out of 3 recent entries, all have it; out of 18 total, most older ones don't)
-- ⚪ Current Jinja `selectattr('prod', 'eq', channel == 'prod')` drops any entry where `prod` is absent — silently
-- ⚪ Decide desired semantics: (i) drop = "unknown provenance, don't offer" (current default), (ii) treat absent-as-false = "old entries are all dev", (iii) treat absent-as-true = "old public releases were all prod". Recommend (i) — least surprising, matches the "explicit is better than inferred" principle
-- ⚪ Document the chosen semantics in [v1-radio-firmware.md](v1-radio-firmware.md) §7 next to the Jinja
-- ⚪ Snapshot audit script that reports "N entries per chip lack `prod`" to inform the decision
+- 🟢 **Resolved: shipped semantics documented in [radio-probe-reference.md](radio-probe-reference.md) §7.4.** 33/169 entries (20%) omit `prod` — primarily older CC26xx ids (0, 3, 4, 5, 16, 17, 18) and SLZB-06m id 1. Current Jinja `selectattr('prod', 'eq', channel == 'prod')` silently drops absent-`prod` entries; rationale is "explicit is better than inferred" — the alternatives (absent = false, absent = true) each silently reclassify ~20% of the catalog. Catalog-diff CI cron (below) will surface if SMLIGHT starts pruning `prod` from newer entries.
 
-#### Add chip 91 to the §6g permutation matrix ⚪
+#### Add chip 91 to the §6g permutation matrix 🟢
 
-- ⚪ Snapshot surfaced chip **91** as a distinct EFR32MG24 codepoint separate from chip **67** — one entry only, ZREL Zigbee firmware (`type: 0`, no `hwFlow` field, `rev: 20260909`)
-- ⚪ [v1-radio-firmware.md](v1-radio-firmware.md) §6g currently lists only 67 for MG24; add 91 with the observed (chip, protocol, role) tuple
-- ⚪ Investigate: is chip 91 a hardware revision variant of MG24, a different SKU, or the SMLIGHT-branded "ZREL" packaging of the same chip? Determines whether the compile-time validator should treat 67/91 as aliases or distinct chips
+- 🟢 **Done** — [radio-probe-reference.md](radio-probe-reference.md) §6g now lists 91 alongside 23/65/67 for EFR32MG24 (line 480). Snapshot surfaced chip 91 as a single-entry ZREL Zigbee firmware (`type: 0`, no `hwFlow`, `rev: 20260909`); treated as an alias of MG24 rather than a distinct chip family (bytes differ from id 23 but silicon is the same per SLZB device docs). Compile-time validator accepts the tuple `(efr32mg24, ezsp, coord)` uniformly for both ids.
+- ⚪ (Residual) Byte-content vs id 23 not yet SHA-verified for the 91 entry; check next MG24 hardware validation cycle
 
-#### Router-role entries have `baud: 0` ⚪
+#### Router-role entries — mixed `baud: 0` and `baud: 115200` 🟢
 
-- ⚪ Every `type: "1"` (Zigbee router) entry in the catalog has `baud: 0` — routers participate in the mesh directly and don't speak a host UART protocol
-- ⚪ Current Jinja `selectattr('baud', 'eq', uart_baud | int)` drops **every** router entry
-- ⚪ Fix: filter conditional on `radio*_role` — if `router`, skip the baud match (or explicitly match `baud: 0`); if any other role, match `uart*_baud`
-- ⚪ Update the pseudo-Jinja examples in [v1-radio-firmware.md](v1-radio-firmware.md) §7.3 and [v1-design.md](v1-design.md) §4 to show the conditional
-- ⚪ Not urgent for MR4U (both radios are non-router) but blocks anyone selecting `radio*_role: router` before this is fixed
+- 🟢 **Shipped in [ha-integrations/smlight-firmware-update.yaml](../ha-integrations/smlight-firmware-update.yaml).** The three catalog filter chains (`latest_version`, `release_summary`, `release_url`) now compute `allowed_bauds = [0, baud] if role == 'router' else [baud]` and use `selectattr('baud', 'in', allowed_bauds)`.
+- Empirical basis: 17/30 `type: "1"` entries carry `baud: 0`; 13 (older CC26xx ids) carry `baud: 115200`. The Jinja now accepts either variant for router role.
+- ⚪ Pseudo-Jinja examples in [radio-probe-reference.md](radio-probe-reference.md) §7.3 and [radio-firmware-mgmt.md](radio-firmware-mgmt.md) §4 still show the single-baud form; update next time those sections are touched (design record, not shipped code).
+- ⚪ MR4U doesn't exercise the fix (both radios non-router); first real test lands when a user selects `radio*_role: router`.
 
 ---
 
@@ -172,9 +168,9 @@ match.
 
 Goal: HA users can flash radio firmware without leaving HA. Only when this
 lands does the "protocol/role as HA `select`" surface become honest (see
-[v1-radio-firmware.md §10.5](v1-radio-firmware.md)).
+[radio-probe-reference.md §10.5](radio-probe-reference.md)).
 
-**Design authority**: [design.md](design.md) §13 (v2 planning — pending write-up).
+Design in [design.md](design.md) §26.6 (implementation shape: Python vs YAML vs HA add-on).
 
 ### Flash-chain core ⚪
 
@@ -198,6 +194,21 @@ EFR32 concurrent Zigbee EZSP + Thread Spinel on one chip.
 - 🔵 SMLIGHT catalog now lists multi-PAN builds under new `type` values — extend §6g matrix
 - 🔵 Only worth building if user demand shows up
 
+### Radio maintenance actions (Phase 7) ⚪
+
+The v2 add-on becomes the UX host for the authenticated ESPHome-side actions
+that replace SLZB-OS's plaintext HTTP admin surface for per-radio operations
+([design.md §15](design.md)). Every action requires the ownership guard
+([design.md §14](design.md)): ZHA/OTBR must be stopped or force-released
+before invocation. Phasing mirrors [design.md §26.6.4](design.md).
+
+- ⚪ **v2.1 — Zigbee network backup export.** nwk key + PAN + device table dump. Same ZNP session as the flash chain uses. Written to `/config/backups/` next to HA snapshots.
+- ⚪ **v2.2 — IEEE migration (the coord-swap star).** `zigbee_ieee_read` on the outgoing coord → `zigbee_ieee_write` on the incoming coord. ZNP MT_SYS CMD 12/14 read, CMD 11 write. Preserves every Zigbee pairing across a coordinator replacement — without this, users re-pair every device. Full migration flow lives in [design.md §29.2](design.md). Wrong value bricks discovery until reflash; add-on UX must guard with an explicit "you are about to overwrite the coord IEEE" confirmation.
+- ⚪ **v2.3 — Radio SoC die temperature diagnostic.** ZNP `SYS_GET_MFG_INFO` (or Silabs equivalent) polled on the add-on's schedule; publishes as an HA sensor.
+- ⚪ **v2.4 — Zigbee energy scan + link diagnostics.** ZNP `ZDO_MGMT_NWK_UPDATE_REQ`. Channel-picker helper, RSSI/link snapshot, radio TX-power read (setter stays with ZHA/Z2M — see [design.md §15](design.md)).
+- ⚪ **Radio reset (`zigbee_radio_reset` / `thread_radio_reset`).** Not tied to a specific v2.x — reuses the same GPIO the flash chain drives (`serial_proxy` `dtr_pin`). Ships whenever it's needed as a manual "kick the radio" escape hatch.
+- ⚪ **Docs**: add a "Migrating a coordinator (preserve pairings)" recipe under [`docs/ha-integrations/`](../ha-integrations/) that walks users through the stop-ZHA / read-IEEE / swap / write-IEEE / restart-ZHA sequence.
+
 ### Optional on-device dashboard 🔵
 
 - 🔵 `web_server:` bolt-on package (opt-in) — for users who want a device-side UI for flash progress etc.
@@ -206,7 +217,7 @@ EFR32 concurrent Zigbee EZSP + Thread Spinel on one chip.
 
 ### Security review — tier-3 config surface ⚪
 
-Placeholder from [v1-radio-firmware.md §11](v1-radio-firmware.md):
+Placeholder from [radio-probe-reference.md §11](radio-probe-reference.md):
 
 - ⚪ If tier-3 selects go over Native API only, Noise + API key covers auth by construction — cheap win
 - ⚪ If `web_server:` ships, do the HTTPS + CSRF review before merge
@@ -230,7 +241,7 @@ Manual refresh cadence: bump when we prep a release, or when a user reports a "y
 
 ### Hardware map maintenance ⚪
 
-- ⚪ Extend [hardware-map.md](hardware-map.md) as we validate additional devices
+- ⚪ Extend [hardware-map.md](../hardware-map.md) as we validate additional devices
 - ⚪ Add hw revision variants (`r1_74`, `r1_75`, …) as SMLIGHT ships them
 - ⚪ Document the "add a new device" checklist once we've done it 2–3 times
 
@@ -245,7 +256,7 @@ A private security-findings review of SLZB-OS is maintained locally; disclosure 
 
 ## Explicitly deferred / not doing
 
-- ❌ **Sound-reactive WS2812 effects + I2S microphone (`music_leds` + `fastled_helper`, upstream from [`andrewjswan/esphome-components`](https://github.com/andrewjswan/esphome-components))** — deleted from the tree on 2026-09-10 along with the FastLED library dependency they pulled in. The pipeline (FFT every ~32 ms on a FreeRTOS task + FastLED rendering + WS2812 RMT output) fights the `serial_proxy` UART loops on the same ESP32-S3 that has to service 2–3 radio UARTs at 115200–460800 baud, causing byte drops on the Zigbee / Thread / Z-Wave streams. Core job wins. If sound-reactive effects ever come back, it will be gated behind an explicit runtime "pause radios while mic active" switch — not on-by-default. See [`design.md §18`](design.md) for the non-goal rationale and [`design.md §30.3`](design.md) for the removal register.
+- ❌ **Sound-reactive WS2812 effects + I2S microphone (`music_leds` + `fastled_helper`, upstream from [`andrewjswan/esphome-components`](https://github.com/andrewjswan/esphome-components))** — deleted from the tree along with the FastLED library dependency they pulled in. The pipeline (FFT every ~32 ms on a FreeRTOS task + FastLED rendering + WS2812 RMT output) fights the `serial_proxy` UART loops on the same ESP32-S3 that has to service 2–3 radio UARTs at 115200–460800 baud, causing byte drops on the Zigbee / Thread / Z-Wave streams. Core job wins. If sound-reactive effects ever come back, it will be gated behind an explicit runtime "pause radios while mic active" switch — not on-by-default. See [`design.md §18`](design.md) for the non-goal rationale and [`design.md §30.3`](design.md) for the removal register.
 - ❌ **On-device SPA** — HA is the UX. If users want a device-side page for edge cases, `web_server:` covers it; we don't ship a custom UI.
 - ❌ **On-device AI agent** — users can run whatever LLM they want in HA against our sensors.
 - ❌ **Zigbee network-key management** — belongs in Z2M / ZHA, not in the transport.

@@ -26,7 +26,7 @@ SMLIGHT's public firmware catalog and renders a native HA update card.
 - An ESPHome device flashed with this fork (v1 or later). The device must
   publish the per-radio diagnostic sensors — that's automatic when the
   device YAML includes `packages/diagnostics/radio_probe_ext.yaml` plus
-  one or more of `radioN_firmware_info.yaml`.
+  one or more of `radio{1,2,3}_probe.yaml`.
 - HA has adopted the device via the ESPHome integration.
 - HA can reach `updates.smlight.tech` outbound (HTTPS).
 
@@ -72,9 +72,86 @@ v1.x.
 | SLW09U (no radio) | *not included* | — | — |
 
 Stubbed radios still expose the static diagnostic sensors (`chip`,
-`smlight_id`, `protocol`, `role`, `firmware_channel`, `uart_baud`) so
-the HA snippet keeps working across the v1 → v1.x transition without
+`protocol`, `role`, `firmware_channel`, `uart_baud`, `installed_firmware`)
+so the HA snippet keeps working across the v1 → v1.x transition without
 edits — the card just starts rendering the moment a live probe ships.
+
+### Wire-probed identity sensors
+
+For radios with a live probe (ZNP / Spinel today), the device also
+publishes two extra diagnostic sensors alongside the declared ones:
+
+- `sensor.<slug>_<radio>_chip_probed` — chip family reported by the wire
+  probe. Values: `cc26xx_family` (ZNP — TI's SYS_VERSION cannot
+  distinguish CC2674P10 / CC1352P7 / CC1352P2 without a SMLIGHT-specific
+  NV read), `efr32mg26`, `efr32mg24`, `efr32` (bare family fallback),
+  or `unknown` when the probe couldn't determine it.
+- `sensor.<slug>_<radio>_role_probed` — firmware role reported by the
+  wire probe. Values: `coord` / `router` / `end_device` (ZNP via
+  `UTIL_GET_DEVICE_INFO`), `rcp` (Spinel — hardcoded per SMLIGHT's
+  SL-OPENTHREAD population), or `unknown`.
+
+**How the template uses them**:
+
+- **Card availability**: hidden when the probed value hard-contradicts
+  the declared one (e.g. `chip=cc2674p10`, `chip_probed=efr32mg26` —
+  the user flashed the wrong hardware into the config, or vice versa).
+  Family-only probe results (`cc26xx_family`, bare `efr32`) count as
+  agreement — they only confirm the family, not the specific variant.
+  `unknown` probed values (stubs, probe failure) also allow the card
+  through — no wire evidence means no contradiction.
+- **Boot log**: on any hard mismatch the device emits `ESP_LOGE` with
+  both values. Users tail the ESPHome log to see why a card disappeared.
+
+For stubbed protocols (EZSP, Z-Wave) both `_probed` sensors publish
+`unknown`; catalog fit still works off the declared `chip` / `role`.
+
+### How catalog matching works
+
+The template joins two data sources per (device, radio):
+
+- **The ESPHome device's declared values** (`chip`, `role`,
+  `firmware_channel`, `uart_baud`) — set in your `hw_defs/**/*.yaml`.
+- **SMLIGHT's public catalog** — one `rest:` sensor fetches the whole
+  catalog once per day and caches it as JSON attributes.
+
+The catalog groups firmwares under numeric ids, but some SLZB SKUs ship
+byte-identical firmware under two different ids (marketing labels
+`SLZB-06P7` vs `SLZB-06P7-EXT`, "signed" vs "unsigned" MG26 SDK v8.0.3,
+etc.). The template accounts for this by mapping each chip family to
+its full **duplicate-SHA equivalence group**:
+
+| Declared `chip` | Catalog ids scanned |
+|---|---|
+| `cc2674p10` | 4, 18 |
+| `cc1352p7` | 5, 17 |
+| `cc1352p2` | 0, 16 |
+| `efr32mg26` | 13, 21, 68 |
+| `efr32mg24` | 23, 67 |
+
+Within a scan set, entries are filtered by `(type, baud, prod)` matching
+the device's declared `role` / `uart_baud` / `firmware_channel`, and the
+lexicographically-highest `rev` is offered as the update target.
+
+**Custom channel** (`firmware_channel: custom`) short-circuits the
+comparison — `latest_version == installed_version` and the release
+summary calls out that the catalog is bypassed. Ids outside these
+duplicate-SHA groups (SMHUB `.hex` variants like `70`, older refreshes
+like `2`/`3`, signed SMHUB tracks like `65`/`66`) are deliberately not
+iterated in v1; users on those tracks see the card offer no updates.
+Full ids-vs-chip audit lives in
+[../radio-firmware/catalog-audit.md](../radio-firmware/catalog-audit.md).
+
+> **⚠️ If SMLIGHT restructures the catalog, this template needs
+> updating.** The Jinja depends on a handful of specific field shapes:
+> `chip_to_ids` mapping stays valid only while SMLIGHT keeps serving
+> the same chip family under the same numeric ids; `type` values remain
+> `'0'` / `'1'` / `'2'` for coord/router/rcp; `prod` remains a boolean;
+> `baud` remains an integer; `rev` remains lexicographically-sortable
+> within a chip family. If any of that changes, symptoms will be
+> "no update card renders", "card offers a suspicious rev", or a
+> template error in HA's log. Please open an issue against this repo
+> so we can update the mapping.
 
 ### Multiple SMLIGHT devices
 
@@ -110,8 +187,8 @@ required.
 
 ### Reference
 
-- Design authority: [../v1-radio-firmware.md](../v1-radio-firmware.md)
+- Detailed design: [../radio-probe-reference.md](../design/radio-probe-reference.md)
 - Roadmap for the stub → live probe transition:
-  [../roadmap.md](../roadmap.md) v1.x section
+  [../roadmap.md](../design/roadmap.md) v1.x section
 - SMLIGHT catalog snapshot for reviewing schema drift:
   [../radio-firmware/](../radio-firmware/)

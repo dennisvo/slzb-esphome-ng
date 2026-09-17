@@ -23,13 +23,13 @@ Although this hardware map documents the MR4U in detail (because it is our refer
 | **ULTIMA** | 3 (CC26 + EFR32 + ZW-800/Z-Wave) | ✓ Full — Native API encryption + OTA password + 3 `serial_proxy` instances replacing 3 plaintext bridges. Biggest security uplift. |
 | **MRxU** family (MR4U, MR2U, etc.) | 2 (CC26 + EFR32) | ✓ Full — this is our **primary target and only tested platform** |
 | **06xU** | 1 (CC26 *or* EFR32) | ✓ Full — same shared-package changes; 1 `serial_proxy` instance |
-| **SLWF-09U** | 0 (Wi-Fi/BT dongle only) | Partial — Native API encryption + OTA password apply. No radios, so no plaintext-UART attack surface to remove. Marginal benefit. |
+| **SLWF-09U** | 0 (general-purpose ESP32-S3 node) | Partial — Native API encryption + OTA password apply. Stock USB-over-network function is available via opt-in `packages/usb/usb_uart.yaml` (commented in `devices/slw09u_r1_01.yaml`; swaps plaintext TCP :9638 → encrypted `serial_proxy` when enabled). Otherwise a general-purpose Ethernet+PoE HA node with GPIO/DIY expansion and optional BLE proxy. |
 
 **Support levels defined:**
 
 - **✓ Full, tested**: MR4U only. Reference test hardware — firmware built, flashed, and validated here first.
 - **✓ Full, expected-to-work-by-construction**: ULTIMA, MRxU siblings, 06xU. Same shared packages, same architecture. Not personally validated on physical hardware; user test reports welcome.
-- **Partial**: SLWF-09U. Native API encryption and password-protected OTA apply, but the fork's core purpose (secure Zigbee/Thread radio transport) doesn't — there are no radios to protect.
+- **Partial**: SLWF-09U. Native API encryption and password-protected OTA apply. Stock SLWF-09U's USB-over-network pass-through function is available via opt-in `packages/usb/usb_uart.yaml` (see the commented include in `devices/slw09u_r1_01.yaml`); when enabled, it swaps plaintext TCP :9638 → encrypted `serial_proxy`. Without the opt-in, the device serves as an Ethernet+PoE-powered HA node with GPIO/DIY expansion (and optional BLE proxy).
 
 The rest of this document uses MR4U as the concrete example throughout. Where a pin or port is specific to MR4U (as opposed to shared MRxU family or generic SMLIGHT convention), that is called out.
 
@@ -103,7 +103,7 @@ Sorted by GPIO number. All values pulled from `hw_defs/mrxu/mr4u_r1_73.yaml`.
 
 ## 4. Radio 1 — CC26 (Zigbee / Thread on TI CC2674P10)
 
-Declared in `hw_defs/mrxu/mr4u_r1_73.yaml` under the "UART1" heading. The table below records the physical wiring and the upstream `stream_server` bridge on port 7638. This fork replaces that bridge with a `serial_proxy` instance carried over the encrypted Native API; port 7638 is not exposed. See [design.md](design.md) for the transport model.
+Declared in `hw_defs/mrxu/mr4u_r1_73.yaml` under the "UART1" heading. The table below records the physical wiring and the upstream `stream_server` bridge on port 7638. This fork replaces that bridge with a `serial_proxy` instance carried over the encrypted Native API; port 7638 is not exposed. See [design.md](design/design.md) for the transport model.
 
 | Aspect | Value | Source |
 |---|---|---|
@@ -118,7 +118,7 @@ Declared in `hw_defs/mrxu/mr4u_r1_73.yaml` under the "UART1" heading. The table 
 | **Current TCP exposure** | Port **7638**, plaintext | `packages/stream_servers/ss_uart1.yaml` + `uart1_default_port: 7638` |
 | Stream server implementation | `oxan/esphome-stream-server` external component | `packages/external_components/stream_server.yaml` |
 
-The runtime behavior of upstream on port 7638: any host on the same L2 segment as the MR4U can `nc <mr4u-ip> 7638` and get a raw bidirectional pipe to the CC26 UART with no authentication and no encryption. This is the primary attack surface this fork removes; see [design.md](design.md) §2.
+The runtime behavior of upstream on port 7638: any host on the same L2 segment as the MR4U can `nc <mr4u-ip> 7638` and get a raw bidirectional pipe to the CC26 UART with no authentication and no encryption. This is the primary attack surface this fork removes; see [design.md](design/design.md) §2.
 
 ## 5. Radio 2 — EFR32 (Zigbee / Thread on Silicon Labs EFR32MG26)
 
@@ -229,7 +229,7 @@ The component ships and is wired into every device with a radio UART. MR4U defau
 | USB-C CC1 sense | 4 | ADC in | Analog voltage on CC1 pin — used to detect USB-C source/sink orientation and current-advertising resistors. |
 | USB-C CC2 sense | 5 | ADC in | Same for CC2. |
 
-Full USB behavior lives in `packages/usb/`. See [design.md](design.md) for the post-v1 USB build variant.
+Full USB behavior lives in `packages/usb/`. See [design.md](design/design.md) for the post-v1 USB build variant.
 
 ## 9. LEDs and buttons
 
@@ -261,16 +261,16 @@ Compare the plaintext-ports baseline in upstream `smlight-tech/slzb-esphome` wit
 ### 10.2 This fork's changes
 
 1. **`stream_server` removed from both radios.** Deleted `stream_server` external component; ports 7638 and 6638 are no longer opened.
-2. **Native API encryption on.** `api.encryption.key: !secret device_encryption_key` in `packages/core/core.yaml`. Connections without the correct PSK are rejected during Noise handshake.
+2. **Native API encryption on.** `api.encryption.key: !secret device_encryption_key` in `packages/core/core.yaml`. Connections without the correct PSK are rejected during the encrypted handshake.
 3. **OTA encrypted with the same PSK.** `ota.encryption:` (bare, no separate key) inherits the API key, so the firmware image and the uploader are both authenticated with one per-device PSK. Requires ESPHome 2026.9+ on both device and dashboard.
 4. **`serial_proxy` in place of `stream_server`.** One instance per radio UART, carried over the encrypted Native API. See `packages/serial_proxies/`.
-5. **HW UART flow control — planned, not yet shipped.** See §6.
+5. **HW UART flow control shipped via fork-local `uart_hw_flow` custom component.** See §6.
 6. **Web server stays off.** Upstream already leaves it disabled; this fork keeps it that way.
 
 ---
 
 ## 11. Related docs
 
-- [design.md](design.md) — architecture and phase model, including the transport and flow-control designs summarized above.
+- [design.md](design/design.md) — architecture and phase model, including the transport and flow-control designs summarized above.
 - [architecture.md](architecture.md) — repo layout and package model.
-- [roadmap.md](roadmap.md) — what's shipped, planned, and deferred (including `components/uart_hw_flow/`).
+- [roadmap.md](design/roadmap.md) — what's shipped, planned, and deferred (including `components/uart_hw_flow/`).

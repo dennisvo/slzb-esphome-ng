@@ -1,7 +1,7 @@
 # packages/bluetooth/bluetooth.yaml
 #
 # OPT-IN. Not !include'd by any shipping device build in v1.
-# See docs/development-considerations.md §11.3 for the rationale.
+# See docs/design/design.md §27.3 for the rationale.
 #
 # BLE on the ESP32-S3 shares CPU, interrupts and the RF frontend with
 # `serial_proxy`'s radio UART loops. Aggressive scanning and an active GATT

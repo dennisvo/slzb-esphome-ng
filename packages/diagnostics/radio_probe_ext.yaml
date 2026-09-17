@@ -11,7 +11,7 @@
 # iteration on unpushed component changes: temporarily swap `type: git` for
 # `type: local, path: components`.
 #
-# See docs/v1-radio-firmware.md §5 for the shipping form.
+# See docs/design/radio-probe-reference.md §5 for the shipping form.
 
 external_components:
   - source:

@@ -14,19 +14,19 @@ packages:
   platform_diag: !include ../packages/diagnostics/diagnostics.yaml
   # BLE proxy is off by default — it shares CPU / interrupts / RF frontend
   # with the radio UART loops. Uncomment to opt in; see
-  # docs/development-considerations.md §11.3.
+  # docs/design/design.md §27.3.
   # platform_ble:  !include ../packages/bluetooth/bluetooth.yaml
 
   # --- Radio firmware version diagnostics (v1) ---
   # Single-radio device; the logical Radio 1 lives on the physical UART2
   # (see radio1_uart_id in hw_defs). Default variant is CC2674P10 ZNP coord
   # (SLZB-06P10), which gets a live probe; EFR32-based variants get the
-  # stub in v1 and a real probe in v1.x. See docs/v1-radio-firmware.md.
+  # stub in v1 and a real probe in v1.x. See docs/design/radio-probe-reference.md.
   platform_radio_probe_ext: !include ../packages/diagnostics/radio_probe_ext.yaml
   platform_radio1_probe:    !include ../packages/diagnostics/radio1_probe.yaml
   # NOTE (slzb-esphome-ng fork): `stream_server` and its per-UART bridge are
   # replaced by a `serial_proxy` instance tunnelled through the encrypted Native
-  # API. See docs/design.md §7 and Phase 1.
+  # API. See docs/design/design.md §7 and Phase 1.
   # platform_wifi: !include ../packages/wifi/wifi.yaml   # enable if needed
 
 
@@ -40,7 +40,7 @@ packages:
 
   # --- UART HW flow control ext (fork-local custom component) ---
   # Declares components/uart_hw_flow/ so uart2_hw_flow.yaml can register a
-  # per-UART flow-control instance. See docs/v1-design.md §5.
+  # per-UART flow-control instance. See docs/design/radio-firmware-mgmt.md §5.
   platform_uart_hw_flow_ext: !include ../packages/buses/uarts/uart_hw_flow_ext.yaml
 
   # --- UART bus (with HW flow control) ---

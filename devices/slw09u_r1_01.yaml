@@ -14,10 +14,10 @@ packages:
   platform_diag: !include ../packages/diagnostics/diagnostics.yaml
   # BLE proxy is off by default — it shares CPU / interrupts / RF frontend
   # with the radio UART loops. Uncomment to opt in; see
-  # docs/development-considerations.md §11.3.
+  # docs/design/design.md §27.3.
   # platform_ble:  !include ../packages/bluetooth/bluetooth.yaml
   # SLW09U has no radio UART — the v1 radio_firmware_info packages are
-  # intentionally not included. See docs/v1-radio-firmware.md §6f.
+  # intentionally not included. See docs/design/radio-probe-reference.md §6f.
   # (BLE-off default still applies for consistency and image size.)
   # platform_wifi: !include ../packages/wifi/wifi.yaml   # enable if needed
 
@@ -46,6 +46,12 @@ packages:
   # --- PoE ---
   hal_poe_check:   !include ../packages/addons/poe_check.yaml
   hal_poe_to_usb:  !include ../packages/usb/poe_to_usb_power.yaml
+
+  # --- USB pass-through (stock SLWF-09U function; opt-in) ---
+  # Uncomment to bridge a USB-serial gadget plugged into the SLWF-09U over
+  # encrypted `serial_proxy` (port name `usb`). Replaces stock plaintext
+  # TCP :9638. Requires ESPHome 2026.9+.
+  # hal_usb_uart:    !include ../packages/usb/usb_uart.yaml
 
   # --- WS2812B / Addressable LEDs ---
   # TODO: Add LED power switch package when available

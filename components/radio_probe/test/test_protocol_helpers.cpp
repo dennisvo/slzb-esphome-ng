@@ -19,6 +19,8 @@ using esphome::radio_probe::ccitt16_crc;
 using esphome::radio_probe::crc16_x25;
 using esphome::radio_probe::hdlc_escape;
 using esphome::radio_probe::hdlc_unescape;
+using esphome::radio_probe::parse_openthread_build_date;
+using esphome::radio_probe::parse_openthread_platform;
 using esphome::radio_probe::HDLC_FLAG;
 using esphome::radio_probe::HDLC_ESCAPE;
 using esphome::radio_probe::HDLC_XON;
@@ -101,12 +103,122 @@ static void test_hdlc_dangling_escape_rejected() {
   CHECK(hdlc_unescape(bad, sizeof(bad), out, sizeof(out)) == 0);
 }
 
+static void test_openthread_build_date_canonical() {
+  // Live MR4U boot log, EFR32MG26 3.0.1 Thread RCP (rev 20260416).
+  const char *v = "SL-OPENTHREAD/3.0.1.0_GitHub-61e43cffb; EFR32; Apr 16 2026 06:14:46";
+  char out[9] = {0};
+  CHECK(parse_openthread_build_date(v, std::strlen(v), out));
+  CHECK(std::strcmp(out, "20260416") == 0);
+}
+
+static void test_openthread_build_date_leading_space_day() {
+  // __DATE__ pads single-digit days with a leading space, not a zero.
+  const char *v = "SL-OPENTHREAD/3.0.1.0_GitHub-abcdefg; EFR32; Apr  6 2026 06:14:46";
+  char out[9] = {0};
+  CHECK(parse_openthread_build_date(v, std::strlen(v), out));
+  CHECK(std::strcmp(out, "20260406") == 0);
+}
+
+static void test_openthread_build_date_all_months() {
+  // Every month token must resolve to the correct 1..12 index.
+  const char *inputs[12] = {
+      "vendor; plat; Jan 01 2026 00:00:00", "vendor; plat; Feb 02 2026 00:00:00",
+      "vendor; plat; Mar 03 2026 00:00:00", "vendor; plat; Apr 04 2026 00:00:00",
+      "vendor; plat; May 05 2026 00:00:00", "vendor; plat; Jun 06 2026 00:00:00",
+      "vendor; plat; Jul 07 2026 00:00:00", "vendor; plat; Aug 08 2026 00:00:00",
+      "vendor; plat; Sep 09 2026 00:00:00", "vendor; plat; Oct 10 2026 00:00:00",
+      "vendor; plat; Nov 11 2026 00:00:00", "vendor; plat; Dec 12 2026 00:00:00",
+  };
+  const char *expected[12] = {
+      "20260101", "20260202", "20260303", "20260404", "20260505", "20260606",
+      "20260707", "20260808", "20260909", "20261010", "20261111", "20261212",
+  };
+  for (int i = 0; i < 12; i++) {
+    char out[9] = {0};
+    CHECK(parse_openthread_build_date(inputs[i], std::strlen(inputs[i]), out));
+    CHECK(std::strcmp(out, expected[i]) == 0);
+  }
+}
+
+static void test_openthread_build_date_malformed() {
+  char out[9] = {0};
+
+  // Empty / too short.
+  CHECK(!parse_openthread_build_date("", 0, out));
+  CHECK(!parse_openthread_build_date("short", 5, out));
+
+  // No "; " separator anywhere.
+  const char *no_sep = "no-separator-anywhere-in-string";
+  CHECK(!parse_openthread_build_date(no_sep, std::strlen(no_sep), out));
+
+  // Invalid month token.
+  const char *bad_month = "vendor; plat; Xyz 06 2026 00:00:00";
+  CHECK(!parse_openthread_build_date(bad_month, std::strlen(bad_month), out));
+
+  // Day out of range.
+  const char *bad_day = "vendor; plat; Apr 42 2026 00:00:00";
+  CHECK(!parse_openthread_build_date(bad_day, std::strlen(bad_day), out));
+
+  // Year out of catalog window.
+  const char *bad_year = "vendor; plat; Apr 16 1999 00:00:00";
+  CHECK(!parse_openthread_build_date(bad_year, std::strlen(bad_year), out));
+
+  // Missing space between components.
+  const char *bad_space = "vendor; plat; Apr16 2026 00:00:00";
+  CHECK(!parse_openthread_build_date(bad_space, std::strlen(bad_space), out));
+}
+
+static void test_openthread_platform_canonical() {
+  // Live MR4U boot log, EFR32MG26 3.0.1 Thread RCP.
+  const char *v = "SL-OPENTHREAD/3.0.1.0_GitHub-61e43cffb; EFR32MG26; Apr 16 2026 06:14:46";
+  CHECK(std::strcmp(parse_openthread_platform(v, std::strlen(v)), "efr32mg26") == 0);
+
+  const char *w = "SL-OPENTHREAD/3.0.1.0_GitHub-abc; EFR32MG24; Apr 16 2026 06:14:46";
+  CHECK(std::strcmp(parse_openthread_platform(w, std::strlen(w)), "efr32mg24") == 0);
+}
+
+static void test_openthread_platform_family_only() {
+  // Public Silabs GSDK examples stamp the platform as bare "EFR32".
+  const char *v = "SL-OPENTHREAD/3.0.1.0_GitHub-abc; EFR32; Apr 16 2026 06:14:46";
+  CHECK(std::strcmp(parse_openthread_platform(v, std::strlen(v)), "efr32") == 0);
+}
+
+static void test_openthread_platform_case_insensitive() {
+  const char *v = "SL-OPENTHREAD/3.0.1.0_GitHub-abc; efr32mg26; Apr 16 2026 06:14:46";
+  CHECK(std::strcmp(parse_openthread_platform(v, std::strlen(v)), "efr32mg26") == 0);
+}
+
+static void test_openthread_platform_malformed() {
+  // Only one "; " — no closing delimiter for platform token.
+  const char *one_sep = "SL-OPENTHREAD/3.0.1; EFR32MG26";
+  CHECK(std::strcmp(parse_openthread_platform(one_sep, std::strlen(one_sep)), "") == 0);
+
+  // Unknown platform token → empty result (caller treats as unknown).
+  const char *unknown = "SL-OPENTHREAD/3.0.1; CC2652P; Apr 16 2026 06:14:46";
+  CHECK(std::strcmp(parse_openthread_platform(unknown, std::strlen(unknown)), "") == 0);
+
+  // No separator at all.
+  const char *no_sep = "no-separator-anywhere";
+  CHECK(std::strcmp(parse_openthread_platform(no_sep, std::strlen(no_sep)), "") == 0);
+
+  // Empty input.
+  CHECK(std::strcmp(parse_openthread_platform("", 0), "") == 0);
+}
+
 int main() {
   test_crc_known_vectors();
   test_hdlc_roundtrip_plain_payload();
   test_hdlc_roundtrip_all_reserved();
   test_hdlc_output_cap_too_small();
   test_hdlc_dangling_escape_rejected();
+  test_openthread_build_date_canonical();
+  test_openthread_build_date_leading_space_day();
+  test_openthread_build_date_all_months();
+  test_openthread_build_date_malformed();
+  test_openthread_platform_canonical();
+  test_openthread_platform_family_only();
+  test_openthread_platform_case_insensitive();
+  test_openthread_platform_malformed();
   std::printf("OK — %d assertions passed\n", g_pass);
   return 0;
 }

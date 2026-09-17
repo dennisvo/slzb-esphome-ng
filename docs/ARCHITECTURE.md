@@ -10,7 +10,7 @@ A **security-hardened** ESPHome firmware for SMLIGHT-style network Zigbee/Thread
 
 Upstream (`smlight-tech/slzb-esphome`) exposes every radio UART as a plaintext TCP port. This fork replaces that with an **encrypted ESPHome Native API** carrying [`serial_proxy`](https://esphome.io/components/serial_proxy.html) streams to Home Assistant.
 
-Result: on a running device, the only externally-reachable ports are the standard ESPHome trio — `6053/tcp` (encrypted Native API), `8266/tcp` (password-protected OTA) and `5353/udp` (mDNS, for HA discovery). Gone: `6638`, `7638`, `8638`, `9638`, `80`.
+Result: on a running device, the only externally-reachable ports are the standard ESPHome trio — `6053/tcp` (encrypted Native API), `3232/tcp` (password-protected OTA) and `5353/udp` (mDNS, for HA discovery). Gone: `6638`, `7638`, `8638`, `9638`, `80`.
 
 ---
 
@@ -103,7 +103,7 @@ Do **not** try to interpolate substitutions inside `!include` paths — ESPHome 
 
 ---
 
-## 5. Security architecture (Phase 1)
+## 5. Security architecture
 
 | Concern | Mechanism |
 |---|---|
@@ -145,13 +145,13 @@ No changes to any `packages/*` should be required.
 
 ## 8. Where to read next
 
-- `docs/design.md` — full design rationale, threat model, phased roadmap.
-- `docs/roadmap.md` — phase-by-phase status and open work items.
-- `docs/v1-design.md` — v1 substitution surface, package inventory, feature-parity strategy.
-- `docs/v1-radio-firmware.md` — v1 radio firmware version visibility design.
+- `docs/design/design.md` — full design rationale, threat model, phased roadmap.
+- `docs/design/roadmap.md` — phase-by-phase status and open work items.
+- `docs/design/radio-firmware-mgmt.md` — v1 substitution surface, package inventory, feature-parity strategy.
+- `docs/design/radio-probe-reference.md` — v1 radio firmware version visibility design.
 - `docs/integration-recipes.md` — HA integration paths (URL schemes, ZHA, OTBR).
 - `docs/hardware-map.md` — MR4U pin map (UARTs, resets, boot pins, LEDs) plus per-board variants.
-- `docs/research/serial-proxy-inspection.md` — deep dive on the upstream `serial_proxy` component.
-- `docs/research/serialx-inspection.md` — the HA-side `serialx` package and `esphome-hass://` scheme.
-- `docs/research/zha-zigpy-inspection.md` — the ZHA → zigpy → radio-backend chain.
-- `docs/research/otbr-inspection.md` — the HA OTBR add-on architecture.
+- `docs/design/archive/serial-proxy-inspection.md` — deep dive on the upstream `serial_proxy` component.
+- `docs/design/archive/serialx-inspection.md` — the HA-side `serialx` package and `esphome-hass://` scheme.
+- `docs/design/archive/zha-zigpy-inspection.md` — the ZHA → zigpy → radio-backend chain.
+- `docs/design/archive/otbr-inspection.md` — the HA OTBR add-on architecture.
