@@ -34,15 +34,11 @@ class RadioProbe : public Component, public uart::UARTDevice {
   void set_uart_baud(const std::string &s) { this->uart_baud_ = s; }
   void set_installed_firmware_sensor(text_sensor::TextSensor *s) { this->installed_ = s; }
   void set_installed_firmware_raw_sensor(text_sensor::TextSensor *s) { this->installed_raw_ = s; }
-  void set_chip_probed_sensor(text_sensor::TextSensor *s) { this->chip_probed_ = s; }
-  void set_role_probed_sensor(text_sensor::TextSensor *s) { this->role_probed_ = s; }
 
  protected:
   void dispatch_();
   void publish_(const std::string &value);
   void publish_raw_(const std::string &value);
-  void publish_probed_(const std::string &chip_probed, const std::string &role_probed,
-                       bool probe_ok);
   void drain_rx_();
 
   // Bounded replacement for uart::UARTDevice::flush(). Under ESP-IDF the
@@ -57,15 +53,8 @@ class RadioProbe : public Component, public uart::UARTDevice {
   // received + validated). On true, `rev` is the normalized YYYYMMDD tag
   // (or an "unknown (…)" sentinel when the wire format doesn't yield a
   // parseable date) and `raw` is the full firmware descriptor for triage.
-  // `chip_probed` / `role_probed` receive wire-derived identity strings
-  // (may be empty when the probe can't determine them).
-  bool probe_znp_(std::string &rev, std::string &raw, std::string &chip_probed,
-                  std::string &role_probed);
-  bool probe_spinel_(std::string &rev, std::string &raw, std::string &chip_probed,
-                     std::string &role_probed);
-  // ZNP UTIL_GET_DEVICE_INFO 0x27/0x00 — returns coord/router/end-device
-  // as a separate MT/UNPI round-trip. See docs/design/radio-probe-reference.md §6a.
-  bool probe_znp_role_(std::string &role_probed);
+  bool probe_znp_(std::string &rev, std::string &raw);
+  bool probe_spinel_(std::string &rev, std::string &raw);
 
   std::string chip_;
   std::string protocol_;
@@ -74,8 +63,6 @@ class RadioProbe : public Component, public uart::UARTDevice {
   std::string uart_baud_;
   text_sensor::TextSensor *installed_{nullptr};
   text_sensor::TextSensor *installed_raw_{nullptr};
-  text_sensor::TextSensor *chip_probed_{nullptr};
-  text_sensor::TextSensor *role_probed_{nullptr};
 };
 
 }  // namespace radio_probe

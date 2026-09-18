@@ -300,7 +300,7 @@ Concrete v1 shape:
     - `zwave` → probe stub → publish `"unknown (zwave probe not implemented in v1)"`
     - Any probe timeout (200 ms) or framing error → publish `"unknown (probe timeout)"` / `"unknown (framing error)"`
     - `none` → no sensor emitted (slw09u case)
-  - **Additionally publishes two wire-probed identity sensors per radio**: `radioN_chip_probed` (`cc26xx_family` / `efr32mg26` / `efr32mg24` / `unknown`) and `radioN_role_probed` (`coord` / `router` / `rcp` / `unknown`). See §6i for the detection paths per wire protocol. Mismatches against the declared `chip` / `role` sensors are logged at boot via `ESP_LOGE` — not published as separate entities. HA re-derives whatever verdict it needs by comparing the pair.
+  - **Additionally publishes a raw firmware descriptor per radio** (`radioN_installed_firmware_raw`) so a user can eyeball the untouched wire response when the normalized rev is `"unknown (…)"`. The declared `radioN_chip` / `radioN_protocol` / `radioN_role` sensors publish the values baked into `hw_defs/**` — those are treated as the authoritative identity per the user-responsibility contract in `radio-firmware-mgmt.md §6`. See §6i for why we do not publish a separate wire-derived chip/role pair.
 - **Ship the HA snippet** in `docs/ha-integrations/smlight-firmware-update.yaml` with a short README pointing out (a) ZHA independently reports coord version, ours is orthogonal (§6e), (b) recorder-exclusion for the big JSON attribute (§4), (c) which radios are live-probed vs stubbed in v1 (§6f), (d) how the HA update-entity template treats `"unknown"` (no update entity created; user sees only the diagnostic sensors, not a broken update card).
 
 Users who care get an update entity in HA per live-probed radio. Users who
@@ -617,57 +617,60 @@ sensor shows `"unknown (spinel version format not recognised)"` — because a
 future OpenThread build changes the `; EFR32; Mmm DD YYYY` tail format —
 the raw sensor keeps working for triage.
 
-### 6i. Wire protocol vs firmware role — a taxonomy fix
+### 6i. Wire-derived chip / role — considered and rejected
 
-Earlier drafts of this doc conflated *wire protocol* (the framing the host
-speaks on the UART) with *firmware role* (what the radio does with those
-frames). They're independent axes and treating them as one hides the
-question the boot log actually needs to answer.
+> **Status:** Archive note. Earlier drafts of v1 shipped `radioN_chip_probed`
+> and `radioN_role_probed` sensors alongside `installed_firmware`. Flashed
+> testing on an MR4U with a CC2674P10 ZNP + EFR32MG26 Spinel revealed
+> that the wire evidence we could extract wasn't accurate enough to earn
+> its complexity, and the sensors were removed. This section preserves
+> the analysis and the reason.
 
-- **Wire protocol** is a *chip-side* property: it's determined by which
-  firmware image is on the silicon. The host either negotiates it via a
-  handshake (EZSP has an `EZSP_VERSION` opening frame) or infers it from
-  which byte-framing produces valid responses.
-- **Firmware role** is a *stack-side* property: what the flashed image
-  actually does with the mesh. A ZNP-wire firmware can be `coord` or
-  `router` — both speak ZNP framing to the host, but the router firmware
-  builds a Zigbee child of another network rather than forming its own.
+**What was tried:**
 
-The three wire protocols we care about, and the roles each supports:
+- ZNP `SYS_VERSION` Product byte (offset 5) was mapped to `cc2530` / `cc2538` /
+  `cc26xx_family`.
+- ZNP `UTIL_GET_DEVICE_INFO` (`MT_UTIL 0x27/0x00`) was called as a follow-up
+  round-trip to read a `DeviceType` byte and publish `coord` / `router` /
+  `end_device`.
+- Spinel `NCP_VERSION` was parsed for the `; PLATFORM; ` token to publish
+  `efr32mg26` / `efr32mg24` / `efr32`, with `role_probed` hardcoded to `rcp`.
 
-| Wire protocol | Chip families | Roles the same wire supports | Live probe |
-|---|---|---|---|
-| **ZNP** (TI SimpleLink `MT_SYS` MT-framing, `SYS_VERSION 0x21/0x02`) | CC2652P / CC1352P2 / CC1352P7 / CC2674P10 | `coord` (Z-Stack Coordinator), `router` (Z-Stack Router). Both speak ZNP; role differs in what the firmware initialises after boot. | ✅ live v1 |
-| **EZSP** (Silabs EmberZNet, ASH-framed serial) | EFR32MG21 / MG24 / MG26 | `coord` (EmberZNet Coordinator), `router` (EmberZNet Router). Both speak EZSP; router firmware advertises itself via the network-formation command it invokes. | 🟡 stub v1 |
-| **Spinel** (OpenThread NCP protocol, HDLC-lite framed) | EFR32MG21 / MG24 / MG26 | Single role: `rcp` (Radio Co-Processor — Thread stack runs on the host / OTBR). Spinel does not support Zigbee-style role variants. `ncp` in the taxonomy is a hypothetical Thread-full-stack-on-radio variant SMLIGHT does not ship. | ✅ live v1 |
+**What broke on real hardware:**
 
-**The role-detection rule**:
+1. **The ZNP Product byte is a Z-Stack build identifier, not a chip family
+   selector.** On the CC2674P10 running SMLIGHT's latest SL-ZBB build the
+   Product byte returned `1`, which our mapping labeled `cc2538` — wrong
+   silicon family. The byte's semantics are TI-internal; there is no
+   documented mapping to chip family.
+2. **`UTIL_GET_DEVICE_INFO` is not present in every ZNP build.** The
+   SMLIGHT CC2674P10 firmware returned no valid SRSP frame within the
+   probe timeout; the probe reported `Unknown` for role.
+3. **Family-only Spinel identification** (`efr32`) matches multiple
+   catalog entries and doesn't actually narrow anything the user hasn't
+   already declared in `hw_defs/**`.
+4. **Every new wire protocol** (EZSP, Z-Wave Serial API, …) would need
+   its own chip/role taxonomy handler on the device side. That's a
+   scaling burden with poor UX return.
 
-- ZNP → parse the `installed_firmware_raw` for role tokens. TI ships router
-  binaries with `zr_` or `router` in the filename, and the chip's revision
-  string can be cross-referenced against the catalog: if the installed
-  `(chip, rev)` matches a `type: "1"` catalog entry, it's a router; if it
-  matches a `type: "0"` entry, it's a coordinator.
-- EZSP → analogous inspection when we implement the EZSP probe. EmberZNet
-  routers advertise themselves at boot via the initialisation command they
-  invoke (`emberFormNetwork` vs `emberJoinNetwork`).
-- Spinel → single-role; `role=rcp` is inferred whenever the wire probe
-  succeeds, no further checks needed.
+**Why removing them is safe:**
 
-**Why v1's compile-time `radioN_role` substitution is still useful**: it's
-the *expected* role — the cross-reference we check the runtime probe against.
-The wire-derived value is published as `sensor.<slug>_radio_N_role_probed`.
-When it disagrees with the declared `sensor.<slug>_radio_N_role`, the device
-emits `ESP_LOGE` at boot (log-only, not exposed as a separate entity — HA
-compares the two sensors itself). This lets a user who flashed the wrong
-image get a clean warning instead of an obscure "catalog update card is
-offering me a router when I have a coordinator" symptom in HA.
+- `radio-firmware-mgmt.md §6` already puts (chip, protocol, role)
+  alignment on the operator's shoulders as part of the manual reflash
+  contract. The declared `radioN_chip` / `radioN_protocol` /
+  `radioN_role` sensors publish those YAML values faithfully.
+- The wire-derived `installed_firmware` (a YYYYMMDD rev for ZNP and
+  Spinel) is the novel, valuable signal that drives HA's update entity.
+  Its catalog-match against SMLIGHT's public feed is the practical
+  misconfig detector: a rev from the wrong chip's tracks won't appear in
+  the catalog rows the HA template iterates.
+- `installed_firmware_raw` remains available for eyeball triage.
 
-The full sensor surface (2 new per radio: `chip_probed`, `role_probed` —
-alongside the existing declared `chip`, `role`, and `installed_firmware`
-sensors) is documented in §11 below. HA re-derives whatever verdict it
-needs from those pairs plus the fetched catalog; no derived / computed
-entities are published device-side.
+**Left in place for possible reuse:**
+
+- `parse_openthread_platform()` in `protocol_helpers.h` (unit-tested) is
+  kept as dead code in case a future contributor wants to re-add
+  wire-derived chip narrowing as a v2 feature.
 
 ### 6j. Baud + hwFlow observed matrix
 
@@ -721,8 +724,8 @@ in [radio-firmware/catalog-audit.md](../radio-firmware/catalog-audit.md#baud--hw
 firmware whose `(baud, hwFlow)` disagrees with the device's UART config.
 Users see a warning surfaced by the HA-side catalog-fit template
 computed against the fetched SMLIGHT catalog; the device itself just
-publishes the wire-derived and configured values (`chip_probed`,
-`role_probed`, `chip`, `role`, `uart_baud`, `uart_hw_flow`) and lets HA
+publishes the configured values (`chip`, `role`, `uart_baud`,
+`uart_hw_flow`) plus the wire-derived `installed_firmware` and lets HA
 draw the verdict. SMLIGHT sometimes ships hwFlow-absent Spinel builds
 that work fine on hwFlow-true UARTs at low traffic, so hard enforcement
 would drop legitimate configurations silently.

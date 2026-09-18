@@ -191,7 +191,7 @@ Four properties in your device YAML (`hw_defs/**/*.yaml`) describe what the radi
 
 Never do it the other way round — the boot-time probe will disagree with the config in the window before you reflash the ESP32, and you'll lose HA connectivity to the radio until both sides line up.
 
-The boot-time chip / role probe (`radioN_chip_probed`, `radioN_role_probed` sensors — live for ZNP + Spinel in v1) catches hard mismatches: the HA update card's `availability:` template hides the card when the wire-probed identity contradicts the declared YAML. Baud and hw_flow mismatches are not currently probed — you'll notice them as radio silence in ZHA / OTBR / Z-Wave JS. Full design rationale in [`docs/design/radio-firmware-mgmt.md §5, §6`](docs/design/radio-firmware-mgmt.md) and the filter chain in [`docs/design/radio-probe-reference.md §4, §6i`](docs/design/radio-probe-reference.md).
+The boot-time firmware version probe (`radioN_installed_firmware` — live for ZNP + Spinel in v1) is the practical misconfig detector: a rev from the wrong chip's tracks won't appear in the SMLIGHT catalog the HA update card iterates over, and the card silently declines to render. An earlier v1 draft additionally shipped wire-derived `radioN_chip_probed` / `radioN_role_probed` sensors; flashed testing showed the wire evidence wasn't reliable enough to earn its complexity, so they were dropped. Baud and hw_flow mismatches are not probed — you'll notice them as radio silence in ZHA / OTBR / Z-Wave JS. Full design rationale in [`docs/design/radio-firmware-mgmt.md §5, §6`](docs/design/radio-firmware-mgmt.md) and the archive note in [`docs/design/radio-probe-reference.md §6i`](docs/design/radio-probe-reference.md).
 
 ---
 

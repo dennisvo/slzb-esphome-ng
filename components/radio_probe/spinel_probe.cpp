@@ -58,8 +58,7 @@ constexpr size_t SPINEL_TX_BUF = 32;
 
 }  // namespace
 
-bool RadioProbe::probe_spinel_(std::string &rev, std::string &raw, std::string &chip_probed,
-                               std::string &role_probed) {
+bool RadioProbe::probe_spinel_(std::string &rev, std::string &raw) {
   this->drain_rx_();
 
   // ── Build request payload + CRC ─────────────────────────────────────────
@@ -193,17 +192,6 @@ have_frame:
   }
   raw.assign(reinterpret_cast<const char *>(str_start), str_len);
   ESP_LOGD(TAG, "spinel NCP_VERSION: %s", raw.c_str());
-
-  // Chip from the "; PLATFORM; " token in NCP_VERSION. SL-OPENTHREAD
-  // catalog builds stamp EFR32MG26 / EFR32MG24 explicitly; older stock
-  // GSDK examples stamp bare "EFR32" (family only, variant unresolved).
-  const char *plat = parse_openthread_platform(raw.data(), raw.size());
-  chip_probed = plat;
-
-  // Role: SL-OPENTHREAD builds SMLIGHT ships for our fork are RCP across
-  // the entire catalog population for EFR32MG26/MG24 (see catalog-audit.md).
-  // A separate PROP_CAPS query could confirm, but is not necessary in v1.
-  role_probed = "rcp";
 
   // Distill "; EFR32; Mmm DD YYYY …" tail to YYYYMMDD so HA can compare
   // by string equality against the SMLIGHT catalog's `rev` field. On any

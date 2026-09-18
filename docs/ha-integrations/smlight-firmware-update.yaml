@@ -4,9 +4,7 @@
 # Ships one update entity per (device, radio) pair by joining:
 #
 #   1. The ESPHome device's per-radio diagnostic sensors (chip, protocol,
-#      role, firmware_channel, uart_baud, installed_firmware, plus the
-#      wire-derived chip_probed / role_probed pair when a live probe is
-#      available).
+#      role, firmware_channel, uart_baud, installed_firmware).
 #   2. SMLIGHT's public firmware catalog fetched via `rest:`.
 #
 # See docs/design/radio-probe-reference.md §§4, 5, 6i, 7 for the design.
@@ -26,12 +24,14 @@
 # tracks like 65/66) are deliberately not iterated — users on those tracks
 # see no-op comparisons for now (accepted limitation).
 #
-# The `availability:` filter suppresses the card when the wire probe
-# hard-contradicts the declared chip / role (rescue behavior; ESP_LOGE
-# fires device-side and the standalone chip_probed / role_probed sensors
-# expose the discrepancy). Family-only probe results (cc26xx_family,
-# efr32) count as agreement — they only confirm the family, not the
-# variant.
+# The `availability:` filter suppresses the card when the ESPHome wire
+# probe couldn't determine the installed rev ("unknown (…)" values). The
+# authoritative chip / protocol / role identity comes from the device's
+# `hw_defs/**` YAML (the operator's reflash contract in radio-firmware-
+# mgmt.md §6); the practical misconfig detector is a rev that doesn't
+# land in the SMLIGHT catalog track this template iterates — the card
+# then declines to show an update. See radio-probe-reference.md §6i for
+# why the wire-derived chip_probed / role_probed sensors were dropped.
 #
 # Usage:
 #   1. Copy the `rest:` block below into your HA config once. It's device-
@@ -78,29 +78,16 @@ template:
           {{ states('sensor.!DEVICE_SLUG!_!RADIO!_installed_firmware') }}
 
         # Suppress the card when the probe couldn't determine the
-        # installed rev, OR when the wire-derived chip / role hard-
-        # contradicts what the YAML declares (rescue behavior — a bare
-        # family match on CC26xx / EFR32 is OK, only variant-level
-        # contradictions hide the card).
+        # installed rev. Wire-derived chip / role sensors were removed in
+        # v1 (see radio-probe-reference.md §6i); (chip, protocol, role)
+        # alignment is the operator's responsibility per
+        # radio-firmware-mgmt.md §6 and is enforced end-to-end by whether
+        # the installed rev appears in the SMLIGHT catalog track this
+        # template iterates.
         availability: >
           {% set inst = states('sensor.!DEVICE_SLUG!_!RADIO!_installed_firmware') %}
-          {% set chip = states('sensor.!DEVICE_SLUG!_!RADIO!_chip') %}
-          {% set chip_probed = states('sensor.!DEVICE_SLUG!_!RADIO!_chip_probed') %}
-          {% set role = states('sensor.!DEVICE_SLUG!_!RADIO!_role') %}
-          {% set role_probed = states('sensor.!DEVICE_SLUG!_!RADIO!_role_probed') %}
-          {% set cc26xx = ['cc2674p10', 'cc1352p7', 'cc1352p2'] %}
-          {% set efr32  = ['efr32mg26', 'efr32mg24'] %}
-          {% set chip_ok =
-             chip_probed in ['unknown', 'unavailable', 'none', '']
-             or chip_probed == chip
-             or (chip_probed == 'cc26xx_family' and chip in cc26xx)
-             or (chip_probed == 'efr32' and chip in efr32) %}
-          {% set role_ok =
-             role_probed in ['unknown', 'unavailable', 'none', '']
-             or role_probed == role %}
           {{ inst not in ('unknown', 'unavailable', 'none')
-             and not inst.startswith('unknown (')
-             and chip_ok and role_ok }}
+             and not inst.startswith('unknown (') }}
 
         # Latest available — iterate the chip's duplicate-SHA group,
         # filter by (type, baud, prod), pick the max rev.

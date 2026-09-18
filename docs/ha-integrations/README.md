@@ -76,35 +76,26 @@ Stubbed radios still expose the static diagnostic sensors (`chip`,
 so the HA snippet keeps working across the v1 → v1.x transition without
 edits — the card just starts rendering the moment a live probe ships.
 
-### Wire-probed identity sensors
+### Why there are no wire-derived chip / role sensors
 
-For radios with a live probe (ZNP / Spinel today), the device also
-publishes two extra diagnostic sensors alongside the declared ones:
+An earlier v1 draft published `sensor.<slug>_<radio>_chip_probed` and
+`sensor.<slug>_<radio>_role_probed` alongside `installed_firmware`.
+Flashed testing on an MR4U revealed the wire evidence we could extract
+wasn't accurate enough to earn its complexity — the ZNP `SYS_VERSION`
+Product byte is a Z-Stack build id (not a chip family), and
+`UTIL_GET_DEVICE_INFO` is optional in SMLIGHT's CC2674P10 builds. The
+sensors were removed. See
+[radio-probe-reference.md §6i](../design/radio-probe-reference.md#6i-wire-derived-chip--role--considered-and-rejected)
+for the full analysis.
 
-- `sensor.<slug>_<radio>_chip_probed` — chip family reported by the wire
-  probe. Values: `cc26xx_family` (ZNP — TI's SYS_VERSION cannot
-  distinguish CC2674P10 / CC1352P7 / CC1352P2 without a SMLIGHT-specific
-  NV read), `efr32mg26`, `efr32mg24`, `efr32` (bare family fallback),
-  or `unknown` when the probe couldn't determine it.
-- `sensor.<slug>_<radio>_role_probed` — firmware role reported by the
-  wire probe. Values: `coord` / `router` / `end_device` (ZNP via
-  `UTIL_GET_DEVICE_INFO`), `rcp` (Spinel — hardcoded per SMLIGHT's
-  SL-OPENTHREAD population), or `unknown`.
-
-**How the template uses them**:
-
-- **Card availability**: hidden when the probed value hard-contradicts
-  the declared one (e.g. `chip=cc2674p10`, `chip_probed=efr32mg26` —
-  the user flashed the wrong hardware into the config, or vice versa).
-  Family-only probe results (`cc26xx_family`, bare `efr32`) count as
-  agreement — they only confirm the family, not the specific variant.
-  `unknown` probed values (stubs, probe failure) also allow the card
-  through — no wire evidence means no contradiction.
-- **Boot log**: on any hard mismatch the device emits `ESP_LOGE` with
-  both values. Users tail the ESPHome log to see why a card disappeared.
-
-For stubbed protocols (EZSP, Z-Wave) both `_probed` sensors publish
-`unknown`; catalog fit still works off the declared `chip` / `role`.
+The practical replacement: the declared `radio*_chip` /
+`radio*_protocol` / `radio*_role` sensors publish the values baked into
+`hw_defs/**` (authoritative per the operator's reflash contract in
+[radio-firmware-mgmt.md §6](../design/radio-firmware-mgmt.md#user-responsibility-documentation-contract)),
+and the wire-derived `installed_firmware` rev either lands in the
+SMLIGHT catalog track HA iterates for the update entity — or it
+doesn't, in which case the update card silently declines to render and
+the user sees the raw wire response on `installed_firmware_raw`.
 
 ### How catalog matching works
 
