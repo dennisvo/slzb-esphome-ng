@@ -17,6 +17,8 @@
 #include "driver/uart.h"
 
 #include "esphome/components/uart/uart_component_esp_idf.h"
+#else
+#error "This fork requires the ESP-IDF framework. See packages/core/core.yaml."
 #endif
 
 namespace esphome {
@@ -32,20 +34,12 @@ void RadioProbe::setup() {
 }
 
 bool RadioProbe::flush_bounded_(uint32_t timeout_ms) {
-#ifdef USE_ESP_IDF
   if (this->parent_ == nullptr) {
     return false;
   }
   auto *idf = static_cast<uart::IDFUARTComponent *>(this->parent_);
   const uart_port_t port = static_cast<uart_port_t>(idf->get_hw_serial_number());
   return uart_wait_tx_done(port, pdMS_TO_TICKS(timeout_ms)) == ESP_OK;
-#else
-  // Fork ships ESP-IDF only. No safe bounded flush primitive on other
-  // frameworks; refusing to fall back to unbounded flush() is deliberate
-  // — see radio-probe-reference.md §6d "boot-time hazard".
-  ESP_LOGW(TAG, "flush_bounded_ is a no-op outside ESP-IDF");
-  return false;
-#endif
 }
 
 void RadioProbe::dump_config() {

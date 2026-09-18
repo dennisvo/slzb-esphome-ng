@@ -14,13 +14,14 @@
 #include "driver/uart.h"
 
 #include "esphome/components/uart/uart_component_esp_idf.h"
+#else
+#error "This fork requires the ESP-IDF framework. See packages/core/core.yaml."
 #endif
 
 namespace esphome {
 namespace uart_hw_flow {
 
 void UartHwFlow::setup() {
-#ifdef USE_ESP_IDF
   if (!this->enabled_) {
     // Matches stock SMLIGHT radio firmware default (hwFlow=false) on MR4U.
     // Deliberate no-op keeps YAML shape stable across enabled/disabled.
@@ -58,11 +59,6 @@ void UartHwFlow::setup() {
 
   ESP_LOGCONFIG(TAG, "UART%d HW flow control enabled (CTS=GPIO%d, RTS=GPIO%d, threshold=%u)", port, this->cts_pin_,
                 this->rts_pin_, RX_FLOW_THRESHOLD);
-#else
-  // Arduino framework path — no ESP-IDF UART driver to talk to. Fork ships
-  // ESP-IDF only, so this branch should never fire in normal builds.
-  ESP_LOGW(TAG, "uart_hw_flow is a no-op outside ESP-IDF");
-#endif
 }
 
 void UartHwFlow::dump_config() {
