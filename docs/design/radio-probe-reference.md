@@ -384,6 +384,39 @@ mode. The HA update-entity template skips radios reporting `"unknown"` so a
 stubbed radio just doesn't produce an update card; the diagnostic sensors
 still show what the substitutions declared.
 
+#### Boot-time hazard — bounded flush + delayed dispatch
+
+`radio_probe` inherits `uart::UARTDevice`. Under ESP-IDF the base-class
+`flush()` calls `uart_wait_tx_done(port, portMAX_DELAY)` — an **unbounded**
+wait for the TX FIFO to drain. When HW flow control is enabled on the same
+UART (`uart_hw_flow: true`, see `radio-firmware-mgmt.md §5`), the ESP32
+UART peripheral will not shift any byte out until the peer asserts CTS.
+If the ESP32 wins the POR race against the radio, `flush()` inside the
+probe never returns, the main task starves the idle task, the task
+watchdog fires on core 1, and `safe_mode` rolls the OTA back on the next
+boot.
+
+Two layered defences are required and both must stay in place:
+
+1. **Delayed dispatch.** `RadioProbe::setup()` must not call `dispatch_()`
+   directly. Schedule it via `Component::set_timeout("dispatch", 300, …)`
+   so the radio has time to boot and drive CTS before the first probe
+   frame goes on the wire. 300 ms is comfortably above the observed EFR32
+   / CC26xx cold-boot budget without materially delaying the sensor
+   value's first publish.
+2. **Bounded flush.** Never call `uart::UARTDevice::flush()` from probe
+   code. Use the `flush_bounded_(uint32_t timeout_ms)` helper defined on
+   `RadioProbe` — it wraps `uart_wait_tx_done` with a 100 ms deadline and
+   returns `false` on timeout, which the probe then treats as a normal
+   "publish `unknown (…)`" failure. This keeps the hazard contained even
+   if the delay in (1) proves insufficient on a future hardware variant
+   or if HW flow control is enabled on a UART where the peer never
+   comes up.
+
+Rule of thumb for future probe authors: any `write_array(…)` inside a
+probe **must** be followed by `flush_bounded_(…)` rather than `flush()`.
+CI-lint pending; grep-review will catch it until then.
+
 ### 6e. What ZHA already reports (and why we still don't rely on it)
 
 ZHA (via `zigpy-znp`) issues `SYS_VERSION` during coordinator startup and

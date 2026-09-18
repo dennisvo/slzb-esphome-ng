@@ -90,7 +90,13 @@ bool RadioProbe::probe_spinel_(std::string &rev, std::string &raw, std::string &
   const size_t frame_len = 1 + body_len + crc_len + 1;
 
   this->write_array(framed, frame_len);
-  this->flush();
+  if (!this->flush_bounded_(100)) {
+    ESP_LOGE(TAG,
+             "spinel TX flush timeout: peer never asserted CTS. Likely "
+             "uart*_hw_flow is enabled but radio firmware has hwFlow: false — "
+             "see radio-firmware-mgmt.md §5 for the matching rule.");
+    return false;
+  }
   ESP_LOGV(TAG, "spinel TX %u bytes: %s", static_cast<unsigned>(frame_len),
            format_hex_pretty(framed, frame_len).c_str());
 

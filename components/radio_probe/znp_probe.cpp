@@ -93,7 +93,13 @@ bool RadioProbe::probe_znp_(std::string &rev, std::string &raw, std::string &chi
   const uint8_t frame[] = {ZNP_SOF, req_body[0], req_body[1], req_body[2], req_fcs};
 
   this->write_array(frame, sizeof(frame));
-  this->flush();
+  if (!this->flush_bounded_(100)) {
+    ESP_LOGE(TAG,
+             "ZNP TX flush timeout: peer never asserted CTS. Likely uart*_hw_flow "
+             "is enabled but radio firmware has hwFlow: false — see "
+             "radio-firmware-mgmt.md §5 for the matching rule.");
+    return false;
+  }
 
   uint8_t buf[ZNP_MAX_FRAME];
   size_t pos = 0;
@@ -184,7 +190,13 @@ bool RadioProbe::probe_znp_role_(std::string &role_probed) {
   const uint8_t frame[] = {ZNP_SOF, req_body[0], req_body[1], req_body[2], req_fcs};
 
   this->write_array(frame, sizeof(frame));
-  this->flush();
+  if (!this->flush_bounded_(100)) {
+    ESP_LOGE(TAG,
+             "ZNP UTIL TX flush timeout: peer never asserted CTS. Likely "
+             "uart*_hw_flow is enabled but radio firmware has hwFlow: false — "
+             "see radio-firmware-mgmt.md §5 for the matching rule.");
+    return false;
+  }
 
   uint8_t buf[ZNP_UTIL_MAX_FRAME];
   size_t pos = 0;

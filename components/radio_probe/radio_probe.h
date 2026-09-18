@@ -45,6 +45,14 @@ class RadioProbe : public Component, public uart::UARTDevice {
                        bool probe_ok);
   void drain_rx_();
 
+  // Bounded replacement for uart::UARTDevice::flush(). Under ESP-IDF the
+  // stock flush() calls uart_wait_tx_done(portMAX_DELAY), which hangs
+  // forever when HW flow control is enabled and the peer hasn't asserted
+  // CTS yet (e.g. radio still booting at ESP32 POR). Returns true if TX
+  // drained within `timeout_ms`, false on timeout. Design authority:
+  // docs/design/radio-probe-reference.md §6d (best-effort probe).
+  bool flush_bounded_(uint32_t timeout_ms);
+
   // Per-protocol probes. Return true on protocol-level success (frame
   // received + validated). On true, `rev` is the normalized YYYYMMDD tag
   // (or an "unknown (…)" sentinel when the wire format doesn't yield a

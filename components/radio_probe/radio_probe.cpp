@@ -13,11 +13,39 @@
 
 #include "esphome/core/log.h"
 
+#ifdef USE_ESP_IDF
+#include "driver/uart.h"
+
+#include "esphome/components/uart/uart_component_esp_idf.h"
+#endif
+
 namespace esphome {
 namespace radio_probe {
 
 void RadioProbe::setup() {
-  this->dispatch_();
+  // Delay dispatch so the radio has time to boot and (when HW flow control
+  // is enabled) assert CTS before we write the first probe frame. Without
+  // this, an ESP32 POR that beats the radio to ready leaves flush() waiting
+  // on a CTS that never arrives → task WDT → OTA rollback. Probe is
+  // best-effort so 300 ms is a comfortable margin.
+  this->set_timeout("dispatch", 300, [this]() { this->dispatch_(); });
+}
+
+bool RadioProbe::flush_bounded_(uint32_t timeout_ms) {
+#ifdef USE_ESP_IDF
+  if (this->parent_ == nullptr) {
+    return false;
+  }
+  auto *idf = static_cast<uart::IDFUARTComponent *>(this->parent_);
+  const uart_port_t port = static_cast<uart_port_t>(idf->get_hw_serial_number());
+  return uart_wait_tx_done(port, pdMS_TO_TICKS(timeout_ms)) == ESP_OK;
+#else
+  // Fork ships ESP-IDF only. No safe bounded flush primitive on other
+  // frameworks; refusing to fall back to unbounded flush() is deliberate
+  // — see radio-probe-reference.md §6d "boot-time hazard".
+  ESP_LOGW(TAG, "flush_bounded_ is a no-op outside ESP-IDF");
+  return false;
+#endif
 }
 
 void RadioProbe::dump_config() {

@@ -225,6 +225,8 @@ Internal implementation (`components/uart_hw_flow/`): a plain `Component` at `se
 
 **Bottom line for MR4U today: value in `uart*_hw_flow` is `false` on both radios.** The custom component still ships in v1 so the substitution exists and future MG24 support drops in cleanly.
 
+**Safety belt against future misconfigs.** If `uart*_hw_flow: true` is ever set while the peer firmware has `hwFlow: false`, the ESP32 UART peripheral stalls waiting on a CTS the peer never drives. The `radio_probe` boot-time probe defends against this — it uses a bounded `uart_wait_tx_done` and delayed dispatch so the probe reports `unknown (…)` with an error-level log naming this exact mismatch, rather than hanging the main task and triggering `safe_mode` OTA rollback. See [radio-probe-reference.md §6d "Boot-time hazard"](radio-probe-reference.md#boot-time-hazard--bounded-flush--delayed-dispatch).
+
 Shipped in `packages/buses/uarts/uart{1,2,3}_hw_flow.yaml` — UART block + `uart_hw_flow:` invocation. The `_no_hwfc.yaml` siblings are dead files pending deletion (housekeeping in §9).
 
 ---
