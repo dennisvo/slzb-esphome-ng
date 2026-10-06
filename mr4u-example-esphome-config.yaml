@@ -1,4 +1,4 @@
-# mr4u-local.yaml — personal, ESPHome-dashboard-friendly MR4U build.
+# mr4u-local.yaml — working ESPHome-dashboard example for an MR4U build.
 #
 # Both radios active:
 #   Radio 1 — CC2674P10 Zigbee coordinator on UART1 @ 115200 (znp).
@@ -27,12 +27,31 @@
 # Required in your central secrets.yaml (`/config/esphome/secrets.yaml`
 # for the HA add-on):
 #   device_encryption_key: "<base64 32-byte key>"
-# One key protects both the Native API and OTA transports; ESPHome
-# 2026.9.0+ is required (enforced by `min_version:` in packages/core/core.yaml).
+# Generate a unique key with OpenSSL:
+#   openssl rand -base64 32
+# Put the output in secrets.yaml; keep it private and do not commit it. The
+# key protects both Native API and OTA. ESPHome 2026.9.0+ is required.
+#
+# Set `device_name` and `friendly_name` below for your device. Since
+# `name_add_mac_suffix` is disabled, give each device a unique `device_name`.
+#
+# Radio UART settings can be changed in this file's substitutions below;
+# these override the board-package defaults. Keep each `radioN_uart_*`
+# diagnostic value in sync with its corresponding `uartN_*` setting. The
+# baud must match the installed radio firmware. Enable HW flow only if that
+# firmware explicitly supports it. Changes require a rebuild and reflash.
 
 substitutions:
   device_name: slzb-ng-mr4u
   friendly_name: "SLZB-NG-MR4U"
+  uart1_baud: "115200"
+  uart1_hw_flow: "false"
+  radio1_uart_baud: "115200"
+  radio1_uart_hw_flow: "false"
+  uart2_baud: "460800"
+  uart2_hw_flow: "false"
+  radio2_uart_baud: "460800"
+  radio2_uart_hw_flow: "false"
 
 esphome:
   name_add_mac_suffix: false
@@ -46,6 +65,7 @@ logger:
 
 packages:
   slzb_ng:
+    # Fork only for board-level changes such as pin mappings or radio identity.
     url: https://github.com/dennisvo/slzb-esphome-ng
     ref: main
     refresh: 30s
