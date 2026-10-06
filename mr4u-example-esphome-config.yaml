@@ -1,0 +1,75 @@
+# mr4u-local.yaml — personal, ESPHome-dashboard-friendly MR4U build.
+#
+# Both radios active:
+#   Radio 1 — CC2674P10 Zigbee coordinator on UART1 @ 115200 (znp).
+#   Radio 2 — EFR32MG26 OpenThread RCP on UART2 @ 460800 (spinel).
+# Bluetooth, Wi-Fi, USB host, USB-C ADC, PoE→USB, I²C, and the runtime baud
+# selector are all off. Ethernet is the sole network link.
+#
+# Radio transport: encrypted `serial_proxy` over the ESPHome Native API —
+# NOT the plaintext `stream_server` used by SLZB-OS and upstream
+# `smlight-tech/slzb-esphome`. Nothing radio-related is exposed on the
+# LAN; only `:6053` (encrypted API) is reachable.
+#
+# In HA, after adopting this device via the ESPHome integration:
+#   ZHA (Zigbee) — Serial device path:
+#     esphome-hass://<config_entry_id>?port_name=zigbee
+#   OTBR / Home Assistant Border Router (Thread) — Serial device path:
+#     esphome-hass://<config_entry_id>?port_name=thread
+# The port picker autofills the URL — you don't type the entry_id.
+#
+# Paste this file into the ESPHome dashboard (or run
+# `esphome run mr4u-local.yaml` locally). The `packages:` block below
+# pulls every referenced YAML from GitHub at build time — no local clone
+# required. Nested `!include`s inside the fetched packages resolve against
+# the cached checkout of the repo, so listing the leaves is enough.
+#
+# Required in your central secrets.yaml (`/config/esphome/secrets.yaml`
+# for the HA add-on):
+#   device_encryption_key: "<base64 32-byte key>"
+# One key protects both the Native API and OTA transports; ESPHome
+# 2026.9.0+ is required (enforced by `min_version:` in packages/core/core.yaml).
+
+substitutions:
+  device_name: slzb-ng-mr4u
+  friendly_name: "SLZB-NG-MR4U"
+
+esphome:
+  name_add_mac_suffix: false
+
+logger:
+  level: INFO
+  logs:
+    ethernet: INFO
+    api: INFO
+    component: INFO
+
+packages:
+  slzb_ng:
+    url: https://github.com/dennisvo/slzb-esphome-ng
+    ref: main
+    refresh: 30s
+    files:
+      # ---- Device wiring (board, pins, ESPHome runtime, network, I/O) ----
+      - hw_defs/mrxu/mr4u_r1_73.yaml               # board pins + radio1_*/radio2_* substitutions
+      - packages/core/core.yaml                    # api, ota, mdns, i18n
+      - packages/diagnostics/diagnostics.yaml      # uptime, version, restart button
+      - packages/ethernet/w5500_gpio.yaml          # W5500 Ethernet (Wi-Fi is off)
+      - packages/ethernet/rj45_leds_gpio.yaml      # RJ45 link/act LEDs
+      - packages/input/button1_gpio.yaml           # front button
+      - packages/leds/led1_gpio.yaml               # status LED 1
+      - packages/leds/led2_gpio.yaml               # status LED 2
+
+      # ---- Fork-local custom components (declare once, used by both radios) ----
+      - packages/buses/uarts/uart_hw_flow_ext.yaml # ext-comp: uart_hw_flow (CTS/RTS via ESP-IDF)
+      - packages/diagnostics/radio_probe_ext.yaml  # ext-comp: radio_probe (boot-time version probe)
+
+      # ---- Radio 1 — CC2674P10 Zigbee coordinator (UART1 @ 115200, znp) ----
+      - packages/buses/uarts/uart1_hw_flow.yaml    # hw_uart1 bus + optional HW flow
+      - packages/serial_proxies/sp_uart1.yaml      # encrypted tunnel, port_name=zigbee
+      - packages/diagnostics/radio1_probe.yaml     # probe instance + Radio 1 sensors
+
+      # ---- Radio 2 — EFR32MG26 OpenThread RCP (UART2 @ 460800, spinel) ----
+      - packages/buses/uarts/uart2_hw_flow.yaml    # hw_uart2 bus + optional HW flow
+      - packages/serial_proxies/sp_uart2.yaml      # encrypted tunnel, port_name=thread
+      - packages/diagnostics/radio2_probe.yaml     # probe instance + Radio 2 sensors
