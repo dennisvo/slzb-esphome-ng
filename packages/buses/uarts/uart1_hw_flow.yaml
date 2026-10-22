@@ -17,6 +17,7 @@ uart:
     tx_pin: ${pin_uart1_tx}
     rx_pin: ${pin_uart1_rx}
     baud_rate: ${uart1_baud}
+    flush_timeout: 1s
 
 uart_hw_flow:
   - uart_id: hw_uart1

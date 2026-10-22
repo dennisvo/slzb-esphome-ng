@@ -30,7 +30,7 @@
 # Generate a unique key with OpenSSL:
 #   openssl rand -base64 32
 # Put the output in secrets.yaml; keep it private and do not commit it. The
-# key protects both Native API and OTA. ESPHome 2026.9.0+ is required.
+# key protects both Native API and OTA. ESPHome 2026.10.0+ is required.
 #
 # Set `device_name` and `friendly_name` below for your device. Since
 # `name_add_mac_suffix` is disabled, give each device a unique `device_name`.

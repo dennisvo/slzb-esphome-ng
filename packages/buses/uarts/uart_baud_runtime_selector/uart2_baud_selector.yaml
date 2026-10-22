@@ -4,15 +4,19 @@ select:
     platform: template
     options: ["115200", "230400", "460800", "921600"]
     initial_option: "${uart2_baud}"
-    optimistic: true
+    optimistic: false
     restore_value: true
     entity_category: config
     icon: mdi:swap-horizontal
     set_action:
       - lambda: |-
-          id(hw_uart2).flush();
           uint32_t br = stoi(x);
           if (id(hw_uart2).get_baud_rate() != br) {
+            if (id(hw_uart2).flush() != uart::UARTFlushResult::UART_FLUSH_RESULT_SUCCESS) {
+              ESP_LOGW("uart_baud", "UART2 TX flush failed; baud rate unchanged");
+              return;
+            }
             id(hw_uart2).set_baud_rate(br);
             id(hw_uart2).load_settings();
           }
+          id(change_baud_rate_uart2).publish_state(x);

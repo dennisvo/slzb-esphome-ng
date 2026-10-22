@@ -88,6 +88,12 @@ Design in [radio-firmware-mgmt.md](radio-firmware-mgmt.md) §5.
 
 Additive to v1, no breaking changes. Each item is independent; order flexible.
 
+### Preserve UART hardware flow control on reconfiguration (low priority)
+
+- [ ] TODO: Preserve configured CTS/RTS after both local baud changes and `serial_proxy`-initiated UART reloads. The current `uart_hw_flow` component enables handshake only during ESPHome setup; a UART reload disables it.
+- Normal operation uses the baud/framing required by the installed radio firmware, and unchanged proxy settings do not reload the UART. This is maintenance-path hardening, not an ESPHome 2026.10 upgrade blocker.
+- Defer until live radio flashing or reconfiguration is needed. Validate with Ultima's flow-controlled Thread UART; rebooting the ESPHome host restores handshake, but resetting only the radio does not.
+
 ### Replace Spinel stub with a real probe 🟢
 
 Highest debugging cost of any protocol lives here (HDLC-lite framing + CCITT-16 CRC, unsolicited property notifications need discarding at boot). Landed as a post-v1 point release on `feature/spinel-probe`.

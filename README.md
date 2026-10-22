@@ -67,7 +67,7 @@ What you give up compared to running the stock firmware (SLZB-OS):
 
 - **Home Assistant is effectively required.** The Native API transport is designed around the HA ESPHome integration and the `esphome-hass://` URL scheme. If you want to run the device standalone (no HA at all, or with any host that only speaks raw `socket://` to a TCP UART), this firmware is not the right choice — stick with the stock SMLIGHT firmware.
 - **ZHA-only for Zigbee in v1; no Zigbee2MQTT.** Z2M does not natively speak the `esphome://` URL scheme, so v1 has no working Z2M path (neither as an HA add-on nor standalone). If you need Z2M today, stay on the stock SMLIGHT firmware. Z2M is a candidate future client (see [`docs/design/design.md §9`](docs/design/design.md)) but not shipped or validated in v1.
-- **Recent HA versions are required.** You need a Home Assistant version whose ESPHome integration supports `serial_proxy`, and ZHA / OTBR / Z-Wave JS versions that accept the `esphome-hass://` URL scheme.
+- **Home Assistant 2026.10.0 or newer is required.** Upgrade HA alongside ESPHome so its serial client supports the `serial_proxy` subscription requirements. ZHA / OTBR / Z-Wave JS must also accept the `esphome-hass://` URL scheme.
 - **No built-in web admin UI.** SLZB-OS's HTTP dashboard (device info, radio mode switching, VPN config, etc.) is gone by design. Configuration lives in YAML and is applied by re-flashing; runtime state is exposed as normal HA entities.
 - **You build and flash the firmware yourself.** No pre-built binaries are published here; you compile with the ESPHome CLI or dashboard against this repo. This is the normal ESPHome workflow but is a shift from downloading a consumer-ready vendor image.
 - **SLZB-OS-only features are not reproduced.** Vendor extras such as the built-in ZeroTier / WireGuard clients and the SMLIGHT cloud portal are not part of this firmware.
@@ -109,7 +109,7 @@ For the full delta reference — everything preserved, removed, disabled-by-defa
 
 ### Setup
 
-**Requirement:** ESPHome 2026.9.0 or newer on both the device and the dashboard — the OTA transport inherits the Native API encryption key so the firmware image never travels the network in plaintext. The build refuses to compile on older versions.
+**Requirement:** ESPHome 2026.10.0 or newer on both the device and the dashboard, with Home Assistant 2026.10.0 or newer. The build refuses to compile on older ESPHome versions. The OTA transport inherits the Native API encryption key so the firmware image never travels the network in plaintext.
 
 Install the **ESPHome Device Builder** add-on in Home Assistant, create a new device, copy-paste the YAML file for your board, adjust to your liking, make sure `secrets.yaml` contains a `device_encryption_key` entry, and hit **Install**.
 

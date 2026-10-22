@@ -13,6 +13,7 @@ uart:
     tx_pin: ${pin_uart2_tx}
     rx_pin: ${pin_uart2_rx}
     baud_rate: ${uart2_baud}
+    flush_timeout: 1s
 
 uart_hw_flow:
   - uart_id: hw_uart2
